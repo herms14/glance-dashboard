@@ -1,6 +1,6 @@
 # Glance Dashboard - GitOps Repository
 
-Homelab dashboard with service monitoring, media stats, weather, and more.
+Comprehensive homelab dashboard with 9 tabs covering infrastructure monitoring, media management, backup status, sports, and more.
 
 ## Overview
 
@@ -12,17 +12,42 @@ Homelab dashboard with service monitoring, media stats, weather, and more.
 | **Port** | 8080 |
 | **URL** | https://glance.hrmsmrflrii.xyz |
 
-## Deployment
+## Dashboard Pages (9 Tabs)
 
-This repository is automatically deployed via GitLab CI/CD when changes are pushed to the `main` branch.
+| Tab | Description | Key Widgets |
+|-----|-------------|-------------|
+| **Home** | Central dashboard with life tracking | Chess.com stats, weather, calendar, daily note, service health monitors, GitHub contributions, life progress |
+| **Compute** | Proxmox cluster monitoring | Proxmox Cluster Health (Grafana), Container Status History (Grafana), Linux/Windows VM stats |
+| **Storage** | NAS storage metrics | Synology NAS Storage dashboard (Grafana) with RAID status, disk health, temps |
+| **Network** | Network infrastructure | Network Utilization (Grafana), Omada Network Overview (Grafana), speedtest |
+| **Backup** | PBS backup monitoring | Backup Jobs Overview with durations, VM/CT backup status with names, Drive health, PBS Grafana |
+| **Media** | Media server stats | Media Stats grid (Radarr/Sonarr), recent movies, RSS feeds, arr stack bookmarks |
+| **Web** | Tech news aggregator | YouTube channels, tech news RSS, AI/ML feeds, cloud/enterprise news, markets |
+| **Reddit** | Reddit feed manager | Dynamic multi-subreddit feed with thumbnails, native Reddit widgets |
+| **Sports** | NBA and fantasy sports | Today's games, standings, injury report, Yahoo Fantasy league |
 
-### What Happens on Push
+## Custom APIs
 
-1. **Validate** - YAML syntax and Docker Compose validation
-2. **Deploy** - Files copied to target host, container updated
-3. **Configure** - Traefik route updated for HTTPS access
-4. **Verify** - Health check confirms service is running
-5. **Notify** - Discord notification sent
+The dashboard integrates with several custom APIs running on `docker-vm-core-utilities01` (192.168.40.13):
+
+| API | Port | Purpose |
+|-----|------|---------|
+| Life Progress API | 5051 | Birthday countdown, life milestones |
+| Media Stats API | 5054 | Combined Radarr/Sonarr statistics |
+| NBA Stats API | 5060 | NBA games, standings, fantasy data |
+| Reddit Manager | 5053 | Multi-subreddit feed aggregation |
+| NAS Backup Status API | 9102 | PBS backup status with durations and VM names |
+
+## Embedded Grafana Dashboards
+
+| Dashboard | UID | Height | Tab |
+|-----------|-----|--------|-----|
+| Proxmox Cluster Health | `proxmox-cluster-health` | 3200px | Compute |
+| Container Status History | `container-status` | 1250px | Compute |
+| Synology NAS Storage | `synology-nas-modern` | 1350px | Storage |
+| Network Utilization | `network-utilization` | 1100px | Network |
+| Omada Network | `omada-network` | 2200px | Network |
+| PBS Backup Status | `pbs-backup-status` | 1400px | Backup |
 
 ## Repository Structure
 
@@ -32,54 +57,92 @@ glance-homelab/
 ├── service.yml             # GitOps metadata (target, ports, secrets)
 ├── config/
 │   ├── docker-compose.yml  # Container definition
-│   └── glance.yml          # Dashboard configuration
+│   └── glance.yml          # Dashboard configuration (~1800 lines)
 ├── assets/
-│   └── custom-themes.css   # Custom styling
+│   └── custom-themes.css   # Custom styling (full-width, hidden scrollbars)
 └── README.md
+```
+
+## Deployment
+
+### Automatic (GitLab CI/CD)
+
+Push to `main` branch triggers automatic deployment:
+
+1. **Validate** - YAML syntax and Docker Compose validation
+2. **Deploy** - Files copied to target host, container updated
+3. **Configure** - Traefik route updated for HTTPS access
+4. **Verify** - Health check confirms service is running
+5. **Notify** - Discord notification sent
+
+### Manual
+
+```bash
+# SSH to Glance LXC
+ssh root@192.168.40.12
+
+# Update config and restart
+cd /opt/glance
+docker compose restart
 ```
 
 ## Configuration
 
-### Dashboard Pages
+### Theme
 
-| Page | Content |
-|------|---------|
-| **Home** | Clock, weather, service health, bookmarks, markets, RSS feeds |
-| **Media** | Media service status (*arr stack), quick links |
-| **Network** | Network device monitoring (switches, router, firewall) |
-| **Storage** | Synology NAS dashboard (Grafana iframe) |
-| **Containers** | Container status history (Grafana iframe) |
+The dashboard uses a dark theme with full-width display:
 
-### Theme Presets
+```yaml
+theme:
+  background-color: 15 15 20
+  primary-color: 139 92 246
+  contrast-multiplier: 1.2
+  document-width: 100%
+```
 
-Available themes (selectable via theme picker icon):
-- Catppuccin Mocha (default)
-- Midnight Blue
-- Nord
-- Dracula
-- Tokyo Night
+### Custom CSS
+
+Full-width display is enabled via `custom-themes.css`:
+
+```css
+.content-bounds {
+  max-width: 100% !important;
+  width: 100% !important;
+}
+```
 
 ## Making Changes
 
-### Edit Dashboard Configuration
+### Edit Dashboard
 
 1. Modify `config/glance.yml`
 2. Commit and push to `main`
 3. Pipeline deploys automatically
 
-### Add New Bookmarks
-
-Edit `config/glance.yml` under the relevant page's bookmarks widget.
-
 ### Add New Service Monitor
 
-Edit `config/glance.yml` under the relevant page's monitor widget.
+Add to the relevant page's monitor widget in `config/glance.yml`:
 
-### Change Theme
+```yaml
+- type: monitor
+  sites:
+    - title: New Service
+      url: https://service.hrmsmrflrii.xyz
+      icon: si:iconname
+```
 
-Edit `config/glance.yml` under the `theme:` section.
+### Add Custom API Widget
 
-## Required CI/CD Variables
+```yaml
+- type: custom-api
+  title: Widget Title
+  cache: 5m
+  url: http://192.168.40.13:PORT/endpoint
+  template: |
+    <div>{{ .JSON.String "field" }}</div>
+```
+
+## CI/CD Variables
 
 ### Group Level (homelab group)
 
@@ -92,19 +155,8 @@ Edit `config/glance.yml` under the `theme:` section.
 
 | Variable | Description |
 |----------|-------------|
-| `GLANCE_RADARR_API_KEY` | Radarr API key for media stats |
-| `GLANCE_SONARR_API_KEY` | Sonarr API key for media stats |
-| `GLANCE_OPNSENSE_CREDENTIALS` | OPNsense API credentials (base64) |
-
-## Manual Operations
-
-### Rollback
-
-Trigger the `rollback` job manually in GitLab CI/CD to revert to the previous configuration.
-
-### Restart
-
-Trigger the `restart` job manually to restart the container without redeploying.
+| `GLANCE_RADARR_API_KEY` | Radarr API key |
+| `GLANCE_SONARR_API_KEY` | Sonarr API key |
 
 ## Troubleshooting
 
@@ -116,24 +168,34 @@ ssh root@192.168.40.12 "docker ps -a | grep glance"
 
 # Check container logs
 ssh root@192.168.40.12 "docker logs glance --tail 100"
+
+# Restart container
+ssh root@192.168.40.12 "cd /opt/glance && docker compose restart"
 ```
 
 ### Widget Showing Error
 
-Check the specific widget configuration in `config/glance.yml`. Common issues:
-- Invalid URL for monitor sites
-- Missing API key for media widgets
-- Network connectivity to monitored services
+- Check URL accessibility from the Glance container
+- Verify API keys are configured
+- Check cache settings (increase if API is slow)
 
-### Pipeline Failed
+### Grafana Iframe Not Loading
 
-Check the pipeline logs in GitLab. Common issues:
-- SSH key not configured
-- Target host unreachable
-- YAML syntax error
+- Verify Grafana is accessible at `https://grafana.hrmsmrflrii.xyz`
+- Check dashboard UID matches
+- Ensure `kiosk` and `theme=transparent` parameters are set
 
 ## Links
 
 - [Glance Documentation](https://github.com/glanceapp/glance)
-- [GitLab Pipeline](https://gitlab.hrmsmrflrii.xyz/homelab/glance-homelab/-/pipelines)
 - [Dashboard URL](https://glance.hrmsmrflrii.xyz)
+- [Grafana](https://grafana.hrmsmrflrii.xyz)
+- [GitLab Pipeline](https://gitlab.hrmsmrflrii.xyz/homelab/glance-homelab/-/pipelines)
+
+## Recent Updates
+
+### January 15, 2026
+- Enhanced Backup page with job durations (daily, main, NAS sync)
+- VM/CT backup status now shows names instead of just VMIDs
+- Restructured Backup layout with sidebar and main column
+- PBS Grafana iframe height increased to 1400px
