@@ -1,0 +1,115 @@
+/*
+ * Glance Dashboard Custom Themes CSS
+ * ==================================
+ * Additional styling enhancements for all themes.
+ * Theme colors are controlled via glance.yml presets.
+ */
+
+/* Smooth theme transitions */
+* {
+  transition: background-color 0.3s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+/* Enhanced card/widget styling */
+.widget {
+  border-radius: 12px !important;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.widget:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Clock widget */
+.widget-type-clock {
+  text-align: center;
+}
+
+.widget-type-clock .time {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Bookmarks styling */
+.widget-type-bookmarks a {
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.widget-type-bookmarks a:hover {
+  transform: translateX(4px);
+}
+
+/* Monitor widget status */
+.widget-type-monitor .status-online {
+  border-left: 3px solid hsl(var(--color-positive));
+}
+
+.widget-type-monitor .status-offline {
+  border-left: 3px solid hsl(var(--color-negative));
+}
+
+/* iFrame widgets */
+.widget-type-iframe iframe {
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Page navigation */
+.page-navigation {
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 0.5rem;
+}
+
+.page-navigation a {
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  transition: all 0.2s ease;
+}
+
+.page-navigation a:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.widget {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .widget {
+    border-radius: 8px !important;
+  }
+  .widget:hover {
+    transform: none;
+  }
+}

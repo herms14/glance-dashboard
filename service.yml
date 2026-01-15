@@ -1,0 +1,96 @@
+# Glance Dashboard - GitOps Service Definition
+# =============================================
+# This file defines how Glance is deployed via GitLab CI/CD
+#
+# Repository: gitlab.hrmsmrflrii.xyz/homelab/glance-homelab
+# Documentation: https://github.com/glanceapp/glance
+
+service:
+  name: glance
+  display_name: Glance Dashboard
+  description: "Homelab dashboard with service monitoring, media stats, sports scores, and more"
+  category: dashboard
+  version: "0.7.0"
+
+deployment:
+  # Target: docker-lxc-glance (LXC container dedicated to Glance)
+  target_host: docker-lxc-glance
+  port: 8080
+  container_port: 8080
+  install_path: /opt/glance
+
+  # Non-sensitive environment variables
+  environment:
+    TZ: America/New_York
+
+  # Secrets - pulled from GitLab CI/CD Variables during deployment
+  # These are injected into .env file on the target host
+  secrets:
+    - name: RADARR_API_KEY
+      source: GLANCE_RADARR_API_KEY
+    - name: SONARR_API_KEY
+      source: GLANCE_SONARR_API_KEY
+    - name: OPNSENSE_API_CREDENTIALS
+      source: GLANCE_OPNSENSE_CREDENTIALS
+
+  # Health check configuration
+  healthcheck:
+    enabled: true
+    endpoint: /
+    port: 8080
+    interval: 30
+    timeout: 10
+    retries: 3
+    expected_status: [200]
+
+  # Additional files to deploy (beyond docker-compose.yml)
+  extra_files:
+    - source: config/glance.yml
+      destination: config/glance.yml
+    - source: assets/custom-themes.css
+      destination: assets/custom-themes.css
+
+# Traefik reverse proxy configuration
+traefik:
+  enabled: true
+  subdomain: glance
+  entrypoints: [websecure]
+  tls:
+    enabled: true
+    cert_resolver: letsencrypt
+  middlewares: []
+  headers:
+    frame_deny: false  # Allow other services to embed Glance
+
+# DNS configuration (auto-add to OPNsense)
+dns:
+  enabled: true
+  hostname: glance
+
+# Authentik SSO (disabled - Glance is internal dashboard)
+authentik:
+  enabled: false
+
+# Glance is the dashboard itself, so no self-reference needed
+glance:
+  enabled: false
+
+# Container update monitoring
+watchtower:
+  enabled: true
+  notify_on_update: true
+
+# Discord deployment notifications
+notifications:
+  discord:
+    enabled: true
+
+# Metadata
+metadata:
+  maintainer: hermes
+  repository: https://gitlab.hrmsmrflrii.xyz/homelab/glance-homelab
+  docs: https://github.com/glanceapp/glance
+  tags:
+    - dashboard
+    - monitoring
+    - homelab

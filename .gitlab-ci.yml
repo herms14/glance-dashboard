@@ -1,0 +1,339 @@
+# Glance Dashboard - GitLab CI/CD Pipeline
+# =========================================
+# Automatically deploys Glance when changes are pushed to main
+#
+# Required CI/CD Variables (Group level):
+#   SSH_PRIVATE_KEY           - SSH key for deployment
+#   DISCORD_WEBHOOK_URL       - Discord notifications
+#
+# Required CI/CD Variables (Project level):
+#   GLANCE_RADARR_API_KEY     - Radarr API key
+#   GLANCE_SONARR_API_KEY     - Sonarr API key
+#   GLANCE_OPNSENSE_CREDENTIALS - OPNsense API credentials (base64)
+
+stages:
+  - validate
+  - deploy
+  - configure
+  - verify
+  - notify
+
+variables:
+  DOMAIN: hrmsmrflrii.xyz
+  SERVICE_NAME: glance
+  DISPLAY_NAME: Glance Dashboard
+  TARGET_HOST: docker-lxc-glance
+  TARGET_IP: "192.168.40.12"
+  SSH_USER: root
+  INSTALL_PATH: /opt/glance
+  PORT: "8080"
+  SUBDOMAIN: glance
+
+default:
+  tags:
+    - homelab
+    - docker
+
+workflow:
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_PIPELINE_SOURCE == "web"
+
+# ===================================================
+# STAGE: VALIDATE
+# ===================================================
+validate:yaml:
+  stage: validate
+  image: mikefarah/yq:4
+  script:
+    - echo "Validating YAML files..."
+    - yq eval '.' service.yml > /dev/null
+    - yq eval '.' config/glance.yml > /dev/null
+    - echo "Validation passed!"
+  rules:
+    - changes:
+        - service.yml
+        - config/**/*
+
+validate:compose:
+  stage: validate
+  image: docker:24
+  services:
+    - docker:24-dind
+  script:
+    - docker compose -f config/docker-compose.yml config --quiet
+    - echo "Docker Compose validation passed!"
+  rules:
+    - changes:
+        - config/docker-compose.yml
+
+# ===================================================
+# STAGE: DEPLOY
+# ===================================================
+deploy:glance:
+  stage: deploy
+  image: alpine:3.19
+  before_script:
+    - apk add --no-cache openssh-client bash curl python3 py3-pip
+    - pip3 install pyyaml --break-system-packages
+    - mkdir -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+    - chmod 600 ~/.ssh/id_ed25519
+    - ssh-keyscan -H ${TARGET_IP} >> ~/.ssh/known_hosts 2>/dev/null || true
+
+  script:
+    - |
+      echo "=========================================="
+      echo "Deploying ${DISPLAY_NAME}"
+      echo "=========================================="
+      echo "Target: ${SSH_USER}@${TARGET_IP}"
+      echo "Path: ${INSTALL_PATH}"
+      echo ""
+
+      # Generate .env file from secrets
+      cat > /tmp/glance.env << EOF
+      SERVICE_PORT=${PORT}
+      TZ=America/New_York
+      RADARR_API_KEY=${GLANCE_RADARR_API_KEY}
+      SONARR_API_KEY=${GLANCE_SONARR_API_KEY}
+      OPNSENSE_API_CREDENTIALS=${GLANCE_OPNSENSE_CREDENTIALS}
+      EOF
+
+      # Create directories on target
+      ssh -i ~/.ssh/id_ed25519 ${SSH_USER}@${TARGET_IP} "
+        mkdir -p ${INSTALL_PATH}/config
+        mkdir -p ${INSTALL_PATH}/assets
+      "
+
+      # Backup existing configuration
+      ssh -i ~/.ssh/id_ed25519 ${SSH_USER}@${TARGET_IP} "
+        cd ${INSTALL_PATH}
+        if [ -f docker-compose.yml ]; then
+          cp docker-compose.yml docker-compose.yml.bak
+        fi
+        if [ -f config/glance.yml ]; then
+          cp config/glance.yml config/glance.yml.bak
+        fi
+        if [ -f .env ]; then
+          cp .env .env.bak
+        fi
+      "
+
+      echo "Copying configuration files..."
+
+      # Copy all files
+      scp -i ~/.ssh/id_ed25519 config/docker-compose.yml ${SSH_USER}@${TARGET_IP}:${INSTALL_PATH}/
+      scp -i ~/.ssh/id_ed25519 config/glance.yml ${SSH_USER}@${TARGET_IP}:${INSTALL_PATH}/config/
+      scp -i ~/.ssh/id_ed25519 assets/custom-themes.css ${SSH_USER}@${TARGET_IP}:${INSTALL_PATH}/assets/
+      scp -i ~/.ssh/id_ed25519 /tmp/glance.env ${SSH_USER}@${TARGET_IP}:${INSTALL_PATH}/.env
+
+      # Set permissions and deploy
+      ssh -i ~/.ssh/id_ed25519 ${SSH_USER}@${TARGET_IP} "
+        cd ${INSTALL_PATH}
+        chmod 600 .env
+        echo 'Pulling latest image...'
+        docker compose pull
+        echo 'Starting container...'
+        docker compose up -d --remove-orphans
+        echo ''
+        echo 'Container status:'
+        docker compose ps
+      "
+
+      echo ""
+      echo "Deployment completed!"
+
+  artifacts:
+    reports:
+      dotenv: deploy.env
+
+# ===================================================
+# STAGE: CONFIGURE
+# ===================================================
+configure:traefik:
+  stage: configure
+  image: alpine:3.19
+  needs:
+    - job: deploy:glance
+  before_script:
+    - apk add --no-cache openssh-client
+    - mkdir -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+    - chmod 600 ~/.ssh/id_ed25519
+    - ssh-keyscan -H 192.168.40.20 >> ~/.ssh/known_hosts 2>/dev/null || true
+
+  script:
+    - |
+      echo "Configuring Traefik route..."
+
+      cat > /tmp/traefik-${SERVICE_NAME}.yml << 'EOF'
+      # Auto-generated by GitLab CI/CD
+      # Service: glance
+      # Pipeline: ${CI_PIPELINE_ID}
+      http:
+        routers:
+          glance:
+            rule: "Host(`glance.hrmsmrflrii.xyz`)"
+            service: glance
+            entryPoints:
+              - websecure
+            tls:
+              certResolver: letsencrypt
+
+        services:
+          glance:
+            loadBalancer:
+              servers:
+                - url: "http://192.168.40.12:8080"
+      EOF
+
+      scp -i ~/.ssh/id_ed25519 /tmp/traefik-${SERVICE_NAME}.yml \
+        root@192.168.40.20:/opt/traefik/config/dynamic/${SERVICE_NAME}.yml
+
+      echo "Traefik route configured: https://${SUBDOMAIN}.${DOMAIN}"
+
+# ===================================================
+# STAGE: VERIFY
+# ===================================================
+verify:health:
+  stage: verify
+  image: alpine:3.19
+  needs:
+    - job: deploy:glance
+  before_script:
+    - apk add --no-cache curl
+
+  script:
+    - |
+      echo "Waiting for Glance to be healthy..."
+      echo "Endpoint: http://${TARGET_IP}:${PORT}"
+
+      for i in $(seq 1 30); do
+        if curl -sf "http://${TARGET_IP}:${PORT}" > /dev/null 2>&1; then
+          echo ""
+          echo "✓ Glance is healthy!"
+          exit 0
+        fi
+        echo "Attempt $i/30 - waiting 5 seconds..."
+        sleep 5
+      done
+
+      echo ""
+      echo "✗ Health check failed after 30 attempts"
+      exit 1
+
+# ===================================================
+# STAGE: NOTIFY
+# ===================================================
+notify:success:
+  stage: notify
+  image: alpine:3.19
+  needs:
+    - job: verify:health
+  before_script:
+    - apk add --no-cache curl
+  script:
+    - |
+      URL="https://${SUBDOMAIN}.${DOMAIN}"
+
+      curl -sS -H "Content-Type: application/json" \
+        -d "{
+          \"username\": \"GitLab GitOps\",
+          \"avatar_url\": \"https://about.gitlab.com/images/press/press-kit-icon.png\",
+          \"embeds\": [{
+            \"title\": \":white_check_mark: Deployed: ${DISPLAY_NAME}\",
+            \"description\": \"Dashboard deployed successfully via GitLab CI/CD\",
+            \"color\": 3066993,
+            \"fields\": [
+              {\"name\": \":globe_with_meridians: URL\", \"value\": \"[${URL}](${URL})\", \"inline\": true},
+              {\"name\": \":link: Pipeline\", \"value\": \"[#${CI_PIPELINE_ID}](${CI_PIPELINE_URL})\", \"inline\": true},
+              {\"name\": \":bust_in_silhouette: Triggered by\", \"value\": \"${GITLAB_USER_NAME}\", \"inline\": true}
+            ],
+            \"footer\": {\"text\": \"GitLab GitOps\"},
+            \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"
+          }]
+        }" \
+        "${DISCORD_WEBHOOK_URL}"
+  when: on_success
+
+notify:failure:
+  stage: notify
+  image: alpine:3.19
+  needs:
+    - job: deploy:glance
+      optional: true
+  before_script:
+    - apk add --no-cache curl
+  script:
+    - |
+      curl -sS -H "Content-Type: application/json" \
+        -d "{
+          \"username\": \"GitLab GitOps\",
+          \"avatar_url\": \"https://about.gitlab.com/images/press/press-kit-icon.png\",
+          \"embeds\": [{
+            \"title\": \":x: Deployment Failed: ${DISPLAY_NAME}\",
+            \"description\": \"Check pipeline logs for details\",
+            \"color\": 15158332,
+            \"fields\": [
+              {\"name\": \":link: Pipeline\", \"value\": \"[#${CI_PIPELINE_ID}](${CI_PIPELINE_URL})\", \"inline\": true},
+              {\"name\": \":bust_in_silhouette: Triggered by\", \"value\": \"${GITLAB_USER_NAME}\", \"inline\": true}
+            ],
+            \"footer\": {\"text\": \"GitLab GitOps\"},
+            \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"
+          }]
+        }" \
+        "${DISCORD_WEBHOOK_URL}"
+  when: on_failure
+
+# ===================================================
+# MANUAL JOBS
+# ===================================================
+rollback:
+  stage: deploy
+  image: alpine:3.19
+  before_script:
+    - apk add --no-cache openssh-client
+    - mkdir -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+    - chmod 600 ~/.ssh/id_ed25519
+    - ssh-keyscan -H ${TARGET_IP} >> ~/.ssh/known_hosts 2>/dev/null || true
+  script:
+    - |
+      echo "Rolling back ${SERVICE_NAME}..."
+
+      ssh -i ~/.ssh/id_ed25519 ${SSH_USER}@${TARGET_IP} "
+        cd ${INSTALL_PATH}
+        if [ -f docker-compose.yml.bak ]; then
+          mv docker-compose.yml.bak docker-compose.yml
+          mv config/glance.yml.bak config/glance.yml 2>/dev/null || true
+          mv .env.bak .env 2>/dev/null || true
+          docker compose pull
+          docker compose up -d --remove-orphans
+          echo 'Rollback completed'
+        else
+          echo 'No backup found, cannot rollback'
+          exit 1
+        fi
+      "
+  when: manual
+  allow_failure: true
+
+restart:
+  stage: deploy
+  image: alpine:3.19
+  before_script:
+    - apk add --no-cache openssh-client
+    - mkdir -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+    - chmod 600 ~/.ssh/id_ed25519
+    - ssh-keyscan -H ${TARGET_IP} >> ~/.ssh/known_hosts 2>/dev/null || true
+  script:
+    - |
+      echo "Restarting ${SERVICE_NAME}..."
+      ssh -i ~/.ssh/id_ed25519 ${SSH_USER}@${TARGET_IP} "
+        cd ${INSTALL_PATH}
+        docker compose restart
+        docker compose ps
+      "
+  when: manual
+  allow_failure: true

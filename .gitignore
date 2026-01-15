@@ -1,0 +1,33 @@
+# Environment files (contain secrets)
+.env
+*.env
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
+
+# Logs
+*.log
+logs/
+
+# Local testing
+docker-compose.override.yml
+docker-compose.local.yml

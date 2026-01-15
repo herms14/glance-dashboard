@@ -1,0 +1,52 @@
+# Glance Dashboard - Docker Compose Configuration
+# ================================================
+# Deployed via GitLab CI/CD GitOps pipeline
+#
+# Glance v0.7.0+ requires config directory mount (not single file)
+# See: https://github.com/glanceapp/glance/blob/main/docs/v0.7.0-upgrade.md
+
+services:
+  glance:
+    image: glanceapp/glance:latest
+    container_name: glance
+    restart: unless-stopped
+
+    ports:
+      - "${SERVICE_PORT:-8080}:8080"
+
+    volumes:
+      # Configuration directory (contains glance.yml)
+      - ./config:/app/config:ro
+      # Custom CSS themes
+      - ./assets:/app/assets:ro
+      # Timezone configuration
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+
+    env_file:
+      - .env
+
+    environment:
+      - TZ=${TZ:-America/New_York}
+
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+    labels:
+      # Watchtower auto-update
+      - "com.centurylinklabs.watchtower.enable=true"
+      # Service metadata
+      - "homelab.service=glance"
+      - "homelab.category=dashboard"
+      - "homelab.managed-by=gitlab-gitops"
+
+    networks:
+      - glance-net
+
+networks:
+  glance-net:
+    driver: bridge
