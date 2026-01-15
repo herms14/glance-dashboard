@@ -60,6 +60,13 @@ glance-homelab/
 │   └── glance.yml          # Dashboard configuration (~1800 lines)
 ├── assets/
 │   └── custom-themes.css   # Custom styling (full-width, hidden scrollbars)
+├── apis/                   # Custom API source code
+│   ├── life-progress-api.py
+│   ├── media-stats-api.py
+│   ├── nas-backup-status-api.py
+│   ├── nba-stats-api.py
+│   ├── docker-stats-exporter.py
+│   └── README.md
 └── README.md
 ```
 
