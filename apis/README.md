@@ -8,6 +8,8 @@ Custom Python APIs that provide data to the Glance dashboard widgets.
 |-----|------|----------|-------------|
 | **Life Progress** | 5051 | `/progress` | Year, month, day, life progress percentages with daily quotes |
 | **Media Stats** | 5054 | `/api/stats` | Combined Radarr/Sonarr statistics (wanted, downloading, downloaded) |
+| **Steam Stats** | 5055 | `/stats` | Steam profile, top 5 most played games, wishlist sales |
+| **Gaming PC Stats** | 5056 | `/stats` | Gaming PC hardware metrics via LibreHardwareMonitor middleware |
 | **NAS Backup Status** | 9102 | `/status`, `/backups` | PBS backup status with job durations and VM names |
 | **NBA Stats** | 5060 | `/games`, `/standings`, `/fantasy` | NBA games, standings, Yahoo Fantasy integration |
 | **Docker Stats Exporter** | 9417 | `/metrics` | Prometheus metrics for Docker containers |
@@ -26,6 +28,8 @@ cd ~/ansible
 # Deploy individual APIs
 ansible-playbook glance/deploy-life-progress-api.yml
 ansible-playbook glance/deploy-media-stats-api.yml
+ansible-playbook glance/deploy-steam-stats-api.yml -e "steam_api_key=YOUR_KEY steam_id=YOUR_ID"
+ansible-playbook glance/deploy-gaming-pc-api.yml
 ansible-playbook glance/deploy-nas-backup-status-api.yml
 ansible-playbook glance/deploy-nba-stats-api.yml
 ansible-playbook monitoring/deploy-docker-exporter.yml
@@ -74,6 +78,87 @@ Aggregates Radarr and Sonarr statistics into a single endpoint.
   ],
   "radarr": {"wanted": 15, "downloading": 9, "downloaded": 850},
   "sonarr": {"wanted": 1906, "downloading": 98, "downloaded": 12500}
+}
+```
+
+### Steam Stats API (port 5055)
+
+Fetches Steam profile data for Glance dashboard widget. Shows top 5 most played games sorted by total playtime.
+
+**Prerequisites:**
+1. Steam API Key: https://steamcommunity.com/dev/apikey
+2. Steam64 ID: https://steamid.io/
+
+**Environment Variables:**
+- `STEAM_API_KEY` - Steam Web API key
+- `STEAM_ID` - Steam64 ID (17-digit number)
+
+**Endpoints:**
+- `/stats` - Full profile data with top played games and wishlist
+- `/health` - Health check
+
+**Response (`/stats`):**
+```json
+{
+  "profile": {
+    "name": "username",
+    "avatar": "https://...",
+    "status": "Online"
+  },
+  "total_games": 250,
+  "top_played": [
+    {
+      "name": "Cities: Skylines",
+      "thumbnail": "https://cdn.cloudflare.steamstatic.com/steam/apps/255710/header.jpg",
+      "playtime": "594h 30m",
+      "playtime_hours": 594.5
+    }
+  ],
+  "recent_games": [...],
+  "wishlist_on_sale": [
+    {"name": "Game", "discount": 50, "price": 14.99}
+  ],
+  "wishlist_sale_count": 3
+}
+```
+
+**Note:** Wishlist requires Steam profile privacy settings to be set to Public.
+
+### Gaming PC Stats API (port 5056)
+
+Middleware API that fetches and simplifies LibreHardwareMonitor JSON data for Glance. Located on Compute page sidebar.
+
+**Why a Middleware API?**
+- LibreHardwareMonitor's JSON is deeply nested and complex
+- Glance's template engine doesn't support `hasPrefix`, `hasSuffix`, `contains` functions
+- The middleware pre-processes the data into a clean, flat JSON structure
+
+**Prerequisites:**
+- LibreHardwareMonitor running on Windows PC with HTTP server enabled (port 8085)
+- Windows Firewall allowing port 8085
+
+**Endpoints:**
+- `/stats` - Hardware metrics (CPU, GPU, Memory, Storage, Fans)
+- `/health` - Health check
+
+**Response (`/stats`):**
+```json
+{
+  "online": true,
+  "hostname": "GAMING-PC",
+  "cpu": {"temp": "65°C", "load": "25%", "name": "AMD Ryzen 7 9800X3D"},
+  "gpu": {"temp": "55°C", "load": "10%", "vram": "2.1 GB", "name": "NVIDIA RTX 4080"},
+  "memory": {"load": "45%", "used": "28.8 GB", "available": "35.2 GB"},
+  "fans": [{"name": "CPU Fan", "speed": "1200 RPM"}],
+  "storage": [{"name": "Samsung 990 Pro", "temp": "45°C", "used": "512 GB"}]
+}
+```
+
+**When PC is offline:**
+```json
+{
+  "online": false,
+  "error": "Could not connect to Gaming PC"
 }
 ```
 
@@ -133,6 +218,14 @@ curl http://192.168.40.13:5051/progress | jq .
 
 # Media Stats
 curl http://192.168.40.13:5054/api/stats | jq .
+
+# Steam Stats
+curl http://192.168.40.13:5055/stats | jq .
+curl http://192.168.40.13:5055/health
+
+# Gaming PC Stats
+curl http://192.168.40.13:5056/stats | jq .
+curl http://192.168.40.13:5056/health
 
 # NAS Backup Status
 curl http://192.168.40.13:9102/status | jq .

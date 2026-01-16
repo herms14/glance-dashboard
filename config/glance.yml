@@ -24,135 +24,31 @@ pages:
       url: https://api.sunrise-sunset.org/json?lat=14.5995&lng=120.9842&formatted=0&tzid=Asia/Manila
     - first-day-of-week: monday
       type: calendar
-    - cache: 5m
-      headers:
-        Authorization: Bearer 65e224ccc175e90881634d318b0ea502038da1ed49c1bd805097486c63cf8f6e
-      template: "<div style=\"padding: 8px;\">\n  <div style=\"display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;\">\n    <span style=\"color: #8b5cf6; font-weight: 600; font-size: 12px;\">\U0001F4D3 2025-12-30</span>\n    <a href=\"obsidian://open?vault=Hermes%27s%20Life%20Knowledge%20Base&file=05%20Periodic%20Notes%2F00%20Daily%2F2025-12-30\" style=\"font-size: 10px; color: #8b5cf6; text-decoration: none;\">Open in Obsidian →</a>\n  </div>\n\n  <div style=\"display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px;\">\n    <div style=\"background: rgba(139, 92, 246, 0.15); padding: 8px; border-radius: 6px; text-align: center;\">\n      <div style=\"font-size: 18px;\">\U0001F4CB</div>\n      <div style=\"font-size: 9px; color: #8b5cf6; margin-top: 2px;\">Priorities</div>\n    </div>\n    <div style=\"background: rgba(34, 197, 94, 0.15); padding: 8px; border-radius: 6px; text-align: center;\">\n      <div style=\"font-size:\
-        \ 18px;\">\U0001F3CB️</div>\n      <div style=\"font-size: 9px; color: #22c55e; margin-top: 2px;\">Habits</div>\n    </div>\n    <div style=\"background: rgba(245, 158, 11, 0.15); padding: 8px; border-radius: 6px; text-align: center;\">\n      <div style=\"font-size: 18px;\">⚡</div>\n      <div style=\"font-size: 9px; color: #f59e0b; margin-top: 2px;\">Energy</div>\n    </div>\n  </div>\n\n  <div style=\"font-size: 10px; color: #888; text-align: center;\">\n    {{ if .Response.Body }}\n      ✅ Note found - click to open\n    {{ else }}\n      \U0001F4DD Create today's note in Obsidian\n    {{ end }}\n  </div>\n</div>"
-      title: Daily Note
-      type: custom-api
-      url: http://100.90.207.58:27123/vault/05%20Periodic%20Notes/00%20Daily/2025-12-30.md
-    - groups:
-      - links:
-        - icon: si:authentik
-          title: Authentik
-          url: https://auth.hrmsmrflrii.xyz
-        - icon: si:tplink
-          title: Omada Cloud
-          url: https://omada.hrmsmrflrii.xyz
-        - icon: si:proxmox
-          title: Proxmox
-          url: https://proxmox.hrmsmrflrii.xyz
-        - icon: si:traefikproxy
-          title: Traefik
-          url: https://traefik.hrmsmrflrii.xyz
-        - icon: si:opnsense
-          title: OPNsense
-          url: https://192.168.91.30
-        - icon: si:portainer
-          title: Portainer
-          url: https://portainer.hrmsmrflrii.xyz
-        - icon: si:synology
-          title: Synology NAS
-          url: https://192.168.10.31:5001
-        - icon: si:homeassistant
-          title: Home Assistant
-          url: https://ha.hrmsmrflrii.xyz
-        title: Management
-      title: Infrastructure
-      type: bookmarks
-    - groups:
-      - links:
-        - icon: si:jellyfin
-          title: Jellyfin
-          url: https://jellyfin.hrmsmrflrii.xyz
-        - icon: si:radarr
-          title: Radarr
-          url: https://radarr.hrmsmrflrii.xyz
-        - icon: si:sonarr
-          title: Sonarr
-          url: https://sonarr.hrmsmrflrii.xyz
-        - icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/lidarr.png
-          title: Lidarr
-          url: https://lidarr.hrmsmrflrii.xyz
-        - icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/prowlarr.png
-          title: Prowlarr
-          url: https://prowlarr.hrmsmrflrii.xyz
-        - icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/bazarr.png
-          title: Bazarr
-          url: https://bazarr.hrmsmrflrii.xyz
-        - icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/jellyseerr.png
-          title: Jellyseerr
-          url: https://jellyseerr.hrmsmrflrii.xyz
-        - icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/tdarr.png
-          title: Tdarr
-          url: https://tdarr.hrmsmrflrii.xyz
-        - description: User Invitations
-          icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/wizarr.png
-          title: Wizarr
-          url: https://wizarr.hrmsmrflrii.xyz
-        - description: Media Tracking
-          icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/tautulli.png
-          title: Tracearr
-          url: https://tracearr.hrmsmrflrii.xyz
-        title: Media
-      - links:
-        - icon: si:deluge
-          title: Deluge
-          url: https://deluge.hrmsmrflrii.xyz
-        - icon: si:sabnzbd
-          title: SABnzbd
-          url: https://sabnzbd.hrmsmrflrii.xyz
-        - icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/metube.png
-          title: MeTube
-          url: https://metube.hrmsmrflrii.xyz
-        title: Downloads
-      - links:
-        - icon: si:gitlab
-          title: GitLab
-          url: https://gitlab.hrmsmrflrii.xyz
-        - icon: si:immich
-          title: Immich
-          url: https://photos.hrmsmrflrii.xyz
-        - icon: si:n8n
-          title: n8n
-          url: https://n8n.hrmsmrflrii.xyz
-        - icon: si:paperlessngx
-          title: Paperless
-          url: https://paperless.hrmsmrflrii.xyz
-        - description: Bookmark Manager
-          icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/linkwarden.png
-          title: Karakeep
-          url: https://karakeep.hrmsmrflrii.xyz
-        title: Productivity
-      - links:
-        - icon: si:uptimekuma
-          title: Uptime Kuma
-          url: https://uptime.hrmsmrflrii.xyz
-        - icon: si:prometheus
-          title: Prometheus
-          url: https://prometheus.hrmsmrflrii.xyz
-        - icon: si:grafana
-          title: Grafana
-          url: https://grafana.hrmsmrflrii.xyz
-        - icon: si:jaeger
-          title: Jaeger
-          url: https://jaeger.hrmsmrflrii.xyz
-        - icon: si:speedtest
-          title: Speedtest
-          url: https://speedtest.hrmsmrflrii.xyz
-        - icon: si:pihole
-          title: Pi-hole
-          url: https://pihole.hrmsmrflrii.xyz/admin/
-        title: Monitoring
-      - links:
-        - description: Photo Gallery
-          icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/photoprism.png
-          title: Lagident
-          url: https://lagident.hrmsmrflrii.xyz
-        title: Photos
-      title: Services
-      type: bookmarks
+    - type: custom-api
+      title: Steam Top Played
+      cache: 1h
+      url: http://192.168.40.13:5055/stats
+      template: |
+        <div style="padding: 8px;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+            {{ if .JSON.String "profile.avatar" }}
+            <img src="{{ .JSON.String "profile.avatar" }}" style="width: 28px; height: 28px; border-radius: 6px;">
+            {{ end }}
+            <div>
+              <div style="font-weight: 600; font-size: 12px; color: #66c0f4;">{{ .JSON.String "profile.name" }}</div>
+              <div style="font-size: 10px; color: #888;">{{ .JSON.Int "total_games" }} games</div>
+            </div>
+          </div>
+          {{ range .JSON.Array "top_played" }}
+          <div style="display: flex; align-items: center; gap: 8px; padding: 6px; margin-bottom: 4px; background: rgba(102,192,244,0.08); border-radius: 6px;">
+            <img src="{{ .String "thumbnail" }}" style="width: 46px; height: 22px; border-radius: 3px; object-fit: cover;">
+            <div style="flex: 1; min-width: 0;">
+              <div style="font-size: 10px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ .String "name" }}</div>
+              <div style="font-size: 9px; color: #66c0f4;">{{ .String "playtime" }}</div>
+            </div>
+          </div>
+          {{ end }}
+        </div>
   - size: full
     widgets:
     - cache: 1h
@@ -352,6 +248,52 @@ pages:
       type: iframe
   - size: small
     widgets:
+    - type: custom-api
+      title: Gaming PC
+      cache: 30s
+      url: http://192.168.40.13:5056/stats
+      template: |
+        <div style="padding: 8px;">
+          {{ if .JSON.Bool "online" }}
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+            <span style="width: 10px; height: 10px; border-radius: 50%; background: #22c55e;"></span>
+            <span style="font-size: 12px; color: #22c55e; font-weight: 600;">Online</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+            <div style="background: rgba(239,68,68,0.15); padding: 10px; border-radius: 8px; text-align: center;">
+              <div style="font-size: 9px; color: #ef4444; text-transform: uppercase;">CPU</div>
+              <div style="font-size: 18px; font-weight: 600; color: #f87171;">{{ .JSON.String "cpu.temp" }}</div>
+              <div style="font-size: 10px; color: #888;">{{ .JSON.String "cpu.load" }}</div>
+            </div>
+            <div style="background: rgba(74,222,128,0.15); padding: 10px; border-radius: 8px; text-align: center;">
+              <div style="font-size: 9px; color: #4ade80; text-transform: uppercase;">GPU</div>
+              <div style="font-size: 18px; font-weight: 600; color: #4ade80;">{{ .JSON.String "gpu.temp" }}</div>
+              <div style="font-size: 10px; color: #888;">{{ .JSON.String "gpu.load" }}</div>
+            </div>
+          </div>
+          <div style="background: rgba(96,165,250,0.15); padding: 10px; border-radius: 8px; margin-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 9px; color: #60a5fa; text-transform: uppercase;">Memory</span>
+              <span style="font-size: 14px; font-weight: 600; color: #fff;">{{ .JSON.String "memory.load" }}</span>
+            </div>
+            <div style="font-size: 10px; color: #888; margin-top: 4px;">{{ .JSON.String "memory.used" }} used</div>
+          </div>
+          {{ if .JSON.Array "storage" }}
+          <div style="font-size: 9px; color: #888; text-transform: uppercase; margin-bottom: 6px;">Storage</div>
+          {{ range .JSON.Array "storage" }}
+          <div style="display: flex; justify-content: space-between; padding: 6px 8px; background: rgba(251,191,36,0.1); border-radius: 6px; margin-bottom: 4px;">
+            <span style="font-size: 10px; color: #fbbf24; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px;">{{ .String "name" }}</span>
+            <span style="font-size: 10px; color: #fff;">{{ .String "temp" }}</span>
+          </div>
+          {{ end }}
+          {{ end }}
+          {{ else }}
+          <div style="text-align: center; padding: 20px; color: #888;">
+            <div style="font-size: 24px; margin-bottom: 5px;">💤</div>
+            <div style="font-size: 11px;">PC Offline</div>
+          </div>
+          {{ end }}
+        </div>
     - cache: 1m
       sites:
       - allow-insecure: true
