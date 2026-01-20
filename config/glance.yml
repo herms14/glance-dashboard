@@ -186,7 +186,7 @@ pages:
     - type: iframe
       title: Power Control
       source: http://192.168.40.13:5057/
-      height: 180
+      height: 70
     - type: rss
       title: Tech News
       feeds:

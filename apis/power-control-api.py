@@ -45,197 +45,310 @@ CONTROL_PANEL_HTML = """
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
             background: transparent;
-            color: #fff;
-            padding: 12px;
+            color: #e4e4e7;
+            padding: 16px 20px;
         }
-        .control-panel {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-        }
-        .control-btn {
+
+        .container {
             display: flex;
-            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            padding: 16px 12px;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            min-height: 100px;
+            gap: 20px;
         }
-        .control-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        }
-        .control-btn:active {
-            transform: translateY(0);
-        }
-        .control-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-        .control-btn .icon {
-            font-size: 28px;
-            margin-bottom: 8px;
-        }
-        .control-btn .label {
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .control-btn .status {
-            font-size: 10px;
-            margin-top: 4px;
-            opacity: 0.8;
-        }
-        .btn-wol {
-            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-            color: white;
-        }
-        .btn-shutdown {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-            color: white;
-        }
-        .btn-backup {
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-            color: white;
-        }
-        .node-status {
+
+        .nodes {
             display: flex;
-            justify-content: center;
-            gap: 16px;
-            margin-top: 12px;
-            padding: 10px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 8px;
+            gap: 8px;
         }
+
         .node {
             display: flex;
             align-items: center;
             gap: 6px;
-            font-size: 11px;
+            padding: 6px 10px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 6px;
         }
+
         .node-dot {
-            width: 8px;
-            height: 8px;
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
+            transition: all 0.3s ease;
         }
-        .node-dot.online { background: #22c55e; }
-        .node-dot.offline { background: #ef4444; }
-        .node-dot.unknown { background: #6b7280; }
-        .spinner {
-            display: inline-block;
+
+        .node-dot.online {
+            background: #10b981;
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+        }
+        .node-dot.offline {
+            background: #ef4444;
+            box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+        }
+        .node-dot.unknown {
+            background: #3f3f46;
+        }
+
+        .node-label {
+            font-size: 11px;
+            font-weight: 500;
+            color: #71717a;
+            letter-spacing: 0.3px;
+        }
+
+        .divider {
+            width: 1px;
+            height: 32px;
+            background: rgba(255,255,255,0.08);
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            flex: 1;
+            justify-content: flex-end;
+        }
+
+        .action-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.2px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: #a1a1aa;
+        }
+
+        .action-btn:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(255,255,255,0.15);
+            color: #e4e4e7;
+            transform: translateY(-1px);
+        }
+
+        .action-btn:active {
+            transform: translateY(0);
+        }
+
+        .action-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .action-btn.wake:hover {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.3);
+            color: #10b981;
+        }
+
+        .action-btn.shutdown:hover {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+
+        .action-btn.backup:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.3);
+            color: #3b82f6;
+        }
+
+        .action-btn svg {
             width: 14px;
             height: 14px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+            opacity: 0.7;
         }
+
+        .action-btn:hover svg {
+            opacity: 1;
+        }
+
+        .status-text {
+            font-size: 10px;
+            color: #52525b;
+            margin-left: 2px;
+        }
+
+        .spinner {
+            width: 12px;
+            height: 12px;
+            border: 1.5px solid rgba(255,255,255,0.2);
+            border-top-color: currentColor;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
-        .confirm-modal {
+
+        /* Modal */
+        .modal-overlay {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(4px);
             justify-content: center;
             align-items: center;
             z-index: 1000;
         }
-        .confirm-modal.active {
+
+        .modal-overlay.active {
             display: flex;
         }
-        .confirm-box {
-            background: #1e1e2e;
-            padding: 24px;
+
+        .modal {
+            background: #18181b;
+            border: 1px solid rgba(255,255,255,0.1);
             border-radius: 12px;
+            padding: 24px;
+            max-width: 320px;
             text-align: center;
-            max-width: 300px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
         }
-        .confirm-box h3 {
-            margin-bottom: 12px;
-            color: #ef4444;
-        }
-        .confirm-box p {
-            margin-bottom: 20px;
-            color: #888;
-            font-size: 13px;
-        }
-        .confirm-btns {
+
+        .modal-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 16px;
+            background: rgba(239, 68, 68, 0.1);
+            border-radius: 50%;
             display: flex;
-            gap: 12px;
+            align-items: center;
             justify-content: center;
         }
-        .confirm-btns button {
-            padding: 10px 24px;
+
+        .modal-icon svg {
+            width: 24px;
+            height: 24px;
+            color: #ef4444;
+        }
+
+        .modal h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fafafa;
+            margin-bottom: 8px;
+        }
+
+        .modal p {
+            font-size: 13px;
+            color: #71717a;
+            line-height: 1.5;
+            margin-bottom: 24px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 10px 16px;
             border: none;
             border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
             cursor: pointer;
-            font-weight: 600;
+            transition: all 0.15s ease;
         }
-        .confirm-btns .cancel {
-            background: #374151;
-            color: #fff;
+
+        .modal-btn.cancel {
+            background: rgba(255,255,255,0.05);
+            color: #a1a1aa;
+            border: 1px solid rgba(255,255,255,0.1);
         }
-        .confirm-btns .confirm {
+
+        .modal-btn.cancel:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .modal-btn.danger {
             background: #ef4444;
-            color: #fff;
+            color: white;
+        }
+
+        .modal-btn.danger:hover {
+            background: #dc2626;
         }
     </style>
 </head>
 <body>
-    <div class="control-panel">
-        <button class="control-btn btn-wol" id="wolBtn" onclick="sendWol()">
-            <span class="icon">⚡</span>
-            <span class="label">Wake All</span>
-            <span class="status" id="wolStatus">Ready</span>
-        </button>
-        <button class="control-btn btn-shutdown" id="shutdownBtn" onclick="confirmShutdown()">
-            <span class="icon">🔴</span>
-            <span class="label">Shutdown</span>
-            <span class="status" id="shutdownStatus">Ready</span>
-        </button>
-        <button class="control-btn btn-backup" id="backupBtn" onclick="triggerBackup()">
-            <span class="icon">📦</span>
-            <span class="label">Backup Now</span>
-            <span class="status" id="backupStatus">Ready</span>
-        </button>
+    <div class="container">
+        <div class="nodes">
+            <div class="node">
+                <span class="node-dot unknown" id="node01Dot"></span>
+                <span class="node-label">N1</span>
+            </div>
+            <div class="node">
+                <span class="node-dot unknown" id="node02Dot"></span>
+                <span class="node-label">N2</span>
+            </div>
+            <div class="node">
+                <span class="node-dot unknown" id="node03Dot"></span>
+                <span class="node-label">N3</span>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="actions">
+            <button class="action-btn wake" id="wolBtn" onclick="sendWol()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                </svg>
+                <span>Wake</span>
+                <span class="status-text" id="wolStatus"></span>
+            </button>
+
+            <button class="action-btn shutdown" id="shutdownBtn" onclick="confirmShutdown()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18.36 6.64a9 9 0 1 1-12.73 0"/>
+                    <line x1="12" y1="2" x2="12" y2="12"/>
+                </svg>
+                <span>Shutdown</span>
+                <span class="status-text" id="shutdownStatus"></span>
+            </button>
+
+            <button class="action-btn backup" id="backupBtn" onclick="triggerBackup()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <span>Backup</span>
+                <span class="status-text" id="backupStatus"></span>
+            </button>
+        </div>
     </div>
 
-    <div class="node-status" id="nodeStatus">
-        <div class="node">
-            <span class="node-dot unknown" id="node01Dot"></span>
-            <span>node01</span>
-        </div>
-        <div class="node">
-            <span class="node-dot unknown" id="node02Dot"></span>
-            <span>node02</span>
-        </div>
-        <div class="node">
-            <span class="node-dot unknown" id="node03Dot"></span>
-            <span>node03</span>
-        </div>
-    </div>
-
-    <div class="confirm-modal" id="shutdownModal">
-        <div class="confirm-box">
-            <h3>⚠️ Confirm Shutdown</h3>
-            <p>This will shutdown ALL Proxmox nodes. VMs and containers will be stopped gracefully.</p>
-            <div class="confirm-btns">
-                <button class="cancel" onclick="closeModal()">Cancel</button>
-                <button class="confirm" onclick="sendShutdown()">Shutdown</button>
+    <div class="modal-overlay" id="shutdownModal">
+        <div class="modal">
+            <div class="modal-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18.36 6.64a9 9 0 1 1-12.73 0"/>
+                    <line x1="12" y1="2" x2="12" y2="12"/>
+                </svg>
+            </div>
+            <h3>Shutdown Cluster</h3>
+            <p>All VMs and containers will be stopped gracefully before shutting down the nodes.</p>
+            <div class="modal-actions">
+                <button class="modal-btn cancel" onclick="closeModal()">Cancel</button>
+                <button class="modal-btn danger" onclick="sendShutdown()">Shutdown</button>
             </div>
         </div>
     </div>
@@ -247,38 +360,31 @@ CONTROL_PANEL_HTML = """
             try {
                 const resp = await fetch(API_BASE + '/status');
                 const data = await resp.json();
-
                 for (const [node, info] of Object.entries(data.nodes)) {
                     const dot = document.getElementById(node + 'Dot');
-                    if (dot) {
-                        dot.className = 'node-dot ' + (info.online ? 'online' : 'offline');
-                    }
+                    if (dot) dot.className = 'node-dot ' + (info.online ? 'online' : 'offline');
                 }
             } catch (e) {
-                console.error('Failed to fetch status:', e);
+                console.error('Status fetch failed:', e);
             }
         }
 
-        function setButtonLoading(btnId, statusId, loading) {
+        function setLoading(btnId, statusId, loading) {
             const btn = document.getElementById(btnId);
             const status = document.getElementById(statusId);
             btn.disabled = loading;
-            if (loading) {
-                status.innerHTML = '<span class="spinner"></span>';
-            }
+            status.innerHTML = loading ? '<span class="spinner"></span>' : '';
         }
 
         async function sendWol() {
-            setButtonLoading('wolBtn', 'wolStatus', true);
+            setLoading('wolBtn', 'wolStatus', true);
             try {
                 const resp = await fetch(API_BASE + '/wol', { method: 'POST' });
                 const data = await resp.json();
-                document.getElementById('wolStatus').textContent = data.success ? 'Sent!' : 'Failed';
-
-                // Poll for completion
+                document.getElementById('wolStatus').textContent = data.success ? 'sent' : 'failed';
                 pollOperation('wol', 'wolStatus');
             } catch (e) {
-                document.getElementById('wolStatus').textContent = 'Error';
+                document.getElementById('wolStatus').textContent = 'error';
                 document.getElementById('wolBtn').disabled = false;
             }
         }
@@ -293,62 +399,54 @@ CONTROL_PANEL_HTML = """
 
         async function sendShutdown() {
             closeModal();
-            setButtonLoading('shutdownBtn', 'shutdownStatus', true);
+            setLoading('shutdownBtn', 'shutdownStatus', true);
             try {
                 const resp = await fetch(API_BASE + '/shutdown?confirm=true', { method: 'POST' });
                 const data = await resp.json();
-                document.getElementById('shutdownStatus').textContent = data.success ? 'Initiated' : 'Failed';
-
+                document.getElementById('shutdownStatus').textContent = data.success ? 'done' : 'failed';
                 pollOperation('shutdown', 'shutdownStatus');
             } catch (e) {
-                document.getElementById('shutdownStatus').textContent = 'Error';
+                document.getElementById('shutdownStatus').textContent = 'error';
                 document.getElementById('shutdownBtn').disabled = false;
             }
         }
 
         async function triggerBackup() {
-            setButtonLoading('backupBtn', 'backupStatus', true);
+            setLoading('backupBtn', 'backupStatus', true);
             try {
                 const resp = await fetch(API_BASE + '/backup', { method: 'POST' });
                 const data = await resp.json();
-                document.getElementById('backupStatus').textContent = data.success ? 'Started!' : 'Failed';
-
+                document.getElementById('backupStatus').textContent = data.success ? 'started' : 'failed';
                 pollOperation('backup', 'backupStatus');
             } catch (e) {
-                document.getElementById('backupStatus').textContent = 'Error';
+                document.getElementById('backupStatus').textContent = 'error';
                 document.getElementById('backupBtn').disabled = false;
             }
         }
 
         async function pollOperation(opType, statusId) {
-            const checkStatus = async () => {
+            const check = async () => {
                 try {
                     const resp = await fetch(API_BASE + '/operation/' + opType);
                     const data = await resp.json();
-
                     if (data.status === 'completed') {
-                        document.getElementById(statusId).textContent = data.message || 'Done';
+                        document.getElementById(statusId).textContent = '';
                         document.getElementById(opType + 'Btn').disabled = false;
                         updateNodeStatus();
-                        return;
                     } else if (data.status === 'error') {
-                        document.getElementById(statusId).textContent = 'Error';
+                        document.getElementById(statusId).textContent = 'error';
                         document.getElementById(opType + 'Btn').disabled = false;
-                        return;
+                    } else {
+                        setTimeout(check, 3000);
                     }
-
-                    // Still running, check again
-                    setTimeout(checkStatus, 3000);
                 } catch (e) {
-                    document.getElementById(statusId).textContent = 'Error';
+                    document.getElementById(statusId).textContent = 'error';
                     document.getElementById(opType + 'Btn').disabled = false;
                 }
             };
-
-            setTimeout(checkStatus, 2000);
+            setTimeout(check, 2000);
         }
 
-        // Initial load
         updateNodeStatus();
         setInterval(updateNodeStatus, 30000);
     </script>
