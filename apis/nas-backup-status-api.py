@@ -193,25 +193,34 @@ def get_backup_job_status():
         if rc == 0 and count_out.isdigit():
             result[datastore]["count"] = int(count_out)
 
-        # Get backup job duration (time from first to last backup on most recent backup day)
-        recent_cmd = f"find {path} -maxdepth 4 -type d -name '20*T*' 2>/dev/null | sort -r | head -50"
+        # Get backup job duration - find the most recent contiguous job
+        # (backups within 1 hour of each other are considered part of the same job)
+        recent_cmd = f"find {path} -maxdepth 4 -type d -name '20*T*' 2>/dev/null | sort -r | head -100"
         recent_out, rc = run_ssh_command(recent_cmd)
         if rc == 0 and recent_out:
             timestamps = []
-            backup_day = None
             for line in recent_out.split('\n'):
                 match = re.search(r'(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2}):(\d{2})', line)
                 if match:
-                    day = match.group(1)
-                    if backup_day is None:
-                        backup_day = day
-                    if day == backup_day:
-                        ts = datetime.strptime(f"{day} {match.group(2)}:{match.group(3)}:{match.group(4)}", "%Y-%m-%d %H:%M:%S")
-                        timestamps.append(ts)
+                    ts = datetime.strptime(f"{match.group(1)} {match.group(2)}:{match.group(3)}:{match.group(4)}", "%Y-%m-%d %H:%M:%S")
+                    timestamps.append(ts)
 
             if len(timestamps) >= 2:
-                duration = (max(timestamps) - min(timestamps)).total_seconds()
-                result[datastore]["duration"] = format_duration(duration)
+                # Sort descending (most recent first)
+                timestamps.sort(reverse=True)
+
+                # Group into jobs - backups within 1 hour of each other are same job
+                job_timestamps = [timestamps[0]]
+                for i in range(1, len(timestamps)):
+                    # If gap between consecutive backups is less than 1 hour, same job
+                    if (job_timestamps[-1] - timestamps[i]).total_seconds() < 3600:
+                        job_timestamps.append(timestamps[i])
+                    else:
+                        break  # Found a gap, stop (we have the most recent job)
+
+                if len(job_timestamps) >= 2:
+                    duration = (max(job_timestamps) - min(job_timestamps)).total_seconds()
+                    result[datastore]["duration"] = format_duration(duration)
 
         # Check if backups are recent (stale check)
         try:
