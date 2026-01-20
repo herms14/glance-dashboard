@@ -1,30 +1,33 @@
 # Glance Dashboard - GitOps Repository
 
-Comprehensive homelab dashboard with 9 tabs covering infrastructure monitoring, media management, backup status, sports, and more.
+Comprehensive homelab dashboard with 11 pages featuring emoji navigation icons, 35 themes, and extensive infrastructure monitoring.
 
 ## Overview
 
 | Property | Value |
 |----------|-------|
 | **Service** | Glance Dashboard |
-| **Version** | 0.7.0+ |
+| **Version** | 2.0.0 |
 | **Target Host** | docker-lxc-glance (192.168.40.12) |
 | **Port** | 8080 |
 | **URL** | https://glance.hrmsmrflrii.xyz |
+| **Themes** | 35 available |
 
-## Dashboard Pages (9 Tabs)
+## Dashboard Pages (11 Tabs)
 
-| Tab | Description | Key Widgets |
-|-----|-------------|-------------|
-| **Home** | Central dashboard with life tracking | Chess.com stats, weather, calendar, daily note, service health monitors, GitHub contributions, life progress |
-| **Compute** | Proxmox cluster monitoring | Proxmox Cluster Health (Grafana), Container Status History (Grafana), Linux/Windows VM stats |
-| **Storage** | NAS storage metrics | Synology NAS Storage dashboard (Grafana) with RAID status, disk health, temps |
-| **Network** | Network infrastructure | Network Utilization (Grafana), Omada Network Overview (Grafana), speedtest |
-| **Backup** | PBS backup monitoring | Backup Jobs Overview with durations, VM/CT backup status with names, Drive health, PBS Grafana |
-| **Media** | Media server stats | Media Stats grid (Radarr/Sonarr), recent movies, RSS feeds, arr stack bookmarks |
-| **Web** | Tech news aggregator | YouTube channels, tech news RSS, AI/ML feeds, cloud/enterprise news, markets |
-| **Reddit** | Reddit feed manager | Dynamic multi-subreddit feed with thumbnails, native Reddit widgets |
-| **Sports** | NBA and fantasy sports | Today's games, standings, injury report, Yahoo Fantasy league |
+| Tab | Icon | Description | Key Widgets |
+|-----|------|-------------|-------------|
+| **Home** | 🏠 | Central dashboard with life tracking | Chess.com stats, weather, calendar, daily note, GitHub contributions, life progress |
+| **Services** | 🛠 | Infrastructure health monitors | Proxmox nodes, PBS server, Synology NAS, Docker containers status |
+| **Compute** | 💻 | Proxmox cluster monitoring | Proxmox Cluster Health (Grafana), Container Status History (Grafana), Linux/Windows VM stats |
+| **Storage** | 💾 | NAS storage metrics | Synology NAS Storage dashboard (Grafana) with RAID status, disk health, temps |
+| **Backup** | 📦 | PBS backup monitoring | Backup Jobs Overview with durations, VM/CT backup status with names, Drive health, PBS Grafana |
+| **Network** | 🌐 | Network infrastructure | Network Utilization (Grafana), Omada Network Overview (Grafana), speedtest |
+| **Media** | 🎬 | Media server stats | Media Stats grid (Radarr/Sonarr), recent movies, RSS feeds, arr stack bookmarks |
+| **News** | 📰 | Tech news aggregator | Hacker News, tech RSS feeds, headline aggregation |
+| **Finance** | 💰 | Financial markets | Stock markets, crypto prices, financial widgets |
+| **Reddit** | 🤖 | Reddit feed manager | Dynamic multi-subreddit feed with thumbnails, native Reddit widgets |
+| **Sports** | 🏀 | NBA and fantasy sports | Today's games, standings, injury report, Yahoo Fantasy league |
 
 ## Custom APIs
 
@@ -42,8 +45,8 @@ The dashboard integrates with several custom APIs running on `docker-vm-core-uti
 
 | Dashboard | UID | Height | Tab |
 |-----------|-----|--------|-----|
-| Proxmox Cluster Health | `proxmox-cluster-health` | 3200px | Compute |
-| Container Status History | `container-status` | 1250px | Compute |
+| Proxmox Cluster Health | `proxmox-cluster-health` | 2400px | Compute |
+| Container Status History | `container-status` | 1800px | Compute |
 | Synology NAS Storage | `synology-nas-modern` | 1350px | Storage |
 | Network Utilization | `network-utilization` | 1100px | Network |
 | Omada Network | `omada-network` | 2200px | Network |
@@ -199,9 +202,37 @@ ssh root@192.168.40.12 "cd /opt/glance && docker compose restart"
 - [Grafana](https://grafana.hrmsmrflrii.xyz)
 - [GitLab Pipeline](https://gitlab.hrmsmrflrii.xyz/homelab/glance-homelab/-/pipelines)
 
+## Available Themes (35)
+
+The dashboard includes 35 color themes:
+
+**Original Themes:** deep-purple, purple-rain, dark-modern, charcoal, midnight-blue, forest-green, ocean-blue, sunset, nord, dracula
+
+**Editor Themes:** one-dark, material-ocean, ayu-dark, ayu-mirage, synthwave-84, night-owl, palenight, horizon, everforest
+
+**Rose Pine:** rose-pine, rose-pine-moon
+
+**Catppuccin:** catppuccin-macchiato, catppuccin-frappe
+
+**GitHub:** github-dark, github-dimmed
+
+**Modern:** kanagawa, vesper, poimandres, vitesse-dark, oxocarbon, mellow, aurora, fairy-floss
+
+**Terminal:** blue-matrix, green-matrix, amber-terminal, high-contrast
+
 ## Recent Updates
 
-### January 15, 2026
+See [CHANGELOG.md](CHANGELOG.md) for full version history.
+
+### v2.0.0 (January 20, 2026) - Major UI Redesign
+- Added page icons/emojis for all 11 pages
+- Created new Services page consolidating health monitors
+- Split Web page into News and Finance
+- Added 25 new themes (now 35 total)
+- Standardized widget styling (padding: 12px, border-radius: 8px)
+- Optimized iframe heights
+
+### v1.5.0 (January 15, 2026)
 - Enhanced Backup page with job durations (daily, main, NAS sync)
 - VM/CT backup status now shows names instead of just VMIDs
 - Restructured Backup layout with sidebar and main column
