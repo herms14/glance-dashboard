@@ -5,6 +5,17 @@ All notable changes to the Glance Dashboard will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-01-20
+
+### Added
+- **Power Control Panel** on Home page with interactive buttons:
+  - ⚡ Wake All - Send Wake-on-LAN to all 3 Proxmox nodes
+  - 🔴 Shutdown - Graceful shutdown of all nodes (with confirmation modal)
+  - 📦 Backup Now - Trigger daily backup job immediately
+- Real-time node status indicators (online/offline)
+- Power Control API (port 5057) with embedded web UI
+- Async operation handling with status polling
+
 ## [2.0.0] - 2026-01-20
 
 ### Added

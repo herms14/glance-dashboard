@@ -183,6 +183,13 @@ pages:
             </a>
           </div>
         </div>
+    - type: iframe
+      title: Power Control
+      url: http://192.168.40.13:5057/
+      height: 180
+      style:
+        padding: 0
+        border-radius: 8px
     - type: rss
       title: Tech News
       feeds:

@@ -7,7 +7,7 @@ Comprehensive homelab dashboard with 11 pages featuring emoji navigation icons, 
 | Property | Value |
 |----------|-------|
 | **Service** | Glance Dashboard |
-| **Version** | 2.0.0 |
+| **Version** | 2.1.0 |
 | **Target Host** | docker-lxc-glance (192.168.40.12) |
 | **Port** | 8080 |
 | **URL** | https://glance.hrmsmrflrii.xyz |
@@ -40,6 +40,7 @@ The dashboard integrates with several custom APIs running on `docker-vm-core-uti
 | NBA Stats API | 5060 | NBA games, standings, fantasy data |
 | Reddit Manager | 5053 | Multi-subreddit feed aggregation |
 | NAS Backup Status API | 9102 | PBS backup status with durations and VM names |
+| Power Control API | 5057 | Wake-on-LAN, shutdown, backup triggering |
 
 ## Embedded Grafana Dashboards
 
@@ -223,6 +224,12 @@ The dashboard includes 35 color themes:
 ## Recent Updates
 
 See [CHANGELOG.md](CHANGELOG.md) for full version history.
+
+### v2.1.0 (January 20, 2026) - Power Control Panel
+- Added Power Control widget on Home page with interactive buttons
+- Wake-on-LAN, Shutdown, and Backup Now functionality
+- Real-time node status indicators
+- Power Control API (port 5057) with embedded web UI
 
 ### v2.0.0 (January 20, 2026) - Major UI Redesign
 - Added page icons/emojis for all 11 pages
