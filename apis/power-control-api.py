@@ -387,32 +387,32 @@ def check_node_online(ip):
         return False
 
 
-def send_wol_packet(mac_address):
-    """Send Wake-on-LAN magic packet."""
+def send_wol_packet(mac_address, from_node_ip=None):
+    """Send Wake-on-LAN magic packet via SSH from a node on the same VLAN."""
+    # WoL packets don't cross VLANs, so we need to send from a node on VLAN 20
+    # Try to find an online node to send from
+    if from_node_ip is None:
+        for node, info in PROXMOX_NODES.items():
+            if check_node_online(info["ip"]):
+                from_node_ip = info["ip"]
+                break
+
+    if from_node_ip is None:
+        print(f"No online node found to send WoL from")
+        return False
+
     try:
-        # Using wakeonlan command
-        result = subprocess.run(
-            ["wakeonlan", mac_address],
-            capture_output=True,
-            text=True,
-            timeout=10
-        )
-        return result.returncode == 0
+        client = get_ssh_client(from_node_ip)
+        if client:
+            # Send WoL from the Proxmox node (same VLAN 20)
+            stdin, stdout, stderr = client.exec_command(f"wakeonlan {mac_address} 2>/dev/null || echo 'WoL not installed'")
+            output = stdout.read().decode()
+            client.close()
+            return "magic packet" in output.lower() or "WoL not installed" not in output
+        return False
     except Exception as e:
-        print(f"WoL failed for {mac_address}: {e}")
-        # Fallback: construct and send packet manually
-        try:
-            import socket
-            mac_bytes = bytes.fromhex(mac_address.replace(":", ""))
-            magic_packet = b'\xff' * 6 + mac_bytes * 16
-            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-            sock.sendto(magic_packet, ('255.255.255.255', 9))
-            sock.close()
-            return True
-        except Exception as e2:
-            print(f"Manual WoL also failed: {e2}")
-            return False
+        print(f"WoL via SSH failed for {mac_address}: {e}")
+        return False
 
 
 def wol_all_nodes_async():
