@@ -183,10 +183,6 @@ pages:
             </a>
           </div>
         </div>
-    - type: iframe
-      title: Power Control
-      source: http://192.168.40.13:5057/
-      height: 70
     - type: rss
       title: Tech News
       feeds:
@@ -198,6 +194,10 @@ pages:
       style: horizontal-cards
   - size: small
     widgets:
+    - type: iframe
+      title: Power Control
+      source: http://192.168.40.13:5057/
+      height: 160
     - type: markets
       title: Crypto
       markets:
@@ -586,7 +586,7 @@ pages:
             <!-- Main Backups -->
             <div style="background: rgba(139, 92, 246, 0.08); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 12px; padding: 16px;">
               <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                <span style="font-size: 14px; color: #8b5cf6; font-weight: 700;">\U0001F5C4 MAIN BACKUPS</span>
+                <span style="font-size: 14px; color: #8b5cf6; font-weight: 700;">🗄️ MAIN BACKUPS</span>
                 {{ if eq (.JSON.String "job_status.main.status") "success" }}
                 <span style="font-size: 11px; background: #22c55e; color: #000; padding: 6px 12px; border-radius: 8px; font-weight: 600;">OK</span>
                 {{ else if eq (.JSON.String "job_status.main.status") "stale" }}
