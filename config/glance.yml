@@ -183,6 +183,10 @@ pages:
             </a>
           </div>
         </div>
+    - type: iframe
+      title: Power Control
+      source: http://192.168.40.13:5057/
+      height: 70
     - type: rss
       title: Tech News
       feeds:
@@ -194,10 +198,6 @@ pages:
       style: horizontal-cards
   - size: small
     widgets:
-    - type: iframe
-      title: Power Control
-      source: http://192.168.40.13:5057/
-      height: 160
     - type: markets
       title: Crypto
       markets:
@@ -228,142 +228,286 @@ pages:
         name: Amazon
       sort-by: change
 
-# ==================== SERVICES PAGE (NEW) ====================
+# ==================== SERVICES PAGE ====================
+# Powered by Service Version Manager API (192.168.40.13:5070)
+# Shows health status, current version, latest version, and one-click updates
 - name: "\U0001F6E0 Services"
   columns:
   - size: full
     widgets:
-    - type: monitor
+    # --- Critical Infrastructure ---
+    - type: custom-api
       title: "\U0001F534 Critical Infrastructure"
       cache: 1m
-      sites:
-      - title: Node 01
-        url: https://192.168.20.20:8006
-        icon: si:proxmox
-        allow-insecure: true
-      - title: Node 02
-        url: https://192.168.20.21:8006
-        icon: si:proxmox
-        allow-insecure: true
-      - title: Node 03
-        url: https://192.168.20.22:8006
-        icon: si:proxmox
-        allow-insecure: true
-      - title: Synology NAS
-        url: https://192.168.20.31:5001
-        icon: si:synology
-        allow-insecure: true
-      - title: PBS Server
-        url: https://192.168.20.50:8007
-        icon: si:proxmox
-        allow-insecure: true
-      - title: Traefik
-        url: http://192.168.40.20:8082/ping
-        icon: si:traefikproxy
-    - type: monitor
+      url: http://192.168.40.13:5070/api/services/infrastructure
+      template: |
+        <div style="padding: 4px 0;">
+          <div style="display: flex; gap: 8px; margin-bottom: 10px; font-size: 11px; color: #888;">
+            <span>{{ .JSON.Int "online" }}/{{ .JSON.Int "total" }} online</span>
+            {{ if gt (.JSON.Int "updates_available") 0 }}
+            <span style="color: #f59e0b;">{{ .JSON.Int "updates_available" }} update{{ if gt (.JSON.Int "updates_available") 1 }}s{{ end }}</span>
+            {{ end }}
+          </div>
+          {{ range .JSON.Array "services" }}
+          <div style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; margin-bottom: 4px; background: rgba(255,255,255,0.03); border-radius: 8px; border-left: 3px solid {{ if eq (.String "health") "online" }}#22c55e{{ else if eq (.String "health") "offline" }}#ef4444{{ else }}#f59e0b{{ end }};">
+            <div style="flex: 0 0 24px;">
+              <img src="https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/{{ .String "icon" }}.png" style="width: 20px; height: 20px; border-radius: 4px;" onerror="this.style.display='none'">
+            </div>
+            <div style="flex: 1; min-width: 0;">
+              {{ if .String "web_url" }}<a href="{{ .String "web_url" }}" target="_blank" style="color: #e2e8f0; text-decoration: none; font-size: 13px; font-weight: 500;">{{ .String "display_name" }}</a>{{ else }}<span style="color: #e2e8f0; font-size: 13px; font-weight: 500;">{{ .String "display_name" }}</span>{{ end }}
+            </div>
+            <div style="flex: 0 0 60px;">
+              <span style="font-size: 10px; padding: 2px 6px; border-radius: 10px; background: {{ if eq (.String "health") "online" }}rgba(34,197,94,0.15){{ else if eq (.String "health") "offline" }}rgba(239,68,68,0.15){{ else }}rgba(245,158,11,0.15){{ end }}; color: {{ if eq (.String "health") "online" }}#22c55e{{ else if eq (.String "health") "offline" }}#ef4444{{ else }}#f59e0b{{ end }};">{{ if eq (.String "health") "online" }}Online{{ else if eq (.String "health") "offline" }}Offline{{ else }}Unknown{{ end }}</span>
+            </div>
+            <div style="flex: 0 0 80px; font-size: 11px; color: #94a3b8; text-align: right;">
+              {{ if ne (.String "current_version") "N/A" }}v{{ .String "current_version" }}{{ else }}-{{ end }}
+            </div>
+            <div style="flex: 0 0 100px; text-align: right;">
+              {{ if .Bool "can_update" }}
+              <a href="http://192.168.40.13:5070/api/update/{{ .String "name" }}?key=svm-homelab-secret" style="font-size: 10px; padding: 3px 8px; border: 1px solid #f59e0b; background: rgba(245,158,11,0.1); color: #f59e0b; border-radius: 6px; text-decoration: none; cursor: pointer;">Update</a>
+              {{ else if .Bool "update_available" }}
+              <span style="font-size: 10px; color: #f59e0b;" title="Blacklisted from one-click update">Update available</span>
+              {{ else if eq (.String "type") "docker" }}
+              <span style="font-size: 10px; color: #4ade80;">Up to date</span>
+              {{ end }}
+            </div>
+          </div>
+          {{ end }}
+        </div>
+    # --- Auth & Identity ---
+    - type: custom-api
       title: "\U0001F512 Auth & Identity"
       cache: 1m
-      sites:
-      - title: Authentik
-        url: http://192.168.40.21:9000/-/health/ready/
-        icon: si:authentik
-      - title: Pi-hole
-        url: https://pihole.hrmsmrflrii.xyz/admin/
-        icon: si:pihole
-    - type: monitor
+      url: http://192.168.40.13:5070/api/services/auth
+      template: |
+        <div style="padding: 4px 0;">
+          <div style="display: flex; gap: 8px; margin-bottom: 10px; font-size: 11px; color: #888;">
+            <span>{{ .JSON.Int "online" }}/{{ .JSON.Int "total" }} online</span>
+            {{ if gt (.JSON.Int "updates_available") 0 }}
+            <span style="color: #f59e0b;">{{ .JSON.Int "updates_available" }} update{{ if gt (.JSON.Int "updates_available") 1 }}s{{ end }}</span>
+            {{ end }}
+          </div>
+          {{ range .JSON.Array "services" }}
+          <div style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; margin-bottom: 4px; background: rgba(255,255,255,0.03); border-radius: 8px; border-left: 3px solid {{ if eq (.String "health") "online" }}#22c55e{{ else if eq (.String "health") "offline" }}#ef4444{{ else }}#f59e0b{{ end }};">
+            <div style="flex: 0 0 24px;">
+              <img src="https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/{{ .String "icon" }}.png" style="width: 20px; height: 20px; border-radius: 4px;" onerror="this.style.display='none'">
+            </div>
+            <div style="flex: 1; min-width: 0;">
+              {{ if .String "web_url" }}<a href="{{ .String "web_url" }}" target="_blank" style="color: #e2e8f0; text-decoration: none; font-size: 13px; font-weight: 500;">{{ .String "display_name" }}</a>{{ else }}<span style="color: #e2e8f0; font-size: 13px; font-weight: 500;">{{ .String "display_name" }}</span>{{ end }}
+            </div>
+            <div style="flex: 0 0 60px;">
+              <span style="font-size: 10px; padding: 2px 6px; border-radius: 10px; background: {{ if eq (.String "health") "online" }}rgba(34,197,94,0.15){{ else if eq (.String "health") "offline" }}rgba(239,68,68,0.15){{ else }}rgba(245,158,11,0.15){{ end }}; color: {{ if eq (.String "health") "online" }}#22c55e{{ else if eq (.String "health") "offline" }}#ef4444{{ else }}#f59e0b{{ end }};">{{ if eq (.String "health") "online" }}Online{{ else if eq (.String "health") "offline" }}Offline{{ else }}Unknown{{ end }}</span>
+            </div>
+            <div style="flex: 0 0 80px; font-size: 11px; color: #94a3b8; text-align: right;">
+              {{ if ne (.String "current_version") "N/A" }}v{{ .String "current_version" }}{{ else }}-{{ end }}
+            </div>
+            <div style="flex: 0 0 100px; text-align: right;">
+              {{ if .Bool "can_update" }}
+              <a href="http://192.168.40.13:5070/api/update/{{ .String "name" }}?key=svm-homelab-secret" style="font-size: 10px; padding: 3px 8px; border: 1px solid #f59e0b; background: rgba(245,158,11,0.1); color: #f59e0b; border-radius: 6px; text-decoration: none; cursor: pointer;">Update</a>
+              {{ else if .Bool "update_available" }}
+              <span style="font-size: 10px; color: #f59e0b;" title="Blacklisted from one-click update">Update available</span>
+              {{ else if eq (.String "type") "docker" }}
+              <span style="font-size: 10px; color: #4ade80;">Up to date</span>
+              {{ end }}
+            </div>
+          </div>
+          {{ end }}
+        </div>
+    # --- Core Applications ---
+    - type: custom-api
       title: "\U0001F4BB Core Applications"
       cache: 1m
-      sites:
-      - title: GitLab
-        url: http://192.168.40.23:80/users/sign_in
-        icon: si:gitlab
-      - title: Immich
-        url: http://192.168.40.22:2283/api/server/ping
-        icon: si:immich
-      - title: n8n
-        url: http://192.168.40.13:5678/healthz
-        icon: si:n8n
-      - title: Paperless
-        url: http://192.168.40.13:8000
-        icon: si:paperlessngx
-      - title: Karakeep
-        url: http://192.168.40.13:3005
-        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/linkwarden.png
-      - title: Lagident
-        url: http://192.168.40.13:9933
-        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/photoprism.png
-      - title: Home Assistant
-        url: http://192.168.40.25:8123
-        icon: si:homeassistant
+      url: http://192.168.40.13:5070/api/services/core_apps
+      template: |
+        <div style="padding: 4px 0;">
+          <div style="display: flex; gap: 8px; margin-bottom: 10px; font-size: 11px; color: #888;">
+            <span>{{ .JSON.Int "online" }}/{{ .JSON.Int "total" }} online</span>
+            {{ if gt (.JSON.Int "updates_available") 0 }}
+            <span style="color: #f59e0b;">{{ .JSON.Int "updates_available" }} update{{ if gt (.JSON.Int "updates_available") 1 }}s{{ end }}</span>
+            {{ end }}
+          </div>
+          {{ range .JSON.Array "services" }}
+          <div style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; margin-bottom: 4px; background: rgba(255,255,255,0.03); border-radius: 8px; border-left: 3px solid {{ if eq (.String "health") "online" }}#22c55e{{ else if eq (.String "health") "offline" }}#ef4444{{ else }}#f59e0b{{ end }};">
+            <div style="flex: 0 0 24px;">
+              <img src="https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/{{ .String "icon" }}.png" style="width: 20px; height: 20px; border-radius: 4px;" onerror="this.style.display='none'">
+            </div>
+            <div style="flex: 1; min-width: 0;">
+              {{ if .String "web_url" }}<a href="{{ .String "web_url" }}" target="_blank" style="color: #e2e8f0; text-decoration: none; font-size: 13px; font-weight: 500;">{{ .String "display_name" }}</a>{{ else }}<span style="color: #e2e8f0; font-size: 13px; font-weight: 500;">{{ .String "display_name" }}</span>{{ end }}
+            </div>
+            <div style="flex: 0 0 60px;">
+              <span style="font-size: 10px; padding: 2px 6px; border-radius: 10px; background: {{ if eq (.String "health") "online" }}rgba(34,197,94,0.15){{ else if eq (.String "health") "offline" }}rgba(239,68,68,0.15){{ else }}rgba(245,158,11,0.15){{ end }}; color: {{ if eq (.String "health") "online" }}#22c55e{{ else if eq (.String "health") "offline" }}#ef4444{{ else }}#f59e0b{{ end }};">{{ if eq (.String "health") "online" }}Online{{ else if eq (.String "health") "offline" }}Offline{{ else }}Unknown{{ end }}</span>
+            </div>
+            <div style="flex: 0 0 80px; font-size: 11px; color: #94a3b8; text-align: right;">
+              {{ if ne (.String "current_version") "N/A" }}v{{ .String "current_version" }}{{ else }}-{{ end }}
+            </div>
+            <div style="flex: 0 0 100px; text-align: right;">
+              {{ if .Bool "can_update" }}
+              <a href="http://192.168.40.13:5070/api/update/{{ .String "name" }}?key=svm-homelab-secret" style="font-size: 10px; padding: 3px 8px; border: 1px solid #f59e0b; background: rgba(245,158,11,0.1); color: #f59e0b; border-radius: 6px; text-decoration: none; cursor: pointer;">Update</a>
+              {{ else if .Bool "update_available" }}
+              <span style="font-size: 10px; color: #f59e0b;" title="Blacklisted from one-click update">Update available</span>
+              {{ else if eq (.String "type") "docker" }}
+              <span style="font-size: 10px; color: #4ade80;">Up to date</span>
+              {{ end }}
+            </div>
+          </div>
+          {{ end }}
+        </div>
   - size: full
     widgets:
-    - type: monitor
+    # --- Media Stack ---
+    - type: custom-api
       title: "\U0001F3AC Media Stack"
       cache: 1m
-      sites:
-      - title: Jellyfin
-        url: http://192.168.40.11:8096/health
-        icon: si:jellyfin
-      - title: Radarr
-        url: http://192.168.40.11:7878/ping
-        icon: si:radarr
-      - title: Sonarr
-        url: http://192.168.40.11:8989/ping
-        icon: si:sonarr
-      - title: Lidarr
-        url: http://192.168.40.11:8686/ping
-        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/lidarr.png
-      - title: Prowlarr
-        url: http://192.168.40.11:9696/ping
-        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/prowlarr.png
-      - title: Bazarr
-        url: http://192.168.40.11:6767/ping
-        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/bazarr.png
-      - title: Jellyseerr
-        url: http://192.168.40.11:5055
-        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/jellyseerr.png
-      - title: Tdarr
-        url: http://192.168.40.11:8265
-        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/tdarr.png
-      - title: Deluge
-        url: http://192.168.40.11:8112
-        icon: si:deluge
-      - title: SABnzbd
-        url: http://192.168.40.11:8081
-        icon: si:sabnzbd
-      - title: MeTube
-        url: http://192.168.40.11:8082
-        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/metube.png
-      - title: Wizarr
-        url: http://192.168.40.13:5690
-        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/wizarr.png
-      - title: Tracearr
-        url: http://192.168.40.13:3002
-        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/tautulli.png
-    - type: monitor
+      url: http://192.168.40.13:5070/api/services/media
+      template: |
+        <div style="padding: 4px 0;">
+          <div style="display: flex; gap: 8px; margin-bottom: 10px; font-size: 11px; color: #888;">
+            <span>{{ .JSON.Int "online" }}/{{ .JSON.Int "total" }} online</span>
+            {{ if gt (.JSON.Int "updates_available") 0 }}
+            <span style="color: #f59e0b;">{{ .JSON.Int "updates_available" }} update{{ if gt (.JSON.Int "updates_available") 1 }}s{{ end }}</span>
+            {{ end }}
+          </div>
+          {{ range .JSON.Array "services" }}
+          <div style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; margin-bottom: 4px; background: rgba(255,255,255,0.03); border-radius: 8px; border-left: 3px solid {{ if eq (.String "health") "online" }}#22c55e{{ else if eq (.String "health") "offline" }}#ef4444{{ else }}#f59e0b{{ end }};">
+            <div style="flex: 0 0 24px;">
+              <img src="https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/{{ .String "icon" }}.png" style="width: 20px; height: 20px; border-radius: 4px;" onerror="this.style.display='none'">
+            </div>
+            <div style="flex: 1; min-width: 0;">
+              {{ if .String "web_url" }}<a href="{{ .String "web_url" }}" target="_blank" style="color: #e2e8f0; text-decoration: none; font-size: 13px; font-weight: 500;">{{ .String "display_name" }}</a>{{ else }}<span style="color: #e2e8f0; font-size: 13px; font-weight: 500;">{{ .String "display_name" }}</span>{{ end }}
+            </div>
+            <div style="flex: 0 0 60px;">
+              <span style="font-size: 10px; padding: 2px 6px; border-radius: 10px; background: {{ if eq (.String "health") "online" }}rgba(34,197,94,0.15){{ else if eq (.String "health") "offline" }}rgba(239,68,68,0.15){{ else }}rgba(245,158,11,0.15){{ end }}; color: {{ if eq (.String "health") "online" }}#22c55e{{ else if eq (.String "health") "offline" }}#ef4444{{ else }}#f59e0b{{ end }};">{{ if eq (.String "health") "online" }}Online{{ else if eq (.String "health") "offline" }}Offline{{ else }}Unknown{{ end }}</span>
+            </div>
+            <div style="flex: 0 0 80px; font-size: 11px; color: #94a3b8; text-align: right;">
+              {{ if ne (.String "current_version") "N/A" }}v{{ .String "current_version" }}{{ else }}-{{ end }}
+            </div>
+            <div style="flex: 0 0 100px; text-align: right;">
+              {{ if .Bool "can_update" }}
+              <a href="http://192.168.40.13:5070/api/update/{{ .String "name" }}?key=svm-homelab-secret" style="font-size: 10px; padding: 3px 8px; border: 1px solid #f59e0b; background: rgba(245,158,11,0.1); color: #f59e0b; border-radius: 6px; text-decoration: none; cursor: pointer;">Update</a>
+              {{ else if .Bool "update_available" }}
+              <span style="font-size: 10px; color: #f59e0b;" title="Blacklisted from one-click update">Update available</span>
+              {{ else if eq (.String "type") "docker" }}
+              <span style="font-size: 10px; color: #4ade80;">Up to date</span>
+              {{ end }}
+            </div>
+          </div>
+          {{ end }}
+        </div>
+    # --- Monitoring & Observability ---
+    - type: custom-api
       title: "\U0001F4C8 Monitoring & Observability"
       cache: 1m
-      sites:
-      - title: Uptime Kuma
-        url: http://192.168.40.13:3001
-        icon: si:uptimekuma
-      - title: Prometheus
-        url: http://192.168.40.13:9090/-/healthy
-        icon: si:prometheus
-      - title: Grafana
-        url: https://grafana.hrmsmrflrii.xyz/api/health
-        icon: si:grafana
-      - title: Jaeger
-        url: http://192.168.40.13:16686
-        icon: si:jaeger
-      - title: Glance
-        url: http://localhost:8080
-        icon: mdi:view-dashboard
-      - title: Speedtest
-        url: http://192.168.40.13:3000/api/healthcheck
-        icon: si:speedtest
+      url: http://192.168.40.13:5070/api/services/monitoring
+      template: |
+        <div style="padding: 4px 0;">
+          <div style="display: flex; gap: 8px; margin-bottom: 10px; font-size: 11px; color: #888;">
+            <span>{{ .JSON.Int "online" }}/{{ .JSON.Int "total" }} online</span>
+            {{ if gt (.JSON.Int "updates_available") 0 }}
+            <span style="color: #f59e0b;">{{ .JSON.Int "updates_available" }} update{{ if gt (.JSON.Int "updates_available") 1 }}s{{ end }}</span>
+            {{ end }}
+          </div>
+          {{ range .JSON.Array "services" }}
+          <div style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; margin-bottom: 4px; background: rgba(255,255,255,0.03); border-radius: 8px; border-left: 3px solid {{ if eq (.String "health") "online" }}#22c55e{{ else if eq (.String "health") "offline" }}#ef4444{{ else }}#f59e0b{{ end }};">
+            <div style="flex: 0 0 24px;">
+              <img src="https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/{{ .String "icon" }}.png" style="width: 20px; height: 20px; border-radius: 4px;" onerror="this.style.display='none'">
+            </div>
+            <div style="flex: 1; min-width: 0;">
+              {{ if .String "web_url" }}<a href="{{ .String "web_url" }}" target="_blank" style="color: #e2e8f0; text-decoration: none; font-size: 13px; font-weight: 500;">{{ .String "display_name" }}</a>{{ else }}<span style="color: #e2e8f0; font-size: 13px; font-weight: 500;">{{ .String "display_name" }}</span>{{ end }}
+            </div>
+            <div style="flex: 0 0 60px;">
+              <span style="font-size: 10px; padding: 2px 6px; border-radius: 10px; background: {{ if eq (.String "health") "online" }}rgba(34,197,94,0.15){{ else if eq (.String "health") "offline" }}rgba(239,68,68,0.15){{ else }}rgba(245,158,11,0.15){{ end }}; color: {{ if eq (.String "health") "online" }}#22c55e{{ else if eq (.String "health") "offline" }}#ef4444{{ else }}#f59e0b{{ end }};">{{ if eq (.String "health") "online" }}Online{{ else if eq (.String "health") "offline" }}Offline{{ else }}Unknown{{ end }}</span>
+            </div>
+            <div style="flex: 0 0 80px; font-size: 11px; color: #94a3b8; text-align: right;">
+              {{ if ne (.String "current_version") "N/A" }}v{{ .String "current_version" }}{{ else }}-{{ end }}
+            </div>
+            <div style="flex: 0 0 100px; text-align: right;">
+              {{ if .Bool "can_update" }}
+              <a href="http://192.168.40.13:5070/api/update/{{ .String "name" }}?key=svm-homelab-secret" style="font-size: 10px; padding: 3px 8px; border: 1px solid #f59e0b; background: rgba(245,158,11,0.1); color: #f59e0b; border-radius: 6px; text-decoration: none; cursor: pointer;">Update</a>
+              {{ else if .Bool "update_available" }}
+              <span style="font-size: 10px; color: #f59e0b;" title="Blacklisted from one-click update">Update available</span>
+              {{ else if eq (.String "type") "docker" }}
+              <span style="font-size: 10px; color: #4ade80;">Up to date</span>
+              {{ end }}
+            </div>
+          </div>
+          {{ end }}
+        </div>
+    # --- Custom APIs & Bots ---
+    - type: custom-api
+      title: "\U0001F916 Custom APIs & Bots"
+      cache: 1m
+      url: http://192.168.40.13:5070/api/services/apis_bots
+      template: |
+        <div style="padding: 4px 0;">
+          <div style="display: flex; gap: 8px; margin-bottom: 10px; font-size: 11px; color: #888;">
+            <span>{{ .JSON.Int "online" }}/{{ .JSON.Int "total" }} online</span>
+            <span style="color: #64748b;">Custom builds</span>
+          </div>
+          {{ range .JSON.Array "services" }}
+          <div style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; margin-bottom: 4px; background: rgba(255,255,255,0.03); border-radius: 8px; border-left: 3px solid {{ if eq (.String "health") "online" }}#22c55e{{ else if eq (.String "health") "offline" }}#ef4444{{ else }}#f59e0b{{ end }};">
+            <div style="flex: 0 0 24px;">
+              <img src="https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/{{ .String "icon" }}.png" style="width: 20px; height: 20px; border-radius: 4px;" onerror="this.style.display='none'">
+            </div>
+            <div style="flex: 1; min-width: 0;">
+              <span style="color: #e2e8f0; font-size: 13px; font-weight: 500;">{{ .String "display_name" }}</span>
+            </div>
+            <div style="flex: 0 0 60px;">
+              <span style="font-size: 10px; padding: 2px 6px; border-radius: 10px; background: {{ if eq (.String "health") "online" }}rgba(34,197,94,0.15){{ else if eq (.String "health") "offline" }}rgba(239,68,68,0.15){{ else }}rgba(245,158,11,0.15){{ end }}; color: {{ if eq (.String "health") "online" }}#22c55e{{ else if eq (.String "health") "offline" }}#ef4444{{ else }}#f59e0b{{ end }};">{{ if eq (.String "health") "online" }}Online{{ else if eq (.String "health") "offline" }}Offline{{ else }}Unknown{{ end }}</span>
+            </div>
+            <div style="flex: 0 0 80px; font-size: 11px; color: #64748b; text-align: right;">
+              custom
+            </div>
+            <div style="flex: 0 0 100px; text-align: right;">
+              <span style="font-size: 10px; color: #64748b;">Ansible deploy</span>
+            </div>
+          </div>
+          {{ end }}
+        </div>
   - size: small
     widgets:
+    # --- Update Summary Sidebar ---
+    - type: custom-api
+      title: "\U0001F4CA Service Summary"
+      cache: 1m
+      url: http://192.168.40.13:5070/api/summary
+      template: |
+        <div style="padding: 12px;">
+          <div style="text-align: center; margin-bottom: 16px;">
+            <div style="font-size: 36px; font-weight: 700; color: #22c55e;">{{ .JSON.Int "online" }}</div>
+            <div style="font-size: 11px; color: #888;">of {{ .JSON.Int "total" }} services online</div>
+          </div>
+          {{ if gt (.JSON.Int "offline") 0 }}
+          <div style="background: rgba(239,68,68,0.1); border-radius: 8px; padding: 10px; margin-bottom: 10px; text-align: center;">
+            <div style="font-size: 20px; font-weight: 600; color: #ef4444;">{{ .JSON.Int "offline" }}</div>
+            <div style="font-size: 10px; color: #ef4444;">Offline</div>
+          </div>
+          {{ end }}
+          {{ if gt (.JSON.Int "updates_available") 0 }}
+          <div style="background: rgba(245,158,11,0.1); border-radius: 8px; padding: 10px; margin-bottom: 10px; text-align: center;">
+            <div style="font-size: 20px; font-weight: 600; color: #f59e0b;">{{ .JSON.Int "updates_available" }}</div>
+            <div style="font-size: 10px; color: #f59e0b;">Updates Available</div>
+          </div>
+          {{ else }}
+          <div style="background: rgba(34,197,94,0.1); border-radius: 8px; padding: 10px; margin-bottom: 10px; text-align: center;">
+            <div style="font-size: 14px; font-weight: 600; color: #4ade80;">All up to date</div>
+          </div>
+          {{ end }}
+          <div style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; margin-top: 6px;">
+            <div style="font-size: 11px; color: #64748b; margin-bottom: 8px;">By Category</div>
+            {{ range .JSON.Array "categories" }}
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0; font-size: 11px;">
+              <span style="color: #94a3b8;">{{ .String "name" }}</span>
+              <span>
+                <span style="color: #22c55e;">{{ .Int "online" }}</span><span style="color: #475569;">/{{ .Int "total" }}</span>
+                {{ if gt (.Int "updates") 0 }}
+                <span style="color: #f59e0b; margin-left: 4px;">{{ .Int "updates" }}&#8593;</span>
+                {{ end }}
+              </span>
+            </div>
+            {{ end }}
+          </div>
+        </div>
+    # --- Quick Access Bookmarks ---
     - type: bookmarks
       title: Quick Access
       groups:
@@ -373,7 +517,7 @@ pages:
           url: https://proxmox.hrmsmrflrii.xyz
           icon: si:proxmox
         - title: Synology DSM
-          url: https://192.168.10.31:5001
+          url: https://192.168.20.31:5001
           icon: si:synology
         - title: PBS Web UI
           url: https://192.168.20.50:8007
@@ -403,6 +547,10 @@ pages:
       title: Container Monitoring
       source: https://grafana.hrmsmrflrii.xyz/d/containers-modern/container-monitoring?orgId=1&kiosk&theme=transparent&refresh=30s
       height: 1800
+    - type: iframe
+      title: Immich Host Health
+      source: https://grafana.hrmsmrflrii.xyz/d/immich-host-health/immich-host-health?orgId=1&kiosk&theme=transparent&refresh=30s
+      height: 900
   - size: small
     widgets:
     - type: custom-api
@@ -586,7 +734,7 @@ pages:
             <!-- Main Backups -->
             <div style="background: rgba(139, 92, 246, 0.08); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 12px; padding: 16px;">
               <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                <span style="font-size: 14px; color: #8b5cf6; font-weight: 700;">🗄️ MAIN BACKUPS</span>
+                <span style="font-size: 14px; color: #8b5cf6; font-weight: 700;">\U0001F5C4 MAIN BACKUPS</span>
                 {{ if eq (.JSON.String "job_status.main.status") "success" }}
                 <span style="font-size: 11px; background: #22c55e; color: #000; padding: 6px 12px; border-radius: 8px; font-weight: 600;">OK</span>
                 {{ else if eq (.JSON.String "job_status.main.status") "stale" }}
@@ -1277,7 +1425,7 @@ pages:
     - type: custom-api
       title: Today's NBA Games
       cache: 2m
-      url: http://172.17.0.1:5060/games
+      url: http://192.168.40.13:5060/games
       template: |
         <div style="font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
           <div style="color: #888; font-size: 12px; margin-bottom: 12px;">{{ .JSON.String "dateDisplay" }}</div>
@@ -1312,7 +1460,7 @@ pages:
     - type: custom-api
       title: Injury Report
       cache: 15m
-      url: http://172.17.0.1:5060/injuries
+      url: http://192.168.40.13:5060/injuries
       template: |
         <div style="font-family: -apple-system, sans-serif; font-size: 11px;">
           {{ if .JSON.String "error" }}
@@ -1339,7 +1487,7 @@ pages:
     - type: custom-api
       title: NBA Standings
       cache: 30m
-      url: http://172.17.0.1:5060/standings
+      url: http://192.168.40.13:5060/standings
       template: |
         <div style="font-family: -apple-system, BlinkMacSystemFont, sans-serif; display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
           <div>
@@ -1399,7 +1547,7 @@ pages:
     - type: custom-api
       title: NBA News
       cache: 15m
-      url: http://172.17.0.1:5060/news
+      url: http://192.168.40.13:5060/news
       template: |
         <div style="font-family: -apple-system, sans-serif; font-size: 12px;">
           {{ if .JSON.String "error" }}
@@ -1423,7 +1571,7 @@ pages:
     - type: custom-api
       title: Fantasy League
       cache: 30m
-      url: http://172.17.0.1:5060/fantasy
+      url: http://192.168.40.13:5060/fantasy
       template: |
         <div style="font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
           {{ if .JSON.String "error" }}
@@ -1457,7 +1605,7 @@ pages:
     - type: custom-api
       title: Week Matchups
       cache: 10m
-      url: http://172.17.0.1:5060/fantasy/matchups
+      url: http://192.168.40.13:5060/fantasy/matchups
       template: |
         <div style="font-family: -apple-system, sans-serif; font-size: 11px;">
           {{ if .JSON.String "error" }}
@@ -1481,7 +1629,7 @@ pages:
     - type: custom-api
       title: Hot Pickups
       cache: 1h
-      url: http://172.17.0.1:5060/fantasy/recommendations
+      url: http://192.168.40.13:5060/fantasy/recommendations
       template: |
         <div style="font-family: -apple-system, sans-serif; font-size: 11px;">
           {{ if .JSON.String "error" }}
