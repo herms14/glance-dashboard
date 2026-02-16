@@ -78,6 +78,20 @@ pages:
               <div style="font-size: 11px; color: #888;">{{ .JSON.Int "total_games" }} games</div>
             </div>
           </div>
+          <div style="font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Last Played</div>
+          <div id="steam-lp">
+          {{ range .JSON.Array "recent_games" }}
+          <div style="display: flex; align-items: center; gap: 10px; padding: 8px; margin-bottom: 8px; background: rgba(102,192,244,0.12); border-radius: 8px;">
+            <img src="{{ .String "thumbnail" }}" style="width: 46px; height: 22px; border-radius: 4px; object-fit: cover;">
+            <div style="flex: 1; min-width: 0;">
+              <div style="font-size: 11px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ .String "name" }}</div>
+              <div style="font-size: 10px; color: #66c0f4;">{{ .String "playtime_2weeks" }} (last 2 weeks)</div>
+            </div>
+          </div>
+          {{ end }}
+          </div>
+          <style>#steam-lp>div{display:none}#steam-lp>div:first-child{display:flex}</style>
+          <div style="font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Top Played</div>
           {{ range .JSON.Array "top_played" }}
           <div style="display: flex; align-items: center; gap: 10px; padding: 8px; margin-bottom: 6px; background: rgba(102,192,244,0.08); border-radius: 8px;">
             <img src="{{ .String "thumbnail" }}" style="width: 46px; height: 22px; border-radius: 4px; object-fit: cover;">
@@ -184,8 +198,8 @@ pages:
         </div>
     - type: iframe
       title: Power Control
-      source: http://192.168.40.13:5057/
-      height: 190
+      source: https://power.hrmsmrflrii.xyz/
+      height: 150
     - type: rss
       title: Tech News
       feeds:
