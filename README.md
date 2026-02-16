@@ -1,25 +1,25 @@
 # Glance Dashboard - GitOps Repository
 
-Comprehensive homelab dashboard with 11 pages featuring emoji navigation icons, 35 themes, and extensive infrastructure monitoring.
+Comprehensive homelab dashboard with 12 pages featuring emoji navigation icons, 35 themes, and extensive infrastructure monitoring.
 
 ## Overview
 
 | Property | Value |
 |----------|-------|
 | **Service** | Glance Dashboard |
-| **Version** | 2.1.0 |
+| **Version** | 2.2.0 |
 | **Target Host** | docker-lxc-glance (192.168.40.12) |
 | **Port** | 8080 |
 | **URL** | https://glance.hrmsmrflrii.xyz |
 | **Themes** | 35 available |
 
-## Dashboard Pages (11 Tabs)
+## Dashboard Pages (12 Tabs)
 
 | Tab | Icon | Description | Key Widgets |
 |-----|------|-------------|-------------|
-| **Home** | 🏠 | Central dashboard with life tracking | Chess.com stats, weather, calendar, daily note, GitHub contributions, life progress |
+| **Home** | 🏠 | Central dashboard with life tracking | Chess.com stats, Steam top/last played, weather, calendar, GitHub contributions, life progress, power control |
 | **Services** | 🛠 | Infrastructure health monitors | Proxmox nodes, PBS server, Synology NAS, Docker containers status |
-| **Compute** | 💻 | Proxmox cluster monitoring | Proxmox Cluster Health (Grafana), Container Status History (Grafana), Linux/Windows VM stats |
+| **Compute** | 💻 | Proxmox cluster monitoring | Proxmox Cluster Health (Grafana), Container Monitoring (Grafana), Immich Host Health (Grafana), Gaming PC stats |
 | **Storage** | 💾 | NAS storage metrics | Synology NAS Storage dashboard (Grafana) with RAID status, disk health, temps |
 | **Backup** | 📦 | PBS backup monitoring | Backup Jobs Overview with durations, VM/CT backup status with names, Drive health, PBS Grafana |
 | **Network** | 🌐 | Network infrastructure | Network Utilization (Grafana), Omada Network Overview (Grafana), speedtest |
@@ -28,30 +28,35 @@ Comprehensive homelab dashboard with 11 pages featuring emoji navigation icons, 
 | **Finance** | 💰 | Financial markets | Stock markets, crypto prices, financial widgets |
 | **Reddit** | 🤖 | Reddit feed manager | Dynamic multi-subreddit feed with thumbnails, native Reddit widgets |
 | **Sports** | 🏀 | NBA and fantasy sports | Today's games, standings, injury report, Yahoo Fantasy league |
+| **Health** | 💪 | Fitness tracking with Strava | Weekly exercise, weight progress, Strava stats, exercise calendar, weight chart, recent activities |
 
 ## Custom APIs
 
 The dashboard integrates with several custom APIs running on `docker-vm-core-utilities01` (192.168.40.13):
 
-| API | Port | Purpose |
-|-----|------|---------|
-| Life Progress API | 5051 | Birthday countdown, life milestones |
-| Media Stats API | 5054 | Combined Radarr/Sonarr statistics |
-| NBA Stats API | 5060 | NBA games, standings, fantasy data |
-| Reddit Manager | 5053 | Multi-subreddit feed aggregation |
-| NAS Backup Status API | 9102 | PBS backup status with durations and VM names |
-| Power Control API | 5057 | Wake-on-LAN, shutdown, backup triggering |
+| API | Port | Purpose | Traefik Domain |
+|-----|------|---------|----------------|
+| Life Progress API | 5051 | Birthday countdown, life milestones | — |
+| Steam Stats API | 5055 | Steam profile, top/recent games | — |
+| Gaming PC Stats | 5056 | LibreHardwareMonitor data (CPU/GPU/RAM) | — |
+| Power Control API | 5057 | Wake-on-LAN, shutdown, backup triggering | `power.hrmsmrflrii.xyz` |
+| Media Stats API | 5054 | Combined Radarr/Sonarr statistics | — |
+| NBA Stats API | 5060 | NBA games, standings, fantasy data | — |
+| Health Tracker API | 5062 | Strava OAuth2, weight logging, exercise tracking | `health-api.hrmsmrflrii.xyz` |
+| Reddit Manager | 5053 | Multi-subreddit feed aggregation | — |
+| NAS Backup Status API | 9102 | PBS backup status with durations and VM names | — |
 
 ## Embedded Grafana Dashboards
 
 | Dashboard | UID | Height | Tab |
 |-----------|-----|--------|-----|
 | Proxmox Cluster Health | `proxmox-cluster-health` | 2400px | Compute |
-| Container Status History | `container-status` | 1800px | Compute |
+| Container Monitoring | `containers-modern` | 1800px | Compute |
+| Immich Host Health | `immich-host-health` | 900px | Compute |
 | Synology NAS Storage | `synology-nas-modern` | 1350px | Storage |
 | Network Utilization | `network-utilization` | 1100px | Network |
 | Omada Network | `omada-network` | 2200px | Network |
-| PBS Backup Status | `pbs-backup-status` | 1400px | Backup |
+| PBS Backup Status | `pbs-backup-status` | 1000px | Backup |
 
 ## Repository Structure
 
@@ -65,11 +70,14 @@ glance-homelab/
 ├── assets/
 │   └── custom-themes.css   # Custom styling (full-width, hidden scrollbars)
 ├── apis/                   # Custom API source code
+│   ├── docker-stats-exporter.py
+│   ├── health-tracker-api.py
 │   ├── life-progress-api.py
 │   ├── media-stats-api.py
 │   ├── nas-backup-status-api.py
 │   ├── nba-stats-api.py
-│   ├── docker-stats-exporter.py
+│   ├── power-control-api.py
+│   ├── steam-stats-api.py
 │   └── README.md
 └── README.md
 ```
@@ -190,11 +198,24 @@ ssh root@192.168.40.12 "cd /opt/glance && docker compose restart"
 - Verify API keys are configured
 - Check cache settings (increase if API is slow)
 
+### Iframe Not Loading (Mixed Content)
+
+- Glance is served over HTTPS — all iframe `source:` URLs must also be HTTPS
+- HTTP iframes will be silently blocked by the browser (mixed content)
+- Solution: Route APIs through Traefik with HTTPS (e.g., `health-api.hrmsmrflrii.xyz`, `power.hrmsmrflrii.xyz`)
+- Note: Glance iframe widgets use `source:` (not `url:`). Using `url:` causes "source is required" errors
+
 ### Grafana Iframe Not Loading
 
 - Verify Grafana is accessible at `https://grafana.hrmsmrflrii.xyz`
 - Check dashboard UID matches
 - Ensure `kiosk` and `theme=transparent` parameters are set
+
+### Custom API Timeout Error
+
+- If a custom-api widget shows "context deadline exceeded", the upstream API is too slow
+- Glance has a ~5 second HTTP timeout for custom-api widgets
+- Fix: Reduce connection timeouts in the API (e.g., gaming-pc-stats uses 2s timeout for offline hosts)
 
 ## Links
 
@@ -224,6 +245,18 @@ The dashboard includes 35 color themes:
 ## Recent Updates
 
 See [CHANGELOG.md](CHANGELOG.md) for full version history.
+
+### v2.2.0 (February 16, 2026) - Health & Fitness Page
+- **New Health page** (12th tab) with Strava integration and weight tracking
+- Health Tracker API (port 5062) with Strava OAuth2, activity caching, weight logging
+- Strava Stats dashboard: Last 4 Weeks, Best Efforts, Year to Date, All-Time
+- Exercise Calendar: 60-day GitHub-style heatmap
+- Weight Tracker: Chart.js line chart with goal line and logging form
+- Weekly Exercise summary with rolling 7-day active days count
+- HTTPS routing via Traefik (`health-api.hrmsmrflrii.xyz`)
+- **Home page improvements**: Steam "Last Played" game, Power Control via HTTPS
+- **Compute page fix**: Gaming PC widget timeout reduced (2s instead of 5s)
+- Added Immich Host Health Grafana dashboard to Compute page
 
 ### v2.1.0 (January 20, 2026) - Power Control Panel
 - Added Power Control widget on Home page with interactive buttons
