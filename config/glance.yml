@@ -1,6 +1,5 @@
 pages:
-# ==================== HOME PAGE ====================
-- name: "\U0001F3E0 Home"
+- name: 🏠 Home
   columns:
   - size: small
     widgets:
@@ -186,7 +185,7 @@ pages:
     - type: iframe
       title: Power Control
       source: http://192.168.40.13:5057/
-      height: 70
+      height: 190
     - type: rss
       title: Tech News
       feeds:
@@ -227,17 +226,12 @@ pages:
       - symbol: AMZN
         name: Amazon
       sort-by: change
-
-# ==================== SERVICES PAGE ====================
-# Powered by Service Version Manager API (192.168.40.13:5070)
-# Shows health status, current version, latest version, and one-click updates
-- name: "\U0001F6E0 Services"
+- name: 🛠 Services
   columns:
   - size: full
     widgets:
-    # --- Critical Infrastructure ---
     - type: custom-api
-      title: "\U0001F534 Critical Infrastructure"
+      title: 🔴 Critical Infrastructure
       cache: 1m
       url: http://192.168.40.13:5070/api/services/infrastructure
       template: |
@@ -274,9 +268,8 @@ pages:
           </div>
           {{ end }}
         </div>
-    # --- Auth & Identity ---
     - type: custom-api
-      title: "\U0001F512 Auth & Identity"
+      title: 🔒 Auth & Identity
       cache: 1m
       url: http://192.168.40.13:5070/api/services/auth
       template: |
@@ -313,9 +306,8 @@ pages:
           </div>
           {{ end }}
         </div>
-    # --- Core Applications ---
     - type: custom-api
-      title: "\U0001F4BB Core Applications"
+      title: 💻 Core Applications
       cache: 1m
       url: http://192.168.40.13:5070/api/services/core_apps
       template: |
@@ -354,9 +346,8 @@ pages:
         </div>
   - size: full
     widgets:
-    # --- Media Stack ---
     - type: custom-api
-      title: "\U0001F3AC Media Stack"
+      title: 🎬 Media Stack
       cache: 1m
       url: http://192.168.40.13:5070/api/services/media
       template: |
@@ -393,9 +384,8 @@ pages:
           </div>
           {{ end }}
         </div>
-    # --- Monitoring & Observability ---
     - type: custom-api
-      title: "\U0001F4C8 Monitoring & Observability"
+      title: 📈 Monitoring & Observability
       cache: 1m
       url: http://192.168.40.13:5070/api/services/monitoring
       template: |
@@ -432,9 +422,8 @@ pages:
           </div>
           {{ end }}
         </div>
-    # --- Custom APIs & Bots ---
     - type: custom-api
-      title: "\U0001F916 Custom APIs & Bots"
+      title: 🤖 Custom APIs & Bots
       cache: 1m
       url: http://192.168.40.13:5070/api/services/apis_bots
       template: |
@@ -465,9 +454,8 @@ pages:
         </div>
   - size: small
     widgets:
-    # --- Update Summary Sidebar ---
     - type: custom-api
-      title: "\U0001F4CA Service Summary"
+      title: 📊 Service Summary
       cache: 1m
       url: http://192.168.40.13:5070/api/summary
       template: |
@@ -507,7 +495,6 @@ pages:
             {{ end }}
           </div>
         </div>
-    # --- Quick Access Bookmarks ---
     - type: bookmarks
       title: Quick Access
       groups:
@@ -533,9 +520,7 @@ pages:
         - title: Uptime Kuma
           url: https://uptime.hrmsmrflrii.xyz
           icon: si:uptimekuma
-
-# ==================== COMPUTE PAGE ====================
-- name: "\U0001F4BB Compute"
+- name: 💻 Compute
   columns:
   - size: full
     widgets:
@@ -613,9 +598,7 @@ pages:
         - title: Portainer
           url: https://portainer.hrmsmrflrii.xyz
           icon: si:portainer
-
-# ==================== STORAGE PAGE ====================
-- name: "💾 Storage"
+- name: 💾 Storage
   columns:
   - size: full
     widgets:
@@ -648,9 +631,7 @@ pages:
         - title: Grafana
           url: https://grafana.hrmsmrflrii.xyz/d/synology-storage
           icon: si:grafana
-
-# ==================== BACKUP PAGE ====================
-- name: "📦 Backup"
+- name: 📦 Backup
   columns:
   - size: small
     widgets:
@@ -820,9 +801,7 @@ pages:
       title: PBS Grafana Dashboard
       source: https://grafana.hrmsmrflrii.xyz/d/pbs-backup-status/pbs-backup-status?orgId=1&kiosk&theme=transparent&refresh=1m
       height: 1000
-
-# ==================== NETWORK PAGE ====================
-- name: "\U0001F310 Network"
+- name: 🌐 Network
   columns:
   - size: full
     widgets:
@@ -922,9 +901,7 @@ pages:
             </div>
           </div>
         </div>
-
-# ==================== MEDIA PAGE ====================
-- name: "\U0001F3AC Media"
+- name: 🎬 Media
   columns:
   - size: full
     widgets:
@@ -1095,9 +1072,7 @@ pages:
       - title: Deluge
         url: http://192.168.40.11:8112
         icon: si:deluge
-
-# ==================== NEWS PAGE (Split from Web) ====================
-- name: "\U0001F4F0 News"
+- name: 📰 News
   columns:
   - size: full
     widgets:
@@ -1220,9 +1195,7 @@ pages:
         - title: Ars Technica
           url: https://arstechnica.com
           icon: si:arstechnica
-
-# ==================== FINANCE PAGE (Split from Web) ====================
-- name: "\U0001F4B0 Finance"
+- name: 💰 Finance
   columns:
   - size: full
     widgets:
@@ -1318,9 +1291,7 @@ pages:
         - title: TradingView
           url: https://tradingview.com
           icon: si:tradingview
-
-# ==================== REDDIT PAGE ====================
-- name: "\U0001F916 Reddit"
+- name: 🤖 Reddit
   columns:
   - size: full
     widgets:
@@ -1416,9 +1387,7 @@ pages:
         - title: r/buildapc
           url: https://reddit.com/r/buildapc
           icon: si:reddit
-
-# ==================== SPORTS PAGE ====================
-- name: "\U0001F3C0 Sports"
+- name: 🏀 Sports
   columns:
   - size: small
     widgets:
@@ -1650,13 +1619,142 @@ pages:
           {{ end }}
           {{ end }}
         </div>
-
-# ==================== SERVER CONFIGURATION ====================
+- name: Health
+  columns:
+  - size: small
+    widgets:
+    - type: custom-api
+      title: Weekly Exercise
+      cache: 5m
+      url: http://192.168.40.13:5062/api/activities/weekly
+      template: |
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+          <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 12px;">
+            <span style="font-size: 32px; font-weight: 700; color: {{ .JSON.String "status_color" }};">{{ .JSON.Int "active_days" }}</span>
+            <span style="font-size: 14px; color: #71717a;">/7 days active</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 6px;">
+              <div style="font-size: 10px; color: #71717a;">Activities</div>
+              <div style="font-size: 16px; font-weight: 600; color: #d4d4d8;">{{ .JSON.Int "total_activities" }}</div>
+            </div>
+            <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 6px;">
+              <div style="font-size: 10px; color: #71717a;">Time</div>
+              <div style="font-size: 16px; font-weight: 600; color: #d4d4d8;">{{ .JSON.String "total_time" }}</div>
+            </div>
+            <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 6px;">
+              <div style="font-size: 10px; color: #71717a;">Rides</div>
+              <div style="font-size: 16px; font-weight: 600; color: #60a5fa;">{{ .JSON.Int "rides" }}</div>
+            </div>
+            <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 6px;">
+              <div style="font-size: 10px; color: #71717a;">Gym</div>
+              <div style="font-size: 16px; font-weight: 600; color: #a78bfa;">{{ .JSON.Int "gym_sessions" }}</div>
+            </div>
+          </div>
+          {{ if .JSON.String "total_distance" }}
+          <div style="font-size: 11px; color: #71717a; margin-top: 8px;">
+            Distance: {{ .JSON.String "total_distance" }}
+            {{ if gt (.JSON.Int "total_calories") 0 }} &middot; {{ .JSON.Int "total_calories" }} cal{{ end }}
+          </div>
+          {{ end }}
+        </div>
+    - type: custom-api
+      title: Weight Progress
+      cache: 10m
+      url: http://192.168.40.13:5062/api/weight
+      template: |
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+          {{ if .JSON.Float "current_weight" }}
+          <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px;">
+            <span style="font-size: 28px; font-weight: 700; color: #d4d4d8;">{{ .JSON.Float "current_weight" }}</span>
+            <span style="font-size: 13px; color: #71717a;">{{ .JSON.String "unit" }}</span>
+          </div>
+          {{ if .JSON.Float "goal_weight" }}
+          <div style="font-size: 11px; color: #71717a; margin-bottom: 8px;">
+            Goal: {{ .JSON.Float "goal_weight" }} {{ .JSON.String "unit" }}
+          </div>
+          {{ end }}
+          <div style="display: flex; gap: 12px; font-size: 12px;">
+            {{ if .JSON.Float "weekly_change" }}
+            <div>
+              <span style="color: #71717a;">Week: </span>
+              <span style="color: {{ if lt (.JSON.Float "weekly_change") 0.0 }}#22c55e{{ else }}#f59e0b{{ end }}; font-weight: 600;">
+                {{ .JSON.Float "weekly_change" }} {{ .JSON.String "unit" }}
+              </span>
+            </div>
+            {{ end }}
+            {{ if .JSON.Float "total_change" }}
+            <div>
+              <span style="color: #71717a;">Total: </span>
+              <span style="color: {{ if lt (.JSON.Float "total_change") 0.0 }}#22c55e{{ else }}#f59e0b{{ end }}; font-weight: 600;">
+                {{ .JSON.Float "total_change" }} {{ .JSON.String "unit" }}
+              </span>
+            </div>
+            {{ end }}
+          </div>
+          {{ else }}
+          <div style="color: #52525b; text-align: center; padding: 20px; font-size: 12px;">
+            No weight data yet
+          </div>
+          {{ end }}
+        </div>
+    - type: custom-api
+      title: Strava
+      cache: 10m
+      url: http://192.168.40.13:5062/api/strava/status
+      template: |
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+          {{ if .JSON.Bool "connected" }}
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <div style="width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,0.6);"></div>
+            <span style="font-size: 12px; color: #22c55e; font-weight: 500;">Connected</span>
+          </div>
+          <div style="font-size: 12px; color: #d4d4d8; margin-bottom: 4px;">{{ .JSON.String "athlete" }}</div>
+          <div style="font-size: 11px; color: #71717a;">
+            Last sync: {{ .JSON.String "last_sync" }}<br>
+            {{ .JSON.Int "activities_cached" }} activities cached
+          </div>
+          {{ else }}
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <div style="width: 8px; height: 8px; border-radius: 50%; background: #ef4444;"></div>
+            <span style="font-size: 12px; color: #ef4444; font-weight: 500;">Not Connected</span>
+          </div>
+          <div style="font-size: 11px; color: #71717a;">
+            Visit the setup page to connect Strava
+          </div>
+          {{ end }}
+        </div>
+    - type: bookmarks
+      groups:
+      - title: Health Links
+        links:
+        - title: Strava Dashboard
+          url: https://www.strava.com/dashboard
+        - title: Health Tracker Setup
+          source: https://health-api.hrmsmrflrii.xyz/page/setup
+        - title: Log Weight
+          source: https://health-api.hrmsmrflrii.xyz/page/weight
+  - size: full
+    widgets:
+    - type: iframe
+      title: Exercise Calendar
+      source: https://health-api.hrmsmrflrii.xyz/page/calendar
+      height: 280
+    - type: iframe
+      title: Weight Tracker
+      source: https://health-api.hrmsmrflrii.xyz/page/weight
+      height: 420
+    - type: iframe
+      title: Strava Stats
+      source: https://health-api.hrmsmrflrii.xyz/page/stats
+      height: 500
+    - type: iframe
+      title: Recent Activities
+      source: https://health-api.hrmsmrflrii.xyz/page/activities
+      height: 380
 server:
   port: 8080
   assets-path: /app/assets
-
-# ==================== THEME CONFIGURATION ====================
 theme:
   background-color: 240 21 15
   primary-color: 267 84 81
@@ -1666,7 +1764,6 @@ theme:
   custom-css-file: /app/assets/custom-themes.css
   document-width: 100%
   presets:
-    # Original Themes
     catppuccin-mocha:
       background-color: 240 21 15
       primary-color: 267 84 81
@@ -1727,7 +1824,6 @@ theme:
       positive-color: 85 56 61
       negative-color: 348 86 70
       contrast-multiplier: 1.2
-    # New Themes
     one-dark:
       background-color: 220 13 18
       primary-color: 207 82 66
