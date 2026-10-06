@@ -1,5 +1,6 @@
 pages:
-- name: 🏠 Home
+# ==================== HOME PAGE ====================
+- name: "\U0001F3E0 Home"
   columns:
   - size: small
     widgets:
@@ -78,20 +79,6 @@ pages:
               <div style="font-size: 11px; color: #888;">{{ .JSON.Int "total_games" }} games</div>
             </div>
           </div>
-          <div style="font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Last Played</div>
-          <div id="steam-lp">
-          {{ range .JSON.Array "recent_games" }}
-          <div style="display: flex; align-items: center; gap: 10px; padding: 8px; margin-bottom: 8px; background: rgba(102,192,244,0.12); border-radius: 8px;">
-            <img src="{{ .String "thumbnail" }}" style="width: 46px; height: 22px; border-radius: 4px; object-fit: cover;">
-            <div style="flex: 1; min-width: 0;">
-              <div style="font-size: 11px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ .String "name" }}</div>
-              <div style="font-size: 10px; color: #66c0f4;">{{ .String "playtime_2weeks" }} (last 2 weeks)</div>
-            </div>
-          </div>
-          {{ end }}
-          </div>
-          <style>#steam-lp>div{display:none}#steam-lp>div:first-child{display:flex}</style>
-          <div style="font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Top Played</div>
           {{ range .JSON.Array "top_played" }}
           <div style="display: flex; align-items: center; gap: 10px; padding: 8px; margin-bottom: 6px; background: rgba(102,192,244,0.08); border-radius: 8px;">
             <img src="{{ .String "thumbnail" }}" style="width: 46px; height: 22px; border-radius: 4px; object-fit: cover;">
@@ -173,7 +160,7 @@ pages:
                 <div style="font-size: 10px; color: #22c55e; margin-top: 4px;">3 Nodes</div>
               </div>
             </a>
-            <a href="https://192.168.20.31:5001" target="_blank" style="text-decoration: none;">
+            <a href="https://192.168.20.32:5001" target="_blank" style="text-decoration: none;">
               <div style="background: rgba(59,130,246,0.15); border-radius: 8px; padding: 14px; text-align: center;">
                 <div style="font-size: 24px; margin-bottom: 6px;">💾</div>
                 <div style="font-size: 12px; color: #3b82f6; font-weight: 600;">Synology</div>
@@ -196,19 +183,6 @@ pages:
             </a>
           </div>
         </div>
-    - type: iframe
-      title: Power Control
-      source: https://power.hrmsmrflrii.xyz/
-      height: 150
-    - type: rss
-      title: Tech News
-      feeds:
-      - title: r/homelab
-        url: https://www.reddit.com/r/homelab/.rss
-      - title: r/selfhosted
-        url: https://www.reddit.com/r/selfhosted/.rss
-      limit: 5
-      style: horizontal-cards
   - size: small
     widgets:
     - type: markets
@@ -240,12 +214,17 @@ pages:
       - symbol: AMZN
         name: Amazon
       sort-by: change
-- name: 🛠 Services
+
+# ==================== SERVICES PAGE ====================
+# Powered by Service Version Manager API (192.168.40.13:5070)
+# Shows health status, current version, latest version, and one-click updates
+- name: "\U0001F6E0 Services"
   columns:
   - size: full
     widgets:
+    # --- Critical Infrastructure ---
     - type: custom-api
-      title: 🔴 Critical Infrastructure
+      title: "\U0001F534 Critical Infrastructure"
       cache: 1m
       url: http://192.168.40.13:5070/api/services/infrastructure
       template: |
@@ -272,7 +251,7 @@ pages:
             </div>
             <div style="flex: 0 0 100px; text-align: right;">
               {{ if .Bool "can_update" }}
-              <a href="http://192.168.40.13:5070/api/update/{{ .String "name" }}?key=svm-homelab-secret" style="font-size: 10px; padding: 3px 8px; border: 1px solid #f59e0b; background: rgba(245,158,11,0.1); color: #f59e0b; border-radius: 6px; text-decoration: none; cursor: pointer;">Update</a>
+              <a href="http://192.168.40.13:5070/api/update/{{ .String "name" }}?key=${SERVICE_VERSION_API_KEY}" style="font-size: 10px; padding: 3px 8px; border: 1px solid #f59e0b; background: rgba(245,158,11,0.1); color: #f59e0b; border-radius: 6px; text-decoration: none; cursor: pointer;">Update</a>
               {{ else if .Bool "update_available" }}
               <span style="font-size: 10px; color: #f59e0b;" title="Blacklisted from one-click update">Update available</span>
               {{ else if eq (.String "type") "docker" }}
@@ -282,8 +261,9 @@ pages:
           </div>
           {{ end }}
         </div>
+    # --- Auth & Identity ---
     - type: custom-api
-      title: 🔒 Auth & Identity
+      title: "\U0001F512 Auth & Identity"
       cache: 1m
       url: http://192.168.40.13:5070/api/services/auth
       template: |
@@ -310,7 +290,7 @@ pages:
             </div>
             <div style="flex: 0 0 100px; text-align: right;">
               {{ if .Bool "can_update" }}
-              <a href="http://192.168.40.13:5070/api/update/{{ .String "name" }}?key=svm-homelab-secret" style="font-size: 10px; padding: 3px 8px; border: 1px solid #f59e0b; background: rgba(245,158,11,0.1); color: #f59e0b; border-radius: 6px; text-decoration: none; cursor: pointer;">Update</a>
+              <a href="http://192.168.40.13:5070/api/update/{{ .String "name" }}?key=${SERVICE_VERSION_API_KEY}" style="font-size: 10px; padding: 3px 8px; border: 1px solid #f59e0b; background: rgba(245,158,11,0.1); color: #f59e0b; border-radius: 6px; text-decoration: none; cursor: pointer;">Update</a>
               {{ else if .Bool "update_available" }}
               <span style="font-size: 10px; color: #f59e0b;" title="Blacklisted from one-click update">Update available</span>
               {{ else if eq (.String "type") "docker" }}
@@ -320,8 +300,9 @@ pages:
           </div>
           {{ end }}
         </div>
+    # --- Core Applications ---
     - type: custom-api
-      title: 💻 Core Applications
+      title: "\U0001F4BB Core Applications"
       cache: 1m
       url: http://192.168.40.13:5070/api/services/core_apps
       template: |
@@ -348,7 +329,7 @@ pages:
             </div>
             <div style="flex: 0 0 100px; text-align: right;">
               {{ if .Bool "can_update" }}
-              <a href="http://192.168.40.13:5070/api/update/{{ .String "name" }}?key=svm-homelab-secret" style="font-size: 10px; padding: 3px 8px; border: 1px solid #f59e0b; background: rgba(245,158,11,0.1); color: #f59e0b; border-radius: 6px; text-decoration: none; cursor: pointer;">Update</a>
+              <a href="http://192.168.40.13:5070/api/update/{{ .String "name" }}?key=${SERVICE_VERSION_API_KEY}" style="font-size: 10px; padding: 3px 8px; border: 1px solid #f59e0b; background: rgba(245,158,11,0.1); color: #f59e0b; border-radius: 6px; text-decoration: none; cursor: pointer;">Update</a>
               {{ else if .Bool "update_available" }}
               <span style="font-size: 10px; color: #f59e0b;" title="Blacklisted from one-click update">Update available</span>
               {{ else if eq (.String "type") "docker" }}
@@ -360,8 +341,9 @@ pages:
         </div>
   - size: full
     widgets:
+    # --- Media Stack ---
     - type: custom-api
-      title: 🎬 Media Stack
+      title: "\U0001F3AC Media Stack"
       cache: 1m
       url: http://192.168.40.13:5070/api/services/media
       template: |
@@ -388,7 +370,7 @@ pages:
             </div>
             <div style="flex: 0 0 100px; text-align: right;">
               {{ if .Bool "can_update" }}
-              <a href="http://192.168.40.13:5070/api/update/{{ .String "name" }}?key=svm-homelab-secret" style="font-size: 10px; padding: 3px 8px; border: 1px solid #f59e0b; background: rgba(245,158,11,0.1); color: #f59e0b; border-radius: 6px; text-decoration: none; cursor: pointer;">Update</a>
+              <a href="http://192.168.40.13:5070/api/update/{{ .String "name" }}?key=${SERVICE_VERSION_API_KEY}" style="font-size: 10px; padding: 3px 8px; border: 1px solid #f59e0b; background: rgba(245,158,11,0.1); color: #f59e0b; border-radius: 6px; text-decoration: none; cursor: pointer;">Update</a>
               {{ else if .Bool "update_available" }}
               <span style="font-size: 10px; color: #f59e0b;" title="Blacklisted from one-click update">Update available</span>
               {{ else if eq (.String "type") "docker" }}
@@ -398,8 +380,9 @@ pages:
           </div>
           {{ end }}
         </div>
+    # --- Monitoring & Observability ---
     - type: custom-api
-      title: 📈 Monitoring & Observability
+      title: "\U0001F4C8 Monitoring & Observability"
       cache: 1m
       url: http://192.168.40.13:5070/api/services/monitoring
       template: |
@@ -426,7 +409,7 @@ pages:
             </div>
             <div style="flex: 0 0 100px; text-align: right;">
               {{ if .Bool "can_update" }}
-              <a href="http://192.168.40.13:5070/api/update/{{ .String "name" }}?key=svm-homelab-secret" style="font-size: 10px; padding: 3px 8px; border: 1px solid #f59e0b; background: rgba(245,158,11,0.1); color: #f59e0b; border-radius: 6px; text-decoration: none; cursor: pointer;">Update</a>
+              <a href="http://192.168.40.13:5070/api/update/{{ .String "name" }}?key=${SERVICE_VERSION_API_KEY}" style="font-size: 10px; padding: 3px 8px; border: 1px solid #f59e0b; background: rgba(245,158,11,0.1); color: #f59e0b; border-radius: 6px; text-decoration: none; cursor: pointer;">Update</a>
               {{ else if .Bool "update_available" }}
               <span style="font-size: 10px; color: #f59e0b;" title="Blacklisted from one-click update">Update available</span>
               {{ else if eq (.String "type") "docker" }}
@@ -436,8 +419,9 @@ pages:
           </div>
           {{ end }}
         </div>
+    # --- Custom APIs & Bots ---
     - type: custom-api
-      title: 🤖 Custom APIs & Bots
+      title: "\U0001F916 Custom APIs & Bots"
       cache: 1m
       url: http://192.168.40.13:5070/api/services/apis_bots
       template: |
@@ -468,8 +452,9 @@ pages:
         </div>
   - size: small
     widgets:
+    # --- Update Summary Sidebar ---
     - type: custom-api
-      title: 📊 Service Summary
+      title: "\U0001F4CA Service Summary"
       cache: 1m
       url: http://192.168.40.13:5070/api/summary
       template: |
@@ -509,6 +494,7 @@ pages:
             {{ end }}
           </div>
         </div>
+    # --- Quick Access Bookmarks ---
     - type: bookmarks
       title: Quick Access
       groups:
@@ -518,7 +504,7 @@ pages:
           url: https://proxmox.hrmsmrflrii.xyz
           icon: si:proxmox
         - title: Synology DSM
-          url: https://192.168.20.31:5001
+          url: https://192.168.20.32:5001
           icon: si:synology
         - title: PBS Web UI
           url: https://192.168.20.50:8007
@@ -534,69 +520,143 @@ pages:
         - title: Uptime Kuma
           url: https://uptime.hrmsmrflrii.xyz
           icon: si:uptimekuma
-- name: 💻 Compute
+
+# ==================== COMPUTE PAGE ====================
+- name: "\U0001F4BB Compute"
   columns:
-  - size: full
-    widgets:
-    - type: iframe
-      title: Proxmox Cluster Health
-      source: https://grafana.hrmsmrflrii.xyz/d/proxmox-cluster-health/proxmox-cluster-health?orgId=1&kiosk&theme=transparent&refresh=30s
-      height: 2400
-    - type: iframe
-      title: Container Monitoring
-      source: https://grafana.hrmsmrflrii.xyz/d/containers-modern/container-monitoring?orgId=1&kiosk&theme=transparent&refresh=30s
-      height: 1800
-    - type: iframe
-      title: Immich Host Health
-      source: https://grafana.hrmsmrflrii.xyz/d/immich-host-health/immich-host-health?orgId=1&kiosk&theme=transparent&refresh=30s
-      height: 900
   - size: small
     widgets:
     - type: custom-api
-      title: Gaming PC
-      cache: 1m
-      url: http://192.168.40.13:5056/stats
+      title: Cluster Nodes
+      cache: 30s
+      url: https://proxmox.hrmsmrflrii.xyz/api2/json/nodes
+      headers:
+        Authorization: "PVEAPIToken=${PROXMOX_API_TOKEN}"
       template: |
-        <div style="padding: 12px;">
-          {{ if .JSON.Bool "online" }}
-          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
-            <span style="width: 12px; height: 12px; border-radius: 50%; background: #22c55e;"></span>
-            <span style="font-size: 13px; color: #22c55e; font-weight: 600;">Online</span>
+        <div style="font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; padding: 0 2px;">MorpheusCluster — 3 nodes</div>
+        {{ range .JSON.Array "data" }}{{ if eq (.String "node") "node01" }}
+        <div style="background: rgba(255,255,255,0.04); border-radius: 10px; padding: 14px; margin-bottom: 10px; border-left: 3px solid {{ if eq (.String "status") "online" }}#22c55e{{ else }}#ef4444{{ end }};">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+            <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 8px; height: 8px; border-radius: 50%; background: {{ if eq (.String "status") "online" }}#22c55e{{ else }}#ef4444{{ end }};"></span><span style="font-weight: 600; color: #fff; font-size: 14px;">{{ .String "node" }}</span></div>
+            <span style="font-size: 10px; color: {{ if eq (.String "status") "online" }}#22c55e{{ else }}#ef4444{{ end }}; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">{{ .String "status" }}</span>
           </div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
-            <div style="background: rgba(239,68,68,0.15); padding: 12px; border-radius: 8px; text-align: center;">
-              <div style="font-size: 10px; color: #ef4444; text-transform: uppercase;">CPU</div>
-              <div style="font-size: 20px; font-weight: 600; color: #f87171;">{{ .JSON.String "cpu.temp" }}</div>
-              <div style="font-size: 11px; color: #888;">{{ .JSON.String "cpu.load" }}</div>
-            </div>
-            <div style="background: rgba(74,222,128,0.15); padding: 12px; border-radius: 8px; text-align: center;">
-              <div style="font-size: 10px; color: #4ade80; text-transform: uppercase;">GPU</div>
-              <div style="font-size: 20px; font-weight: 600; color: #4ade80;">{{ .JSON.String "gpu.temp" }}</div>
-              <div style="font-size: 11px; color: #888;">{{ .JSON.String "gpu.load" }}</div>
-            </div>
+          <div style="display: flex; align-items: center; gap: 5px; margin-bottom: 10px; padding: 4px 6px; background: rgba(255,255,255,0.03); border-radius: 5px;"><span style="font-size: 10px; color: #666;">⏱</span><span style="font-size: 11px; color: #94a3b8;">Uptime:</span><span style="font-size: 11px; color: #fff; font-weight: 500;">{{ if gt (.Int "uptime") 86400 }}{{ div (.Int "uptime") 86400 }}d {{ div (mod (.Int "uptime") 86400) 3600 }}h{{ else }}{{ div (.Int "uptime") 3600 }}h {{ div (mod (.Int "uptime") 3600) 60 }}m{{ end }}</span></div>
+          <div style="margin-bottom: 8px;"><div style="display: flex; justify-content: space-between; margin-bottom: 3px;"><span style="font-size: 10px; color: #60a5fa;">CPU</span><span style="font-size: 10px; color: #fff;">{{ printf "%.1f" (mul (.Float "cpu") 100.0) }}%</span></div><div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 5px;"><div style="background: #3b82f6; border-radius: 4px; height: 5px; width: calc({{ .Float "cpu" }} * 100%);"></div></div></div>
+          <div style="margin-bottom: 8px;"><div style="display: flex; justify-content: space-between; margin-bottom: 3px;"><span style="font-size: 10px; color: #a78bfa;">RAM</span><span style="font-size: 10px; color: #fff;">{{ div (.Int "mem") 1073741824 }}/{{ div (.Int "maxmem") 1073741824 }} GB</span></div><div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 5px;"><div style="background: #8b5cf6; border-radius: 4px; height: 5px; width: calc({{ .Float "mem" }} / {{ .Float "maxmem" }} * 100%);"></div></div></div>
+          <div><div style="display: flex; justify-content: space-between; margin-bottom: 3px;"><span style="font-size: 10px; color: #fbbf24;">Disk</span><span style="font-size: 10px; color: #fff;">{{ div (.Int "disk") 1073741824 }}/{{ div (.Int "maxdisk") 1073741824 }} GB</span></div><div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 5px;"><div style="background: #f59e0b; border-radius: 4px; height: 5px; width: calc({{ .Float "disk" }} / {{ .Float "maxdisk" }} * 100%);"></div></div></div>
+        </div>
+        {{ end }}{{ end }}
+        {{ range .JSON.Array "data" }}{{ if eq (.String "node") "node02" }}
+        <div style="background: rgba(255,255,255,0.04); border-radius: 10px; padding: 14px; margin-bottom: 10px; border-left: 3px solid {{ if eq (.String "status") "online" }}#22c55e{{ else }}#ef4444{{ end }};">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+            <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 8px; height: 8px; border-radius: 50%; background: {{ if eq (.String "status") "online" }}#22c55e{{ else }}#ef4444{{ end }};"></span><span style="font-weight: 600; color: #fff; font-size: 14px;">{{ .String "node" }}</span></div>
+            <span style="font-size: 10px; color: {{ if eq (.String "status") "online" }}#22c55e{{ else }}#ef4444{{ end }}; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">{{ .String "status" }}</span>
           </div>
-          <div style="background: rgba(96,165,250,0.15); padding: 12px; border-radius: 8px; margin-bottom: 10px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="font-size: 10px; color: #60a5fa; text-transform: uppercase;">Memory</span>
-              <span style="font-size: 16px; font-weight: 600; color: #fff;">{{ .JSON.String "memory.load" }}</span>
-            </div>
-            <div style="font-size: 11px; color: #888; margin-top: 4px;">{{ .JSON.String "memory.used" }} used</div>
+          <div style="display: flex; align-items: center; gap: 5px; margin-bottom: 10px; padding: 4px 6px; background: rgba(255,255,255,0.03); border-radius: 5px;"><span style="font-size: 10px; color: #666;">⏱</span><span style="font-size: 11px; color: #94a3b8;">Uptime:</span><span style="font-size: 11px; color: #fff; font-weight: 500;">{{ if gt (.Int "uptime") 86400 }}{{ div (.Int "uptime") 86400 }}d {{ div (mod (.Int "uptime") 86400) 3600 }}h{{ else }}{{ div (.Int "uptime") 3600 }}h {{ div (mod (.Int "uptime") 3600) 60 }}m{{ end }}</span></div>
+          <div style="margin-bottom: 8px;"><div style="display: flex; justify-content: space-between; margin-bottom: 3px;"><span style="font-size: 10px; color: #60a5fa;">CPU</span><span style="font-size: 10px; color: #fff;">{{ printf "%.1f" (mul (.Float "cpu") 100.0) }}%</span></div><div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 5px;"><div style="background: #3b82f6; border-radius: 4px; height: 5px; width: calc({{ .Float "cpu" }} * 100%);"></div></div></div>
+          <div style="margin-bottom: 8px;"><div style="display: flex; justify-content: space-between; margin-bottom: 3px;"><span style="font-size: 10px; color: #a78bfa;">RAM</span><span style="font-size: 10px; color: #fff;">{{ div (.Int "mem") 1073741824 }}/{{ div (.Int "maxmem") 1073741824 }} GB</span></div><div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 5px;"><div style="background: #8b5cf6; border-radius: 4px; height: 5px; width: calc({{ .Float "mem" }} / {{ .Float "maxmem" }} * 100%);"></div></div></div>
+          <div><div style="display: flex; justify-content: space-between; margin-bottom: 3px;"><span style="font-size: 10px; color: #fbbf24;">Disk</span><span style="font-size: 10px; color: #fff;">{{ div (.Int "disk") 1073741824 }}/{{ div (.Int "maxdisk") 1073741824 }} GB</span></div><div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 5px;"><div style="background: #f59e0b; border-radius: 4px; height: 5px; width: calc({{ .Float "disk" }} / {{ .Float "maxdisk" }} * 100%);"></div></div></div>
+        </div>
+        {{ end }}{{ end }}
+        {{ range .JSON.Array "data" }}{{ if eq (.String "node") "node03" }}
+        <div style="background: rgba(255,255,255,0.04); border-radius: 10px; padding: 14px; margin-bottom: 10px; border-left: 3px solid {{ if eq (.String "status") "online" }}#22c55e{{ else }}#ef4444{{ end }};">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+            <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 8px; height: 8px; border-radius: 50%; background: {{ if eq (.String "status") "online" }}#22c55e{{ else }}#ef4444{{ end }};"></span><span style="font-weight: 600; color: #fff; font-size: 14px;">{{ .String "node" }}</span></div>
+            <span style="font-size: 10px; color: {{ if eq (.String "status") "online" }}#22c55e{{ else }}#ef4444{{ end }}; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">{{ .String "status" }}</span>
           </div>
-          {{ if .JSON.Array "storage" }}
-          <div style="font-size: 10px; color: #888; text-transform: uppercase; margin-bottom: 8px;">Storage</div>
-          {{ range .JSON.Array "storage" }}
-          <div style="display: flex; justify-content: space-between; padding: 8px 10px; background: rgba(251,191,36,0.1); border-radius: 8px; margin-bottom: 6px;">
-            <span style="font-size: 11px; color: #fbbf24; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px;">{{ .String "name" }}</span>
-            <span style="font-size: 11px; color: #fff;">{{ .String "temp" }}</span>
+          <div style="display: flex; align-items: center; gap: 5px; margin-bottom: 10px; padding: 4px 6px; background: rgba(255,255,255,0.03); border-radius: 5px;"><span style="font-size: 10px; color: #666;">⏱</span><span style="font-size: 11px; color: #94a3b8;">Uptime:</span><span style="font-size: 11px; color: #fff; font-weight: 500;">{{ if gt (.Int "uptime") 86400 }}{{ div (.Int "uptime") 86400 }}d {{ div (mod (.Int "uptime") 86400) 3600 }}h{{ else }}{{ div (.Int "uptime") 3600 }}h {{ div (mod (.Int "uptime") 3600) 60 }}m{{ end }}</span></div>
+          <div style="margin-bottom: 8px;"><div style="display: flex; justify-content: space-between; margin-bottom: 3px;"><span style="font-size: 10px; color: #60a5fa;">CPU</span><span style="font-size: 10px; color: #fff;">{{ printf "%.1f" (mul (.Float "cpu") 100.0) }}%</span></div><div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 5px;"><div style="background: #3b82f6; border-radius: 4px; height: 5px; width: calc({{ .Float "cpu" }} * 100%);"></div></div></div>
+          <div style="margin-bottom: 8px;"><div style="display: flex; justify-content: space-between; margin-bottom: 3px;"><span style="font-size: 10px; color: #a78bfa;">RAM</span><span style="font-size: 10px; color: #fff;">{{ div (.Int "mem") 1073741824 }}/{{ div (.Int "maxmem") 1073741824 }} GB</span></div><div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 5px;"><div style="background: #8b5cf6; border-radius: 4px; height: 5px; width: calc({{ .Float "mem" }} / {{ .Float "maxmem" }} * 100%);"></div></div></div>
+          <div><div style="display: flex; justify-content: space-between; margin-bottom: 3px;"><span style="font-size: 10px; color: #fbbf24;">Disk</span><span style="font-size: 10px; color: #fff;">{{ div (.Int "disk") 1073741824 }}/{{ div (.Int "maxdisk") 1073741824 }} GB</span></div><div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 5px;"><div style="background: #f59e0b; border-radius: 4px; height: 5px; width: calc({{ .Float "disk" }} / {{ .Float "maxdisk" }} * 100%);"></div></div></div>
+        </div>
+        {{ end }}{{ end }}
+  - size: full
+    widgets:
+    - type: iframe
+      title: Container Monitoring
+      source: https://grafana.hrmsmrflrii.xyz/d/containers-modern/container-monitoring?orgId=1&kiosk&theme=transparent&refresh=30s
+      height: 900
+    - type: custom-api
+      title: Running VMs
+      cache: 30s
+      url: https://proxmox.hrmsmrflrii.xyz/api2/json/cluster/resources
+      headers:
+        Authorization: "PVEAPIToken=${PROXMOX_API_TOKEN}"
+      template: |
+        {{ $running := 0 }}{{ $total := 0 }}{{ range .JSON.Array "data" }}{{ if eq (.String "type") "qemu" }}{{ $total = add $total 1 }}{{ if eq (.String "status") "running" }}{{ $running = add $running 1 }}{{ end }}{{ end }}{{ end }}
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0 2px;">
+          <span style="font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 0.06em;">QEMU Virtual Machines</span>
+          <span style="font-size: 10px; color: #94a3b8;"><span style="color: #22c55e; font-weight: 600;">{{ $running }}</span> running / {{ $total }} total</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+          {{ range .JSON.Array "data" }}
+          {{ if and (eq (.String "type") "qemu") (eq (.String "status") "running") }}
+          <div style="background: rgba(255,255,255,0.04); border-radius: 10px; padding: 12px; border-left: 3px solid #22c55e;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <div style="display: flex; align-items: center; gap: 5px; min-width: 0; overflow: hidden;">
+                <span style="font-size: 8px; color: #22c55e; background: rgba(34,197,94,0.15); padding: 1px 4px; border-radius: 3px; flex-shrink: 0;">LNX</span>
+                <span style="font-size: 8px; color: #94a3b8; background: rgba(255,255,255,0.07); padding: 1px 4px; border-radius: 3px; flex-shrink: 0;">{{ .String "node" }}</span>
+                <span style="font-size: 11px; font-weight: 600; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ .String "name" }}</span>
+              </div>
+              <span style="font-size: 9px; color: #888; flex-shrink: 0; margin-left: 6px;">{{ if gt (.Int "uptime") 86400 }}{{ div (.Int "uptime") 86400 }}d {{ div (mod (.Int "uptime") 86400) 3600 }}h{{ else }}{{ div (.Int "uptime") 3600 }}h{{ end }}</span>
+            </div>
+            <div style="margin-bottom: 5px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+                <span style="font-size: 9px; color: #60a5fa;">CPU</span>
+                <span style="font-size: 9px; color: #fff;">{{ printf "%.1f" (mul (.Float "cpu") 100.0) }}%</span>
+              </div>
+              <div style="background: rgba(255,255,255,0.08); border-radius: 3px; height: 4px;">
+                <div style="background: #3b82f6; border-radius: 3px; height: 4px; width: calc({{ .Float "cpu" }} * 100%);"></div>
+              </div>
+            </div>
+            <div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+                <span style="font-size: 9px; color: #a78bfa;">RAM</span>
+                <span style="font-size: 9px; color: #fff;">{{ div (.Int "mem") 1073741824 }}/{{ div (.Int "maxmem") 1073741824 }} GB</span>
+              </div>
+              <div style="background: rgba(255,255,255,0.08); border-radius: 3px; height: 4px;">
+                <div style="background: #8b5cf6; border-radius: 3px; height: 4px; width: calc({{ .Float "mem" }} / {{ .Float "maxmem" }} * 100%);"></div>
+              </div>
+            </div>
           </div>
           {{ end }}
           {{ end }}
-          {{ else }}
-          <div style="text-align: center; padding: 24px; color: #888;">
-            <div style="font-size: 28px; margin-bottom: 8px;">💤</div>
-            <div style="font-size: 12px;">PC Offline</div>
+        </div>
+  - size: small
+    widgets:
+    - type: custom-api
+      title: VM & Container Status
+      cache: 30s
+      url: https://proxmox.hrmsmrflrii.xyz/api2/json/cluster/resources
+      headers:
+        Authorization: "PVEAPIToken=${PROXMOX_API_TOKEN}"
+      template: |
+        <div style="margin-bottom: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.04); padding: 5px 8px; border-radius: 6px; margin-bottom: 5px;">
+            <span style="font-size: 11px; font-weight: 600; color: #94a3b8;">node01</span>
+            <div style="display: flex; gap: 4px;">{{ $lnx01 := 0 }}{{ $ct01 := 0 }}{{ range .JSON.Array "data" }}{{ if eq (.String "node") "node01" }}{{ if and (eq (.String "type") "qemu") (eq (.String "status") "running") }}{{ $lnx01 = add $lnx01 1 }}{{ end }}{{ if and (eq (.String "type") "lxc") (eq (.String "status") "running") }}{{ $ct01 = add $ct01 1 }}{{ end }}{{ end }}{{ end }}<span style="font-size: 9px; color: #22c55e; background: rgba(34,197,94,0.15); padding: 1px 5px; border-radius: 3px;">🐧 {{ $lnx01 }}</span><span style="font-size: 9px; color: #f59e0b; background: rgba(245,158,11,0.15); padding: 1px 5px; border-radius: 3px;">📦 {{ $ct01 }}</span></div>
           </div>
-          {{ end }}
+          {{ range .JSON.Array "data" }}{{ if eq (.String "node") "node01" }}{{ if or (eq (.String "type") "qemu") (eq (.String "type") "lxc") }}{{ if eq (.String "status") "running" }}
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 3px 8px; margin-bottom: 1px;"><div style="display: flex; align-items: center; gap: 4px; min-width: 0; overflow: hidden;">{{ if eq (.String "type") "lxc" }}<span style="font-size: 8px; color: #f59e0b; background: rgba(245,158,11,0.15); padding: 1px 3px; border-radius: 2px; flex-shrink: 0;">CT</span>{{ else }}<span style="font-size: 8px; color: #22c55e; background: rgba(34,197,94,0.15); padding: 1px 3px; border-radius: 2px; flex-shrink: 0;">LNX</span>{{ end }}<span style="font-size: 10px; color: #d1d5db; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ .String "name" }}</span></div><span style="font-size: 9px; color: #888; flex-shrink: 0; margin-left: 4px;">{{ if gt (.Int "uptime") 86400 }}{{ div (.Int "uptime") 86400 }}d{{ else }}{{ div (.Int "uptime") 3600 }}h{{ end }}</span></div>
+          {{ end }}{{ end }}{{ end }}{{ end }}
+        </div>
+        <div style="margin-bottom: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.04); padding: 5px 8px; border-radius: 6px; margin-bottom: 5px;">
+            <span style="font-size: 11px; font-weight: 600; color: #94a3b8;">node02</span>
+            <div style="display: flex; gap: 4px;">{{ $lnx02 := 0 }}{{ $ct02 := 0 }}{{ range .JSON.Array "data" }}{{ if eq (.String "node") "node02" }}{{ if and (eq (.String "type") "qemu") (eq (.String "status") "running") }}{{ $lnx02 = add $lnx02 1 }}{{ end }}{{ if and (eq (.String "type") "lxc") (eq (.String "status") "running") }}{{ $ct02 = add $ct02 1 }}{{ end }}{{ end }}{{ end }}<span style="font-size: 9px; color: #22c55e; background: rgba(34,197,94,0.15); padding: 1px 5px; border-radius: 3px;">🐧 {{ $lnx02 }}</span><span style="font-size: 9px; color: #f59e0b; background: rgba(245,158,11,0.15); padding: 1px 5px; border-radius: 3px;">📦 {{ $ct02 }}</span></div>
+          </div>
+          {{ range .JSON.Array "data" }}{{ if eq (.String "node") "node02" }}{{ if or (eq (.String "type") "qemu") (eq (.String "type") "lxc") }}{{ if eq (.String "status") "running" }}
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 3px 8px; margin-bottom: 1px;"><div style="display: flex; align-items: center; gap: 4px; min-width: 0; overflow: hidden;">{{ if eq (.String "type") "lxc" }}<span style="font-size: 8px; color: #f59e0b; background: rgba(245,158,11,0.15); padding: 1px 3px; border-radius: 2px; flex-shrink: 0;">CT</span>{{ else }}<span style="font-size: 8px; color: #22c55e; background: rgba(34,197,94,0.15); padding: 1px 3px; border-radius: 2px; flex-shrink: 0;">LNX</span>{{ end }}<span style="font-size: 10px; color: #d1d5db; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ .String "name" }}</span></div><span style="font-size: 9px; color: #888; flex-shrink: 0; margin-left: 4px;">{{ if gt (.Int "uptime") 86400 }}{{ div (.Int "uptime") 86400 }}d{{ else }}{{ div (.Int "uptime") 3600 }}h{{ end }}</span></div>
+          {{ end }}{{ end }}{{ end }}{{ end }}
+        </div>
+        <div style="margin-bottom: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.04); padding: 5px 8px; border-radius: 6px; margin-bottom: 5px;">
+            <span style="font-size: 11px; font-weight: 600; color: #94a3b8;">node03</span>
+            <div style="display: flex; gap: 4px;">{{ $lnx03 := 0 }}{{ $ct03 := 0 }}{{ range .JSON.Array "data" }}{{ if eq (.String "node") "node03" }}{{ if and (eq (.String "type") "qemu") (eq (.String "status") "running") }}{{ $lnx03 = add $lnx03 1 }}{{ end }}{{ if and (eq (.String "type") "lxc") (eq (.String "status") "running") }}{{ $ct03 = add $ct03 1 }}{{ end }}{{ end }}{{ end }}<span style="font-size: 9px; color: #22c55e; background: rgba(34,197,94,0.15); padding: 1px 5px; border-radius: 3px;">🐧 {{ $lnx03 }}</span><span style="font-size: 9px; color: #f59e0b; background: rgba(245,158,11,0.15); padding: 1px 5px; border-radius: 3px;">📦 {{ $ct03 }}</span></div>
+          </div>
+          {{ range .JSON.Array "data" }}{{ if eq (.String "node") "node03" }}{{ if or (eq (.String "type") "qemu") (eq (.String "type") "lxc") }}{{ if eq (.String "status") "running" }}
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 3px 8px; margin-bottom: 1px;"><div style="display: flex; align-items: center; gap: 4px; min-width: 0; overflow: hidden;">{{ if eq (.String "type") "lxc" }}<span style="font-size: 8px; color: #f59e0b; background: rgba(245,158,11,0.15); padding: 1px 3px; border-radius: 2px; flex-shrink: 0;">CT</span>{{ else }}<span style="font-size: 8px; color: #22c55e; background: rgba(34,197,94,0.15); padding: 1px 3px; border-radius: 2px; flex-shrink: 0;">LNX</span>{{ end }}<span style="font-size: 10px; color: #d1d5db; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ .String "name" }}</span></div><span style="font-size: 9px; color: #888; flex-shrink: 0; margin-left: 4px;">{{ if gt (.Int "uptime") 86400 }}{{ div (.Int "uptime") 86400 }}d{{ else }}{{ div (.Int "uptime") 3600 }}h{{ end }}</span></div>
+          {{ end }}{{ end }}{{ end }}{{ end }}
         </div>
     - type: bookmarks
       title: Quick Links
@@ -612,40 +672,373 @@ pages:
         - title: Portainer
           url: https://portainer.hrmsmrflrii.xyz
           icon: si:portainer
-- name: 💾 Storage
+        - title: Container Monitoring
+          url: https://grafana.hrmsmrflrii.xyz/d/containers-modern/container-monitoring?orgId=1
+          icon: si:grafana
+        - title: Proxmox Cluster Health
+          url: https://grafana.hrmsmrflrii.xyz/d/proxmox-cluster-health/proxmox-cluster-health?orgId=1
+          icon: si:grafana
+
+# ==================== STORAGE PAGE ====================
+- name: "💾 Storage"
   columns:
-  - size: full
-    widgets:
-    - type: iframe
-      title: Synology NAS Dashboard
-      source: https://grafana.hrmsmrflrii.xyz/d/synology-nas-modern/synology-nas-storage?orgId=1&_cb=1767873560&kiosk&theme=transparent&refresh=30s
-      height: 1200
   - size: small
     widgets:
+    - type: custom-api
+      title: NAS Overview
+      cache: 30s
+      url: http://192.168.40.13:9090/api/v1/query?query=synologyDiskHealthStatus
+      template: |
+        <div style="font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; padding: 0 2px;">Synology DS923+ · 192.168.20.32</div>
+        <div style="background: rgba(255,255,255,0.04); border-radius: 10px; padding: 14px; margin-bottom: 10px; border-left: 3px solid #22c55e;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+            <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #22c55e;"></span><span style="font-weight: 600; color: #fff; font-size: 14px;">DS923+</span></div>
+            <span style="font-size: 10px; color: #22c55e; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Healthy</span>
+          </div>
+          <div style="font-size: 10px; color: #94a3b8; margin-bottom: 4px;">NAS Health · 4×HDD + 2×M.2 NVMe</div>
+          <div style="font-size: 10px; color: #888;">8TB · 4TB · 12TB · 10TB + 2×1TB</div>
+        </div>
+    - type: custom-api
+      title: Capacity (ProxmoxData)
+      cache: 1m
+      url: https://proxmox.hrmsmrflrii.xyz/api2/json/cluster/resources?type=storage
+      headers:
+        Authorization: "PVEAPIToken=${PROXMOX_API_TOKEN}"
+      template: |
+        {{ $tu := 0.0 }}{{ $tm := 0.0 }}
+        {{ range .JSON.Array "data" }}
+        {{ if and (eq (.String "storage") "ProxmoxData") (eq (.String "node") "node01") }}
+        {{ $tu = .Float "disk" }}
+        {{ $tm = .Float "maxdisk" }}
+        {{ end }}{{ end }}
+        {{ $usedTB := div $tu 1099511627776.0 }}
+        {{ $maxTB := div $tm 1099511627776.0 }}
+        {{ $freeTB := sub $maxTB $usedTB }}
+        {{ $pct := 0.0 }}{{ if gt $tm 0.0 }}{{ $pct = div (mul $tu 100.0) $tm }}{{ end }}
+        <div style="padding: 2px;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px;">
+            <span style="font-size: 22px; color: #fff; font-weight: 700;">{{ printf "%.2f" $usedTB }}<span style="font-size: 11px; color: #94a3b8; margin-left: 4px;">TB used</span></span>
+            <span style="font-size: 12px; color: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; font-weight: 600;">{{ printf "%.1f" $pct }}%</span>
+          </div>
+          <div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 8px; overflow: hidden; margin-bottom: 6px;">
+            <div style="background: linear-gradient(90deg, {{ if lt $pct 70.0 }}#22c55e, #16a34a{{ else if lt $pct 90.0 }}#f59e0b, #d97706{{ else }}#ef4444, #dc2626{{ end }}); height: 8px; width: {{ printf "%.1f" $pct }}%;"></div>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 10px; color: #94a3b8;">
+            <span>{{ printf "%.2f" $freeTB }} TB free</span>
+            <span>{{ printf "%.2f" $maxTB }} TB total</span>
+          </div>
+        </div>
+    - type: custom-api
+      title: System Health
+      cache: 30s
+      url: http://192.168.40.13:9090/api/v1/query?query=synologyDiskHealthStatus
+      template: |
+        {{ $healthy := 0 }}{{ $total := 0 }}
+        {{ range .JSON.Array "data.result" }}
+        {{ $total = add $total 1 }}
+        {{ if eq (.String "value.1") "1" }}{{ $healthy = add $healthy 1 }}{{ end }}
+        {{ end }}
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <div style="background: rgba(34,197,94,0.08); border-left: 3px solid #22c55e; border-radius: 8px; padding: 10px;">
+            <div style="font-size: 9px; color: #4ade80; text-transform: uppercase; letter-spacing: 0.05em;">Healthy Drives</div>
+            <div style="font-size: 22px; color: #fff; font-weight: 700; margin-top: 4px;">{{ $healthy }}<span style="font-size: 12px; color: #94a3b8; margin-left: 3px;">/ {{ $total }}</span></div>
+          </div>
+          <div style="background: rgba(59,130,246,0.08); border-left: 3px solid #3b82f6; border-radius: 8px; padding: 10px;">
+            <div style="font-size: 9px; color: #60a5fa; text-transform: uppercase; letter-spacing: 0.05em;">RAID</div>
+            <div style="font-size: 16px; color: #fff; font-weight: 700; margin-top: 6px;">SHR-1</div>
+          </div>
+        </div>
+    - type: custom-api
+      title: System Temperature
+      cache: 30s
+      url: http://192.168.40.13:9090/api/v1/query?query=synologySystemTemperature
+      template: |
+        {{ $temp := 0.0 }}
+        {{ range .JSON.Array "data.result" }}{{ $temp = .Float "value.1" }}{{ end }}
+        {{ $color := "#22c55e" }}{{ $label := "Cool" }}
+        {{ if gt $temp 55.0 }}{{ $color = "#84cc16" }}{{ $label = "Normal" }}{{ end }}
+        {{ if gt $temp 65.0 }}{{ $color = "#f59e0b" }}{{ $label = "Warm" }}{{ end }}
+        {{ if gt $temp 75.0 }}{{ $color = "#ef4444" }}{{ $label = "Hot" }}{{ end }}
+        <div style="background: rgba(255,255,255,0.04); border-left: 3px solid {{ $color }}; border-radius: 8px; padding: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
+            <span style="font-size: 9px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;">NAS System Temp</span>
+            <span style="font-size: 9px; color: {{ $color }}; font-weight: 600; text-transform: uppercase;">{{ $label }}</span>
+          </div>
+          <div style="font-size: 26px; color: #fff; font-weight: 700;">{{ printf "%.0f" $temp }}<span style="font-size: 13px; color: #94a3b8; margin-left: 4px;">°C</span></div>
+        </div>
+    - type: custom-api
+      title: NAS Memory Used
+      cache: 30s
+      url: http://192.168.40.13:9090/api/v1/query?query=(memTotalReal{instance%3D%22192.168.20.32%22}-memAvailReal{instance%3D%22192.168.20.32%22})/memTotalReal{instance%3D%22192.168.20.32%22}*100
+      template: |
+        {{ $pct := 0.0 }}
+        {{ range .JSON.Array "data.result" }}{{ $pct = .Float "value.1" }}{{ end }}
+        {{ $color := "#22c55e" }}
+        {{ if gt $pct 70.0 }}{{ $color = "#f59e0b" }}{{ end }}
+        {{ if gt $pct 90.0 }}{{ $color = "#ef4444" }}{{ end }}
+        <div style="background: rgba(255,255,255,0.04); border-left: 3px solid {{ $color }}; border-radius: 8px; padding: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
+            <span style="font-size: 9px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;">Total RAM Used</span>
+            <span style="font-size: 22px; color: #fff; font-weight: 700;">{{ printf "%.1f" $pct }}<span style="font-size: 12px; color: #94a3b8; margin-left: 3px;">%</span></span>
+          </div>
+          <div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 7px; overflow: hidden; margin-bottom: 6px;">
+            <div style="background: {{ $color }}; height: 7px; width: {{ printf "%.1f" $pct }}%;"></div>
+          </div>
+          <div style="font-size: 10px; color: #888;">32 GB DDR4 physical</div>
+        </div>
     - type: monitor
       title: Storage Systems
       cache: 1m
       sites:
-      - title: Synology (VLAN 20)
-        url: https://192.168.20.31:5001
+      - title: Synology DSM
+        url: https://192.168.20.32:5001
         icon: si:synology
         allow-insecure: true
-      - title: Synology (VLAN 10)
-        url: https://192.168.10.31:5001
-        icon: si:synology
+      - title: PBS Server
+        url: https://192.168.20.50:8007
+        icon: si:proxmox
+        allow-insecure: true
+      - title: Proxmox Cluster
+        url: https://proxmox.hrmsmrflrii.xyz
+        icon: si:proxmox
         allow-insecure: true
     - type: bookmarks
       title: Quick Links
       groups:
-      - title: Storage
+      - title: NAS
         links:
         - title: Synology DSM
-          url: https://192.168.10.31:5001
+          url: https://192.168.20.32:5001
           icon: si:synology
-        - title: Grafana
-          url: https://grafana.hrmsmrflrii.xyz/d/synology-storage
+        - title: File Station
+          url: https://192.168.20.32:5001/?launchApp=SYNO.SDS.App.FileStation3.Instance
+          icon: si:synology
+        - title: Storage Manager
+          url: https://192.168.20.32:5001/?launchApp=SYNO.SDS.StorageManager.Application
+          icon: si:synology
+      - title: Dashboards
+        links:
+        - title: Synology Grafana
+          url: https://grafana.hrmsmrflrii.xyz/d/synology-nas-modern
           icon: si:grafana
-- name: 📦 Backup
+        - title: Proxmox Cluster
+          url: https://grafana.hrmsmrflrii.xyz/d/proxmox-compute
+          icon: si:grafana
+        - title: PBS Backup Status
+          url: https://grafana.hrmsmrflrii.xyz/d/pbs-backup-status
+          icon: si:grafana
+      - title: Backups
+        links:
+        - title: PBS Web UI
+          url: https://192.168.20.50:8007
+          icon: si:proxmox
+  - size: full
+    widgets:
+    - type: custom-api
+      title: Drive Health (Synology DS923+)
+      cache: 30s
+      url: http://192.168.40.13:9090/api/v1/query?query=synologyDiskID
+      template: |
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0 2px;">
+          <span style="font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 0.06em;">Drive Bays · 4× HDD + 2× M.2 NVMe Cache</span>
+          <span style="font-size: 10px; color: #94a3b8;"><span style="color: #22c55e; font-weight: 600;">6</span> healthy / 6 total</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;" id="drive-grid">
+          <div style="background: rgba(255,255,255,0.04); border-radius: 10px; padding: 12px; border-left: 3px solid #22c55e;" data-disk="0">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <div style="display: flex; align-items: center; gap: 5px; min-width: 0;">
+                <span style="font-size: 8px; color: #22c55e; background: rgba(34,197,94,0.15); padding: 1px 4px; border-radius: 3px;">HDD</span>
+                <span style="font-size: 11px; font-weight: 600; color: #fff;">Disk 1</span>
+              </div>
+              <span style="font-size: 9px; color: #22c55e; font-weight: 600; text-transform: uppercase;">Normal</span>
+            </div>
+            <div style="font-size: 9px; color: #94a3b8; margin-bottom: 6px;">Seagate ST8000VN004 · 8TB</div>
+            <div style="display: flex; justify-content: space-between; font-size: 10px;">
+              <span style="color: #888;">Temperature</span>
+              <span style="color: #fff; font-weight: 600;">45°C</span>
+            </div>
+          </div>
+          <div style="background: rgba(255,255,255,0.04); border-radius: 10px; padding: 12px; border-left: 3px solid #22c55e;" data-disk="1">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <div style="display: flex; align-items: center; gap: 5px;">
+                <span style="font-size: 8px; color: #22c55e; background: rgba(34,197,94,0.15); padding: 1px 4px; border-radius: 3px;">HDD</span>
+                <span style="font-size: 11px; font-weight: 600; color: #fff;">Disk 2</span>
+              </div>
+              <span style="font-size: 9px; color: #22c55e; font-weight: 600; text-transform: uppercase;">Normal</span>
+            </div>
+            <div style="font-size: 9px; color: #94a3b8; margin-bottom: 6px;">Seagate ST10000VN000 · 10TB</div>
+            <div style="display: flex; justify-content: space-between; font-size: 10px;">
+              <span style="color: #888;">Temperature</span>
+              <span style="color: #fff; font-weight: 600;">48°C</span>
+            </div>
+          </div>
+          <div style="background: rgba(255,255,255,0.04); border-radius: 10px; padding: 12px; border-left: 3px solid #22c55e;" data-disk="2">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <div style="display: flex; align-items: center; gap: 5px;">
+                <span style="font-size: 8px; color: #22c55e; background: rgba(34,197,94,0.15); padding: 1px 4px; border-radius: 3px;">HDD</span>
+                <span style="font-size: 11px; font-weight: 600; color: #fff;">Disk 3</span>
+              </div>
+              <span style="font-size: 9px; color: #22c55e; font-weight: 600; text-transform: uppercase;">Normal</span>
+            </div>
+            <div style="font-size: 9px; color: #94a3b8; margin-bottom: 6px;">Seagate ST10000VN000 · 10TB</div>
+            <div style="display: flex; justify-content: space-between; font-size: 10px;">
+              <span style="color: #888;">Temperature</span>
+              <span style="color: #fff; font-weight: 600;">49°C</span>
+            </div>
+          </div>
+          <div style="background: rgba(255,255,255,0.04); border-radius: 10px; padding: 12px; border-left: 3px solid #22c55e;" data-disk="3">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <div style="display: flex; align-items: center; gap: 5px;">
+                <span style="font-size: 8px; color: #22c55e; background: rgba(34,197,94,0.15); padding: 1px 4px; border-radius: 3px;">HDD</span>
+                <span style="font-size: 11px; font-weight: 600; color: #fff;">Disk 4</span>
+              </div>
+              <span style="font-size: 9px; color: #22c55e; font-weight: 600; text-transform: uppercase;">Normal</span>
+            </div>
+            <div style="font-size: 9px; color: #94a3b8; margin-bottom: 6px;">Seagate ST12000VN0008 · 12TB</div>
+            <div style="display: flex; justify-content: space-between; font-size: 10px;">
+              <span style="color: #888;">Temperature</span>
+              <span style="color: #fff; font-weight: 600;">44°C</span>
+            </div>
+          </div>
+          <div style="background: rgba(255,255,255,0.04); border-radius: 10px; padding: 12px; border-left: 3px solid #06b6d4;" data-disk="4">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <div style="display: flex; align-items: center; gap: 5px;">
+                <span style="font-size: 8px; color: #06b6d4; background: rgba(6,182,212,0.15); padding: 1px 4px; border-radius: 3px;">M.2</span>
+                <span style="font-size: 11px; font-weight: 600; color: #fff;">M.2 Drive 1</span>
+              </div>
+              <span style="font-size: 9px; color: #22c55e; font-weight: 600; text-transform: uppercase;">Normal</span>
+            </div>
+            <div style="font-size: 9px; color: #94a3b8; margin-bottom: 6px;">Kingston SNV2S1000G · 1TB Cache</div>
+            <div style="display: flex; justify-content: space-between; font-size: 10px;">
+              <span style="color: #888;">Temperature</span>
+              <span style="color: #fff; font-weight: 600;">36°C</span>
+            </div>
+          </div>
+          <div style="background: rgba(255,255,255,0.04); border-radius: 10px; padding: 12px; border-left: 3px solid #06b6d4;" data-disk="5">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <div style="display: flex; align-items: center; gap: 5px;">
+                <span style="font-size: 8px; color: #06b6d4; background: rgba(6,182,212,0.15); padding: 1px 4px; border-radius: 3px;">M.2</span>
+                <span style="font-size: 11px; font-weight: 600; color: #fff;">M.2 Drive 2</span>
+              </div>
+              <span style="font-size: 9px; color: #22c55e; font-weight: 600; text-transform: uppercase;">Normal</span>
+            </div>
+            <div style="font-size: 9px; color: #94a3b8; margin-bottom: 6px;">Crucial CT1000P2SSD8 · 1TB Cache</div>
+            <div style="display: flex; justify-content: space-between; font-size: 10px;">
+              <span style="color: #888;">Temperature</span>
+              <span style="color: #fff; font-weight: 600;">39°C</span>
+            </div>
+          </div>
+        </div>
+    - type: iframe
+      title: Free Storage Over Time
+      source: https://grafana.hrmsmrflrii.xyz/d/synology-nas-modern/synology-nas-storage?orgId=1&viewPanel=40&kiosk=tv&theme=transparent&refresh=30s
+      height: 320
+    - type: iframe
+      title: Memory Usage Over Time
+      source: https://grafana.hrmsmrflrii.xyz/d/synology-nas-modern/synology-nas-storage?orgId=1&viewPanel=31&kiosk=tv&theme=transparent&refresh=30s
+      height: 320
+    - type: iframe
+      title: Disk Temperatures (Live)
+      source: https://grafana.hrmsmrflrii.xyz/d/synology-nas-modern/synology-nas-storage?orgId=1&viewPanel=20&kiosk=tv&theme=transparent&refresh=30s
+      height: 280
+    - type: custom-api
+      title: Proxmox Storage Pools — Per Node
+      cache: 30s
+      url: https://proxmox.hrmsmrflrii.xyz/api2/json/cluster/resources?type=storage
+      headers:
+        Authorization: "PVEAPIToken=${PROXMOX_API_TOKEN}"
+      template: |
+        {{ $pdN01u := -1.0 }}{{ $pdN01m := 0.0 }}{{ $pdN02u := -1.0 }}{{ $pdN02m := 0.0 }}{{ $pdN03u := -1.0 }}{{ $pdN03m := 0.0 }}
+        {{ $vmN01u := -1.0 }}{{ $vmN01m := 0.0 }}{{ $vmN02u := -1.0 }}{{ $vmN02m := 0.0 }}{{ $vmN03u := -1.0 }}{{ $vmN03m := 0.0 }}
+        {{ $lvN01u := -1.0 }}{{ $lvN01m := 0.0 }}{{ $lvN02u := -1.0 }}{{ $lvN02m := 0.0 }}{{ $lvN03u := -1.0 }}{{ $lvN03m := 0.0 }}
+        {{ range .JSON.Array "data" }}
+          {{ $s := .String "storage" }}{{ $n := .String "node" }}{{ $u := .Float "disk" }}{{ $m := .Float "maxdisk" }}
+          {{ if and (eq $s "ProxmoxData") (eq $n "node01") }}{{ $pdN01u = $u }}{{ $pdN01m = $m }}{{ end }}
+          {{ if and (eq $s "ProxmoxData") (eq $n "node02") }}{{ $pdN02u = $u }}{{ $pdN02m = $m }}{{ end }}
+          {{ if and (eq $s "ProxmoxData") (eq $n "node03") }}{{ $pdN03u = $u }}{{ $pdN03m = $m }}{{ end }}
+          {{ if and (eq $s "VMDisks") (eq $n "node01") }}{{ $vmN01u = $u }}{{ $vmN01m = $m }}{{ end }}
+          {{ if and (eq $s "VMDisks") (eq $n "node02") }}{{ $vmN02u = $u }}{{ $vmN02m = $m }}{{ end }}
+          {{ if and (eq $s "VMDisks") (eq $n "node03") }}{{ $vmN03u = $u }}{{ $vmN03m = $m }}{{ end }}
+          {{ if and (eq $s "local-lvm") (eq $n "node01") }}{{ $lvN01u = $u }}{{ $lvN01m = $m }}{{ end }}
+          {{ if and (eq $s "local-lvm") (eq $n "node02") }}{{ $lvN02u = $u }}{{ $lvN02m = $m }}{{ end }}
+          {{ if and (eq $s "local-lvm") (eq $n "node03") }}{{ $lvN03u = $u }}{{ $lvN03m = $m }}{{ end }}
+        {{ end }}
+        <div style="padding: 4px;">
+          <div style="margin-bottom: 16px;">
+            <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; padding-left: 2px;">ProxmoxData</div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+              {{ if ge $pdN01u 0.0 }}{{ $pct := 0.0 }}{{ if gt $pdN01m 0.0 }}{{ $pct = div (mul $pdN01u 100.0) $pdN01m }}{{ end }}<div style="background: rgba(255,255,255,0.04); border-radius: 8px; padding: 10px; border-left: 3px solid {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }};"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;"><span style="font-size: 11px; color: #d1d5db; font-weight: 600;">node01</span><span style="font-size: 10px; color: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; font-weight: 600;">{{ printf "%.1f" $pct }}%</span></div><div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 6px; margin-bottom: 6px;"><div style="background: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; height: 6px; border-radius: 4px; width: {{ printf "%.1f" $pct }}%;"></div></div><div style="display: flex; justify-content: space-between;"><span style="font-size: 10px; color: #94a3b8;">{{ printf "%.0f" (div $pdN01u 1073741824.0) }} GB used</span><span style="font-size: 10px; color: #888;">{{ printf "%.0f" (div $pdN01m 1073741824.0) }} GB</span></div></div>{{ else }}<div style="background: rgba(255,255,255,0.02); border-radius: 8px; padding: 10px; border: 1px dashed rgba(255,255,255,0.1);"><div style="font-size: 11px; color: #555; font-weight: 600;">node01</div><div style="font-size: 10px; color: #444; margin-top: 4px;">not configured</div></div>{{ end }}
+              {{ if ge $pdN02u 0.0 }}{{ $pct := 0.0 }}{{ if gt $pdN02m 0.0 }}{{ $pct = div (mul $pdN02u 100.0) $pdN02m }}{{ end }}<div style="background: rgba(255,255,255,0.04); border-radius: 8px; padding: 10px; border-left: 3px solid {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }};"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;"><span style="font-size: 11px; color: #d1d5db; font-weight: 600;">node02</span><span style="font-size: 10px; color: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; font-weight: 600;">{{ printf "%.1f" $pct }}%</span></div><div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 6px; margin-bottom: 6px;"><div style="background: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; height: 6px; border-radius: 4px; width: {{ printf "%.1f" $pct }}%;"></div></div><div style="display: flex; justify-content: space-between;"><span style="font-size: 10px; color: #94a3b8;">{{ printf "%.0f" (div $pdN02u 1073741824.0) }} GB used</span><span style="font-size: 10px; color: #888;">{{ printf "%.0f" (div $pdN02m 1073741824.0) }} GB</span></div></div>{{ else }}<div style="background: rgba(255,255,255,0.02); border-radius: 8px; padding: 10px; border: 1px dashed rgba(255,255,255,0.1);"><div style="font-size: 11px; color: #555; font-weight: 600;">node02</div><div style="font-size: 10px; color: #444; margin-top: 4px;">not configured</div></div>{{ end }}
+              {{ if ge $pdN03u 0.0 }}{{ $pct := 0.0 }}{{ if gt $pdN03m 0.0 }}{{ $pct = div (mul $pdN03u 100.0) $pdN03m }}{{ end }}<div style="background: rgba(255,255,255,0.04); border-radius: 8px; padding: 10px; border-left: 3px solid {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }};"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;"><span style="font-size: 11px; color: #d1d5db; font-weight: 600;">node03</span><span style="font-size: 10px; color: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; font-weight: 600;">{{ printf "%.1f" $pct }}%</span></div><div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 6px; margin-bottom: 6px;"><div style="background: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; height: 6px; border-radius: 4px; width: {{ printf "%.1f" $pct }}%;"></div></div><div style="display: flex; justify-content: space-between;"><span style="font-size: 10px; color: #94a3b8;">{{ printf "%.0f" (div $pdN03u 1073741824.0) }} GB used</span><span style="font-size: 10px; color: #888;">{{ printf "%.0f" (div $pdN03m 1073741824.0) }} GB</span></div></div>{{ else }}<div style="background: rgba(255,255,255,0.02); border-radius: 8px; padding: 10px; border: 1px dashed rgba(255,255,255,0.1);"><div style="font-size: 11px; color: #555; font-weight: 600;">node03</div><div style="font-size: 10px; color: #444; margin-top: 4px;">not configured</div></div>{{ end }}
+            </div>
+          </div>
+          <div style="margin-bottom: 16px;">
+            <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; padding-left: 2px;">VMDisks</div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+              {{ if ge $vmN01u 0.0 }}{{ $pct := 0.0 }}{{ if gt $vmN01m 0.0 }}{{ $pct = div (mul $vmN01u 100.0) $vmN01m }}{{ end }}<div style="background: rgba(255,255,255,0.04); border-radius: 8px; padding: 10px; border-left: 3px solid {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }};"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;"><span style="font-size: 11px; color: #d1d5db; font-weight: 600;">node01</span><span style="font-size: 10px; color: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; font-weight: 600;">{{ printf "%.1f" $pct }}%</span></div><div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 6px; margin-bottom: 6px;"><div style="background: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; height: 6px; border-radius: 4px; width: {{ printf "%.1f" $pct }}%;"></div></div><div style="display: flex; justify-content: space-between;"><span style="font-size: 10px; color: #94a3b8;">{{ printf "%.0f" (div $vmN01u 1073741824.0) }} GB used</span><span style="font-size: 10px; color: #888;">{{ printf "%.0f" (div $vmN01m 1073741824.0) }} GB</span></div></div>{{ else }}<div style="background: rgba(255,255,255,0.02); border-radius: 8px; padding: 10px; border: 1px dashed rgba(255,255,255,0.1);"><div style="font-size: 11px; color: #555; font-weight: 600;">node01</div><div style="font-size: 10px; color: #444; margin-top: 4px;">not configured</div></div>{{ end }}
+              {{ if ge $vmN02u 0.0 }}{{ $pct := 0.0 }}{{ if gt $vmN02m 0.0 }}{{ $pct = div (mul $vmN02u 100.0) $vmN02m }}{{ end }}<div style="background: rgba(255,255,255,0.04); border-radius: 8px; padding: 10px; border-left: 3px solid {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }};"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;"><span style="font-size: 11px; color: #d1d5db; font-weight: 600;">node02</span><span style="font-size: 10px; color: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; font-weight: 600;">{{ printf "%.1f" $pct }}%</span></div><div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 6px; margin-bottom: 6px;"><div style="background: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; height: 6px; border-radius: 4px; width: {{ printf "%.1f" $pct }}%;"></div></div><div style="display: flex; justify-content: space-between;"><span style="font-size: 10px; color: #94a3b8;">{{ printf "%.0f" (div $vmN02u 1073741824.0) }} GB used</span><span style="font-size: 10px; color: #888;">{{ printf "%.0f" (div $vmN02m 1073741824.0) }} GB</span></div></div>{{ else }}<div style="background: rgba(255,255,255,0.02); border-radius: 8px; padding: 10px; border: 1px dashed rgba(255,255,255,0.1);"><div style="font-size: 11px; color: #555; font-weight: 600;">node02</div><div style="font-size: 10px; color: #444; margin-top: 4px;">not configured</div></div>{{ end }}
+              {{ if ge $vmN03u 0.0 }}{{ $pct := 0.0 }}{{ if gt $vmN03m 0.0 }}{{ $pct = div (mul $vmN03u 100.0) $vmN03m }}{{ end }}<div style="background: rgba(255,255,255,0.04); border-radius: 8px; padding: 10px; border-left: 3px solid {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }};"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;"><span style="font-size: 11px; color: #d1d5db; font-weight: 600;">node03</span><span style="font-size: 10px; color: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; font-weight: 600;">{{ printf "%.1f" $pct }}%</span></div><div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 6px; margin-bottom: 6px;"><div style="background: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; height: 6px; border-radius: 4px; width: {{ printf "%.1f" $pct }}%;"></div></div><div style="display: flex; justify-content: space-between;"><span style="font-size: 10px; color: #94a3b8;">{{ printf "%.0f" (div $vmN03u 1073741824.0) }} GB used</span><span style="font-size: 10px; color: #888;">{{ printf "%.0f" (div $vmN03m 1073741824.0) }} GB</span></div></div>{{ else }}<div style="background: rgba(255,255,255,0.02); border-radius: 8px; padding: 10px; border: 1px dashed rgba(255,255,255,0.1);"><div style="font-size: 11px; color: #555; font-weight: 600;">node03</div><div style="font-size: 10px; color: #444; margin-top: 4px;">not configured</div></div>{{ end }}
+            </div>
+          </div>
+          <div style="margin-bottom: 16px;">
+            <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; padding-left: 2px;">local-lvm</div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+              {{ if ge $lvN01u 0.0 }}{{ $pct := 0.0 }}{{ if gt $lvN01m 0.0 }}{{ $pct = div (mul $lvN01u 100.0) $lvN01m }}{{ end }}<div style="background: rgba(255,255,255,0.04); border-radius: 8px; padding: 10px; border-left: 3px solid {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }};"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;"><span style="font-size: 11px; color: #d1d5db; font-weight: 600;">node01</span><span style="font-size: 10px; color: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; font-weight: 600;">{{ printf "%.1f" $pct }}%</span></div><div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 6px; margin-bottom: 6px;"><div style="background: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; height: 6px; border-radius: 4px; width: {{ printf "%.1f" $pct }}%;"></div></div><div style="display: flex; justify-content: space-between;"><span style="font-size: 10px; color: #94a3b8;">{{ printf "%.0f" (div $lvN01u 1073741824.0) }} GB used</span><span style="font-size: 10px; color: #888;">{{ printf "%.0f" (div $lvN01m 1073741824.0) }} GB</span></div></div>{{ else }}<div style="background: rgba(255,255,255,0.02); border-radius: 8px; padding: 10px; border: 1px dashed rgba(255,255,255,0.1);"><div style="font-size: 11px; color: #555; font-weight: 600;">node01</div><div style="font-size: 10px; color: #444; margin-top: 4px;">not configured</div></div>{{ end }}
+              {{ if ge $lvN02u 0.0 }}{{ $pct := 0.0 }}{{ if gt $lvN02m 0.0 }}{{ $pct = div (mul $lvN02u 100.0) $lvN02m }}{{ end }}<div style="background: rgba(255,255,255,0.04); border-radius: 8px; padding: 10px; border-left: 3px solid {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }};"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;"><span style="font-size: 11px; color: #d1d5db; font-weight: 600;">node02</span><span style="font-size: 10px; color: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; font-weight: 600;">{{ printf "%.1f" $pct }}%</span></div><div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 6px; margin-bottom: 6px;"><div style="background: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; height: 6px; border-radius: 4px; width: {{ printf "%.1f" $pct }}%;"></div></div><div style="display: flex; justify-content: space-between;"><span style="font-size: 10px; color: #94a3b8;">{{ printf "%.0f" (div $lvN02u 1073741824.0) }} GB used</span><span style="font-size: 10px; color: #888;">{{ printf "%.0f" (div $lvN02m 1073741824.0) }} GB</span></div></div>{{ else }}<div style="background: rgba(255,255,255,0.02); border-radius: 8px; padding: 10px; border: 1px dashed rgba(255,255,255,0.1);"><div style="font-size: 11px; color: #555; font-weight: 600;">node02</div><div style="font-size: 10px; color: #444; margin-top: 4px;">not configured</div></div>{{ end }}
+              {{ if ge $lvN03u 0.0 }}{{ $pct := 0.0 }}{{ if gt $lvN03m 0.0 }}{{ $pct = div (mul $lvN03u 100.0) $lvN03m }}{{ end }}<div style="background: rgba(255,255,255,0.04); border-radius: 8px; padding: 10px; border-left: 3px solid {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }};"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;"><span style="font-size: 11px; color: #d1d5db; font-weight: 600;">node03</span><span style="font-size: 10px; color: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; font-weight: 600;">{{ printf "%.1f" $pct }}%</span></div><div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 6px; margin-bottom: 6px;"><div style="background: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; height: 6px; border-radius: 4px; width: {{ printf "%.1f" $pct }}%;"></div></div><div style="display: flex; justify-content: space-between;"><span style="font-size: 10px; color: #94a3b8;">{{ printf "%.0f" (div $lvN03u 1073741824.0) }} GB used</span><span style="font-size: 10px; color: #888;">{{ printf "%.0f" (div $lvN03m 1073741824.0) }} GB</span></div></div>{{ else }}<div style="background: rgba(255,255,255,0.02); border-radius: 8px; padding: 10px; border: 1px dashed rgba(255,255,255,0.1);"><div style="font-size: 11px; color: #555; font-weight: 600;">node03</div><div style="font-size: 10px; color: #444; margin-top: 4px;">not configured</div></div>{{ end }}
+            </div>
+          </div>
+        </div>
+  - size: small
+    widgets:
+    - type: custom-api
+      title: Proxmox Storage Pools (Aggregate)
+      cache: 30s
+      url: https://proxmox.hrmsmrflrii.xyz/api2/json/cluster/resources?type=storage
+      headers:
+        Authorization: "PVEAPIToken=${PROXMOX_API_TOKEN}"
+      template: |
+        {{ $lvU := 0.0 }}{{ $lvM := 0.0 }}{{ $lvN := 0 }}
+        {{ $vmU := 0.0 }}{{ $vmM := 0.0 }}{{ $vmN := 0 }}
+        {{ $pdU := 0.0 }}{{ $pdM := 0.0 }}{{ $pdN := 0 }}
+        {{ range .JSON.Array "data" }}
+          {{ $s := .String "storage" }}
+          {{ if eq $s "local-lvm" }}{{ $lvU = add $lvU (.Float "disk") }}{{ $lvM = add $lvM (.Float "maxdisk") }}{{ $lvN = add $lvN 1 }}{{ end }}
+          {{ if eq $s "VMDisks" }}{{ $vmU = add $vmU (.Float "disk") }}{{ $vmM = add $vmM (.Float "maxdisk") }}{{ $vmN = add $vmN 1 }}{{ end }}
+          {{ if eq $s "ProxmoxData" }}{{ $pdU = add $pdU (.Float "disk") }}{{ $pdM = add $pdM (.Float "maxdisk") }}{{ $pdN = add $pdN 1 }}{{ end }}
+        {{ end }}
+        <div style="padding: 4px;">
+          {{ if gt $lvM 0.0 }}{{ $pct := div (mul $lvU 100.0) $lvM }}<div style="margin-bottom: 10px;"><div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span style="font-size: 11px; color: #d1d5db; font-weight: 600;">local-lvm</span><span style="font-size: 10px; color: #94a3b8;">{{ printf "%.0f" (div $lvU 1073741824.0) }} / {{ printf "%.0f" (div $lvM 1073741824.0) }} GB</span></div><div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 6px; overflow: hidden;"><div style="background: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; height: 6px; width: {{ printf "%.1f" $pct }}%;"></div></div><div style="display: flex; justify-content: space-between; margin-top: 2px;"><span style="font-size: 9px; color: #666;">{{ $lvN }} nodes</span><span style="font-size: 9px; color: #94a3b8;">{{ printf "%.1f" $pct }}%</span></div></div>{{ end }}
+          {{ if gt $vmM 0.0 }}{{ $pct := div (mul $vmU 100.0) $vmM }}<div style="margin-bottom: 10px;"><div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span style="font-size: 11px; color: #d1d5db; font-weight: 600;">VMDisks</span><span style="font-size: 10px; color: #94a3b8;">{{ printf "%.0f" (div $vmU 1073741824.0) }} / {{ printf "%.0f" (div $vmM 1073741824.0) }} GB</span></div><div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 6px; overflow: hidden;"><div style="background: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; height: 6px; width: {{ printf "%.1f" $pct }}%;"></div></div><div style="display: flex; justify-content: space-between; margin-top: 2px;"><span style="font-size: 9px; color: #666;">{{ $vmN }} nodes</span><span style="font-size: 9px; color: #94a3b8;">{{ printf "%.1f" $pct }}%</span></div></div>{{ end }}
+          {{ if gt $pdM 0.0 }}{{ $pct := div (mul $pdU 100.0) $pdM }}<div style="margin-bottom: 10px;"><div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span style="font-size: 11px; color: #d1d5db; font-weight: 600;">ProxmoxData</span><span style="font-size: 10px; color: #94a3b8;">{{ printf "%.0f" (div $pdU 1073741824.0) }} / {{ printf "%.0f" (div $pdM 1073741824.0) }} GB</span></div><div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 6px; overflow: hidden;"><div style="background: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; height: 6px; width: {{ printf "%.1f" $pct }}%;"></div></div><div style="display: flex; justify-content: space-between; margin-top: 2px;"><span style="font-size: 9px; color: #666;">{{ $pdN }} nodes</span><span style="font-size: 9px; color: #94a3b8;">{{ printf "%.1f" $pct }}%</span></div></div>{{ end }}
+        </div>
+    - type: custom-api
+      title: RAID Volumes
+      cache: 1m
+      url: http://192.168.40.13:9090/api/v1/query?query=synologyRaidName
+      template: |
+        <div style="font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px;">Synology RAID Status</div>
+        <div style="background: rgba(34,197,94,0.08); border-left: 3px solid #22c55e; border-radius: 8px; padding: 10px; margin-bottom: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <span style="font-size: 11px; color: #fff; font-weight: 600;">Volume 2</span>
+            <span style="font-size: 9px; color: #22c55e; font-weight: 600; text-transform: uppercase;">Normal</span>
+          </div>
+          <div style="font-size: 10px; color: #94a3b8;">SHR-1 · 24.4 TB / 25.4 TB</div>
+        </div>
+        <div style="background: rgba(34,197,94,0.08); border-left: 3px solid #22c55e; border-radius: 8px; padding: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <span style="font-size: 11px; color: #fff; font-weight: 600;">Storage Pool 2</span>
+            <span style="font-size: 9px; color: #22c55e; font-weight: 600; text-transform: uppercase;">Normal</span>
+          </div>
+          <div style="font-size: 10px; color: #94a3b8;">M.2 Cache · 1 TB</div>
+        </div>
+    - type: iframe
+      title: Storage Consumption Over Time
+      source: https://grafana.hrmsmrflrii.xyz/d/synology-nas-modern/synology-nas-storage?orgId=1&viewPanel=40&kiosk=tv&theme=transparent&refresh=30s
+      height: 280
+
+# ==================== BACKUP PAGE ====================
+- name: "Backup"
   columns:
   - size: small
     widgets:
@@ -705,7 +1098,7 @@ pages:
             <!-- Daily Backups -->
             <div style="background: rgba(34, 197, 94, 0.08); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 12px; padding: 16px;">
               <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                <span style="font-size: 14px; color: #22c55e; font-weight: 700;">📦 DAILY BACKUPS</span>
+                <span style="font-size: 14px; color: #22c55e; font-weight: 700;">DAILY BACKUPS</span>
                 {{ if eq (.JSON.String "job_status.daily.status") "success" }}
                 <span style="font-size: 11px; background: #22c55e; color: #000; padding: 6px 12px; border-radius: 8px; font-weight: 600;">OK</span>
                 {{ else if eq (.JSON.String "job_status.daily.status") "stale" }}
@@ -729,7 +1122,7 @@ pages:
             <!-- Main Backups -->
             <div style="background: rgba(139, 92, 246, 0.08); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 12px; padding: 16px;">
               <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                <span style="font-size: 14px; color: #8b5cf6; font-weight: 700;">\U0001F5C4 MAIN BACKUPS</span>
+                <span style="font-size: 14px; color: #8b5cf6; font-weight: 700;">MAIN BACKUPS</span>
                 {{ if eq (.JSON.String "job_status.main.status") "success" }}
                 <span style="font-size: 11px; background: #22c55e; color: #000; padding: 6px 12px; border-radius: 8px; font-weight: 600;">OK</span>
                 {{ else if eq (.JSON.String "job_status.main.status") "stale" }}
@@ -753,7 +1146,7 @@ pages:
             <!-- NAS Sync -->
             <div style="background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; padding: 16px;">
               <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                <span style="font-size: 14px; color: #3b82f6; font-weight: 700;">☁️ NAS SYNC</span>
+                <span style="font-size: 14px; color: #3b82f6; font-weight: 700;">NAS SYNC</span>
                 {{ if eq (.JSON.String "status") "success" }}
                 <span style="font-size: 11px; background: #22c55e; color: #000; padding: 6px 12px; border-radius: 8px; font-weight: 600;">OK</span>
                 {{ else if eq (.JSON.String "status") "running" }}
@@ -815,250 +1208,379 @@ pages:
       title: PBS Grafana Dashboard
       source: https://grafana.hrmsmrflrii.xyz/d/pbs-backup-status/pbs-backup-status?orgId=1&kiosk&theme=transparent&refresh=1m
       height: 1000
-- name: 🌐 Network
+
+# ==================== NETWORK PAGE ====================
+- name: "🌐 Network"
   columns:
-  - size: full
-    widgets:
-    - type: iframe
-      title: Network Utilization
-      source: https://grafana.hrmsmrflrii.xyz/d/network-utilization/network-utilization?orgId=1&kiosk&theme=transparent&refresh=30s
-      height: 900
-    - type: iframe
-      title: Omada Network Dashboard
-      source: https://grafana.hrmsmrflrii.xyz/d/omada-network/omada-network-overview?orgId=1&kiosk&theme=transparent&refresh=30s
-      height: 1600
   - size: small
     widgets:
     - type: custom-api
-      title: Network Device Status
-      cache: 1m
-      url: http://192.168.40.13:9090/api/v1/query?query=omada_device_cpu_percentage
-      template: |
-        <div style="padding: 12px;">
-          <div style="font-size: 11px; color: #888; margin-bottom: 12px;">Status via Omada Controller</div>
-          {{ range .JSON.Array "data.result" }}
-          <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px; margin-bottom: 8px; background: rgba(255,255,255,0.05); border-radius: 8px;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <span style="width: 10px; height: 10px; border-radius: 50%; background: #22c55e;"></span>
-              <span style="color: #fff; font-size: 13px;">{{ .String "metric.device" }}</span>
-            </div>
-            <div style="display: flex; gap: 14px; font-size: 11px;">
-              <span style="color: #888;">{{ .String "metric.device_type" }}</span>
-              <span style="color: #3b82f6;">CPU: {{ .String "value.1" }}%</span>
-            </div>
-          </div>
-          {{ end }}
-        </div>
-    - type: custom-api
-      title: Pi-hole DNS Stats
-      cache: 2m
-      url: http://172.17.0.1:5055/api/pihole/stats
-      template: |
-        <div style="padding: 12px;">
-          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 12px;">
-            <div style="background: linear-gradient(135deg, #ef4444, #dc2626); border-radius: 8px; padding: 14px; text-align: center;">
-              <div style="font-size: 10px; color: rgba(255,255,255,0.8); text-transform: uppercase;">Queries Today</div>
-              <div style="font-size: 24px; font-weight: bold; color: #fff;">{{ .JSON.Int "queries.total" | formatNumber }}</div>
-            </div>
-            <div style="background: linear-gradient(135deg, #22c55e, #16a34a); border-radius: 8px; padding: 14px; text-align: center;">
-              <div style="font-size: 10px; color: rgba(255,255,255,0.8); text-transform: uppercase;">Blocked</div>
-              <div style="font-size: 24px; font-weight: bold; color: #fff;">{{ .JSON.Int "queries.blocked" | formatNumber }}</div>
-            </div>
-          </div>
-          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 12px;">
-            <div style="background: rgba(139, 92, 246, 0.2); border-radius: 8px; padding: 12px; text-align: center;">
-              <div style="font-size: 10px; color: #a78bfa;">Block Rate</div>
-              <div style="font-size: 20px; font-weight: 600; color: #8b5cf6;">{{ .JSON.Float "queries.percent_blocked" | printf "%.1f" }}%</div>
-            </div>
-            <div style="background: rgba(59, 130, 246, 0.2); border-radius: 8px; padding: 12px; text-align: center;">
-              <div style="font-size: 10px; color: #93c5fd;">Active Clients</div>
-              <div style="font-size: 20px; font-weight: 600; color: #3b82f6;">{{ .JSON.Int "clients.active" }}</div>
-            </div>
-          </div>
-          <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 12px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <div>
-                <div style="font-size: 10px; color: #888;">Blocklist Domains</div>
-                <div style="font-size: 14px; color: #f59e0b; font-weight: 600;">{{ .JSON.Int "gravity.domains_being_blocked" | formatNumber }}</div>
-              </div>
-              <div style="text-align: right;">
-                <div style="font-size: 10px; color: #888;">Cached</div>
-                <div style="font-size: 14px; color: #22c55e; font-weight: 600;">{{ .JSON.Int "queries.cached" | formatNumber }}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-    - type: custom-api
-      title: Latest Speedtest
+      title: Internet Speed
       cache: 10m
       url: http://192.168.40.13:3000/api/speedtest/latest
       template: |
-        <div style="padding: 12px;">
-          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
-            <div style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); border-radius: 8px; padding: 16px; text-align: center;">
-              <div style="font-size: 10px; color: rgba(255,255,255,0.8);">Download</div>
-              <div style="font-size: 26px; font-weight: bold; color: #fff;">{{ .JSON.Float "data.download" | printf "%.0f" }} Mbps</div>
-            </div>
-            <div style="background: linear-gradient(135deg, #22c55e, #15803d); border-radius: 8px; padding: 16px; text-align: center;">
-              <div style="font-size: 10px; color: rgba(255,255,255,0.8);">Upload</div>
-              <div style="font-size: 26px; font-weight: bold; color: #fff;">{{ .JSON.Float "data.upload" | printf "%.0f" }} Mbps</div>
-            </div>
+        {{ $dl := .JSON.Float "data.download" }}
+        {{ $ul := .JSON.Float "data.upload" }}
+        <div style="background: rgba(255,255,255,0.04); border-left: 3px solid #3b82f6; border-radius: 10px; padding: 12px; margin-bottom: 10px;">
+          <div style="font-size: 10px; color: #60a5fa; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;">⬇ Download</div>
+          <div style="font-size: 26px; color: #fff; font-weight: 700;">{{ printf "%.0f" $dl }}<span style="font-size: 12px; color: #94a3b8; margin-left: 4px;">Mbps</span></div>
+        </div>
+        <div style="background: rgba(255,255,255,0.04); border-left: 3px solid #22c55e; border-radius: 10px; padding: 12px;">
+          <div style="font-size: 10px; color: #4ade80; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;">⬆ Upload</div>
+          <div style="font-size: 26px; color: #fff; font-weight: 700;">{{ printf "%.0f" $ul }}<span style="font-size: 12px; color: #94a3b8; margin-left: 4px;">Mbps</span></div>
+        </div>
+    - type: custom-api
+      title: Latency
+      cache: 10m
+      url: http://192.168.40.13:3000/api/speedtest/latest
+      template: |
+        {{ $ping := .JSON.Float "data.ping" }}
+        {{ $jitter := .JSON.Float "data.ping_jitter" }}
+        {{ $pingColor := "#22c55e" }}
+        {{ if gt $ping 20.0 }}{{ $pingColor = "#f59e0b" }}{{ end }}
+        {{ if gt $ping 50.0 }}{{ $pingColor = "#ef4444" }}{{ end }}
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <div style="background: rgba(255,255,255,0.04); border-left: 3px solid {{ $pingColor }}; border-radius: 8px; padding: 10px;">
+            <div style="font-size: 9px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;">Ping</div>
+            <div style="font-size: 22px; color: #fff; font-weight: 700; margin-top: 4px;">{{ printf "%.1f" $ping }}<span style="font-size: 11px; color: #94a3b8; margin-left: 3px;">ms</span></div>
           </div>
-          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 12px;">
-            <div style="background: rgba(255,255,255,0.08); border-radius: 8px; padding: 12px; text-align: center;">
-              <div style="font-size: 10px; color: #888;">Ping</div>
-              <div style="font-size: 20px; color: #f59e0b;">{{ .JSON.Float "data.ping" | printf "%.1f" }} ms</div>
-            </div>
-            <div style="background: rgba(255,255,255,0.08); border-radius: 8px; padding: 12px; text-align: center;">
-              <div style="font-size: 10px; color: #888;">Jitter</div>
-              <div style="font-size: 20px; color: #8b5cf6;">{{ .JSON.Float "data.ping_jitter" | printf "%.1f" }} ms</div>
-            </div>
+          <div style="background: rgba(255,255,255,0.04); border-left: 3px solid #8b5cf6; border-radius: 8px; padding: 10px;">
+            <div style="font-size: 9px; color: #c4b5fd; text-transform: uppercase; letter-spacing: 0.05em;">Jitter</div>
+            <div style="font-size: 22px; color: #fff; font-weight: 700; margin-top: 4px;">{{ printf "%.1f" $jitter }}<span style="font-size: 11px; color: #94a3b8; margin-left: 3px;">ms</span></div>
           </div>
         </div>
-- name: 🎬 Media
-  columns:
+    - type: custom-api
+      title: Pi-hole DNS
+      cache: 2m
+      url: http://172.17.0.1:5055/api/pihole/stats
+      template: |
+        {{ $total := .JSON.Int "queries.total" }}
+        {{ $blocked := .JSON.Int "queries.blocked" }}
+        {{ $pct := .JSON.Float "queries.percent_blocked" }}
+        {{ $clients := .JSON.Int "clients.active" }}
+        {{ $cached := .JSON.Int "queries.cached" }}
+        {{ $blocklist := .JSON.Int "gravity.domains_being_blocked" }}
+        <div style="background: rgba(239,68,68,0.08); border-left: 3px solid #ef4444; border-radius: 10px; padding: 14px; margin-bottom: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
+            <span style="font-size: 10px; color: #f87171; text-transform: uppercase; letter-spacing: 0.05em;">Queries Today</span>
+            <span style="font-size: 22px; color: #fff; font-weight: 700;">{{ $total | formatNumber }}</span>
+          </div>
+          <div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 7px; overflow: hidden; margin-bottom: 6px;">
+            <div style="background: #ef4444; height: 7px; width: {{ printf "%.1f" $pct }}%;"></div>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 10px; color: #94a3b8;">
+            <span><span style="color: #ef4444; font-weight: 600;">{{ $blocked | formatNumber }}</span> blocked</span>
+            <span style="color: #ef4444; font-weight: 600;">{{ printf "%.1f" $pct }}%</span>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <div style="background: rgba(59,130,246,0.08); border-left: 3px solid #3b82f6; border-radius: 8px; padding: 10px;">
+            <div style="font-size: 9px; color: #93c5fd; text-transform: uppercase; letter-spacing: 0.05em;">Active Clients</div>
+            <div style="font-size: 18px; color: #fff; font-weight: 700; margin-top: 4px;">{{ $clients }}</div>
+          </div>
+          <div style="background: rgba(34,197,94,0.08); border-left: 3px solid #22c55e; border-radius: 8px; padding: 10px;">
+            <div style="font-size: 9px; color: #4ade80; text-transform: uppercase; letter-spacing: 0.05em;">Cached</div>
+            <div style="font-size: 18px; color: #fff; font-weight: 700; margin-top: 4px;">{{ $cached | formatNumber }}</div>
+          </div>
+        </div>
+        <div style="background: rgba(255,255,255,0.04); border-radius: 8px; padding: 10px; margin-top: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 10px; color: #94a3b8;">Blocklist Domains</span>
+            <span style="font-size: 14px; color: #f59e0b; font-weight: 700;">{{ $blocklist | formatNumber }}</span>
+          </div>
+        </div>
+    - type: monitor
+      title: Service Status
+      cache: 1m
+      sites:
+      - title: Core Router
+        url: http://192.168.0.1
+        icon: si:tplink
+        allow-insecure: true
+      - title: Omada Controller
+        url: https://192.168.0.101
+        icon: si:tplink
+        allow-insecure: true
+      - title: Pi-hole DNS
+        url: http://192.168.90.53/admin
+        icon: si:pihole
+      - title: Traefik
+        url: https://traefik.hrmsmrflrii.xyz
+        icon: si:traefikproxy
+        allow-insecure: true
+    - type: bookmarks
+      title: Quick Links
+      groups:
+      - title: Network
+        links:
+        - title: Omada Controller
+          url: https://192.168.0.101
+          icon: si:tplink
+        - title: TP-Link Router
+          url: http://192.168.0.1
+          icon: si:tplink
+        - title: Pi-hole Admin
+          url: http://192.168.90.53/admin
+          icon: si:pihole
+      - title: Dashboards
+        links:
+        - title: Network Utilization
+          url: https://grafana.hrmsmrflrii.xyz/d/network-utilization
+          icon: si:grafana
+        - title: Omada Overview
+          url: https://grafana.hrmsmrflrii.xyz/d/omada-network
+          icon: si:grafana
+        - title: Speedtest Tracker
+          url: https://speedtest.hrmsmrflrii.xyz
+          icon: si:speedtest
   - size: full
     widgets:
     - type: custom-api
-      title: Media Stats
-      cache: 2m
-      url: http://172.17.0.1:5054/api/stats
-      template: |
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; padding: 6px;">
-          {{ range .JSON.Array "stats" }}
-          <div style="background: {{ .String "color" }}; border-radius: 8px; padding: 18px; min-height: 90px; display: flex; flex-direction: column; justify-content: center;">
-            <div style="font-size: 11px; color: rgba(255,255,255,0.85); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; font-weight: 500;">
-              {{ .String "label" }}
-            </div>
-            <div style="font-size: 34px; font-weight: bold; color: #fff;">
-              {{ .Int "value" | formatNumber }}
-            </div>
-          </div>
-          {{ end }}
-        </div>
-    - type: custom-api
-      title: Now Showing - Recent Downloads
-      cache: 3m
-      url: http://172.17.0.1:5054/api/recent
-      template: |
-        <div style="padding: 12px;">
-          {{ if eq (.JSON.Int "count") 0 }}
-          <div style="text-align: center; color: #666; font-style: italic; padding: 40px;">
-            No recent downloads yet
-          </div>
-          {{ else }}
-          <div style="display: flex; flex-wrap: wrap; gap: 16px; justify-content: center;">
-            {{ range .JSON.Array "items" }}
-            <div style="text-align: center; width: 130px;">
-              <div style="position: relative;">
-                {{ if .String "poster" }}
-                <img src="{{ .String "poster" }}" style="width: 130px; height: 195px; object-fit: cover; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.4);" onerror="this.src='https://via.placeholder.com/130x195/333/666?text=No+Poster'">
-                {{ else }}
-                <div style="width: 130px; height: 195px; background: #333; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #666;">No Poster</div>
-                {{ end }}
-                <div style="position: absolute; top: 8px; right: 8px; background: {{ if eq (.String "type") "movie" }}#f59e0b{{ else }}#8b5cf6{{ end }}; color: #fff; font-size: 9px; padding: 3px 8px; border-radius: 8px; text-transform: uppercase; font-weight: 600;">
-                  {{ if eq (.String "type") "movie" }}Movie{{ else }}TV{{ end }}
-                </div>
-              </div>
-              <div style="font-size: 12px; color: #fff; margin-top: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500;">
-                {{ .String "title" }}
-              </div>
-              {{ if .String "episode" }}
-              <div style="font-size: 10px; color: #8b5cf6; margin-top: 4px;">{{ .String "episode" }}</div>
-              {{ else if .Int "year" }}
-              <div style="font-size: 10px; color: #888; margin-top: 4px;">{{ .Int "year" }}</div>
-              {{ end }}
-              <div style="font-size: 9px; color: #666; margin-top: 4px;">{{ .String "quality" }}</div>
-            </div>
-            {{ end }}
-          </div>
-          {{ end }}
-        </div>
-    - type: custom-api
-      title: Currently Downloading
+      title: Network Devices (Omada)
       cache: 30s
-      url: http://172.17.0.1:5054/api/queue
+      url: http://192.168.40.13:9090/api/v1/query?query=omada_device_cpu_percentage
       template: |
-        <div style="padding: 12px;">
-          {{ if eq (.JSON.Int "count") 0 }}
-          <div style="text-align: center; color: #666; font-style: italic; padding: 24px;">
-            No active downloads
-          </div>
-          {{ else }}
-          <div style="display: flex; flex-direction: column; gap: 14px;">
-            {{ range .JSON.Array "items" }}
-            <div style="display: flex; gap: 14px; background: rgba(255,255,255,0.03); border-radius: 8px; padding: 14px; align-items: center;">
-              {{ if .String "poster" }}
-              <img src="{{ .String "poster" }}" style="width: 50px; height: 75px; object-fit: cover; border-radius: 8px; flex-shrink: 0;" onerror="this.style.display='none'">
-              {{ end }}
-              <div style="flex: 1; min-width: 0;">
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
-                  <span style="background: {{ if eq (.String "type") "movie" }}#f59e0b{{ else }}#8b5cf6{{ end }}; color: #fff; font-size: 9px; padding: 3px 8px; border-radius: 8px; text-transform: uppercase; font-weight: 600;">
-                    {{ if eq (.String "type") "movie" }}Movie{{ else }}TV{{ end }}
-                  </span>
-                  <span style="font-size: 13px; color: #fff; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                    {{ .String "title" }}{{ if .String "episode" }} - {{ .String "episode" }}{{ end }}
-                  </span>
-                </div>
-                <div style="font-size: 10px; color: #888; margin-bottom: 8px;">
-                  {{ .String "quality" }} | {{ .String "client" }}{{ if ne (.String "eta") "00:00:00" }} | ETA: {{ .String "eta" }}{{ end }}
-                </div>
-                <div style="position: relative; height: 8px; background: #333; border-radius: 8px; overflow: hidden;">
-                  <div style="position: absolute; left: 0; top: 0; height: 100%; width: {{ .Float "progress" }}%; background: linear-gradient(90deg, {{ if eq (.String "type") "movie" }}#f59e0b, #fbbf24{{ else }}#8b5cf6, #a78bfa{{ end }}); border-radius: 8px; transition: width 0.3s;"></div>
-                </div>
-                <div style="font-size: 10px; color: #aaa; margin-top: 6px; text-align: right;">
-                  {{ .Float "progress" | printf "%.1f" }}%
-                </div>
+        <div style="font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; padding: 0 2px;">8 Devices · Live from Omada Controller</div>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+          {{ range .JSON.Array "data.result" }}
+          {{ $cpu := .Float "value.1" }}
+          {{ $cpuColor := "#22c55e" }}
+          {{ if gt $cpu 50.0 }}{{ $cpuColor = "#f59e0b" }}{{ end }}
+          {{ if gt $cpu 80.0 }}{{ $cpuColor = "#ef4444" }}{{ end }}
+          {{ $devType := .String "metric.device_type" }}
+          {{ $accent := "#3b82f6" }}
+          {{ if eq $devType "gateway" }}{{ $accent = "#a78bfa" }}{{ end }}
+          {{ if eq $devType "switch" }}{{ $accent = "#3b82f6" }}{{ end }}
+          {{ if eq $devType "ap" }}{{ $accent = "#06b6d4" }}{{ end }}
+          <div style="background: rgba(255,255,255,0.04); border-left: 3px solid {{ $accent }}; border-radius: 10px; padding: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <div style="display: flex; align-items: center; gap: 5px; min-width: 0; overflow: hidden;">
+                <span style="font-size: 8px; color: {{ $accent }}; background: rgba(255,255,255,0.07); padding: 1px 5px; border-radius: 3px; text-transform: uppercase; font-weight: 600;">{{ $devType }}</span>
+                <span style="font-size: 11px; font-weight: 600; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ .String "metric.device" }}</span>
+              </div>
+              <span style="font-size: 10px; color: #22c55e; font-weight: 600;">●</span>
+            </div>
+            <div style="margin-bottom: 6px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+                <span style="font-size: 9px; color: #60a5fa;">CPU</span>
+                <span style="font-size: 9px; color: #fff;">{{ printf "%.0f" $cpu }}%</span>
+              </div>
+              <div style="background: rgba(255,255,255,0.08); border-radius: 3px; height: 4px;">
+                <div style="background: {{ $cpuColor }}; border-radius: 3px; height: 4px; width: {{ printf "%.1f" $cpu }}%;"></div>
               </div>
             </div>
-            {{ end }}
           </div>
           {{ end }}
         </div>
-    - type: rss
-      title: Movie & TV News
-      collapse-after: 5
-      limit: 10
-      feeds:
-      - title: Deadline
-        url: https://deadline.com/feed/
-      - title: Hollywood Reporter
-        url: https://www.hollywoodreporter.com/feed/
-      - title: Variety
-        url: https://variety.com/feed/
+    - type: custom-api
+      title: Device Memory & Uptime
+      cache: 30s
+      url: http://192.168.40.13:9090/api/v1/query?query=omada_device_mem_percentage
+      template: |
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+          {{ range .JSON.Array "data.result" }}
+          {{ $mem := .Float "value.1" }}
+          {{ $color := "#22c55e" }}
+          {{ if gt $mem 60.0 }}{{ $color = "#f59e0b" }}{{ end }}
+          {{ if gt $mem 80.0 }}{{ $color = "#ef4444" }}{{ end }}
+          <div style="background: rgba(255,255,255,0.04); border-radius: 8px; padding: 10px;">
+            <div style="font-size: 10px; color: #fff; font-weight: 600; margin-bottom: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ .String "metric.device" }}</div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+              <span style="font-size: 9px; color: #a78bfa;">RAM</span>
+              <span style="font-size: 9px; color: #fff;">{{ printf "%.0f" $mem }}%</span>
+            </div>
+            <div style="background: rgba(255,255,255,0.08); border-radius: 3px; height: 4px;">
+              <div style="background: {{ $color }}; border-radius: 3px; height: 4px; width: {{ printf "%.1f" $mem }}%;"></div>
+            </div>
+          </div>
+          {{ end }}
+        </div>
+    - type: iframe
+      title: Cluster Bandwidth (24h)
+      source: https://grafana.hrmsmrflrii.xyz/d/network-utilization/network-utilization?orgId=1&viewPanel=9&kiosk=tv&theme=transparent&refresh=30s
+      height: 350
+    - type: iframe
+      title: WiFi Signal Quality
+      source: https://grafana.hrmsmrflrii.xyz/d/omada-network/omada-network-overview?orgId=1&viewPanel=22&kiosk=tv&theme=transparent&refresh=30s
+      height: 320
+    - type: iframe
+      title: Switch Port Traffic
+      source: https://grafana.hrmsmrflrii.xyz/d/omada-network/omada-network-overview?orgId=1&viewPanel=32&kiosk=tv&theme=transparent&refresh=30s
+      height: 320
+    - type: iframe
+      title: Client Connection Trend
+      source: https://grafana.hrmsmrflrii.xyz/d/omada-network/omada-network-overview?orgId=1&viewPanel=50&kiosk=tv&theme=transparent&refresh=30s
+      height: 280
   - size: small
     widgets:
+    - type: custom-api
+      title: Connected Clients
+      cache: 30s
+      url: http://192.168.40.13:9090/api/v1/query?query=sum(omada_client_connected_total)
+      template: |
+        {{ $total := 0 }}
+        {{ range .JSON.Array "data.result" }}{{ $total = .Int "value.1" }}{{ end }}
+        <div style="background: rgba(34,197,94,0.08); border-left: 3px solid #22c55e; border-radius: 10px; padding: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <span style="font-size: 10px; color: #4ade80; text-transform: uppercase; letter-spacing: 0.06em;">Connected</span>
+            <span style="font-size: 28px; color: #fff; font-weight: 700;">{{ $total }}</span>
+          </div>
+          <div style="font-size: 10px; color: #94a3b8; margin-top: 4px;">Across all VLANs & APs</div>
+        </div>
+    - type: custom-api
+      title: VLAN Map
+      cache: 1h
+      url: http://192.168.40.13:9090/api/v1/query?query=up
+      template: |
+        <div style="font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px;">8 VLANs · 192.168.x.0/24</div>
+        <div style="background: rgba(255,255,255,0.04); border-radius: 8px; padding: 8px; margin-bottom: 6px;"><div style="display: flex; justify-content: space-between;"><span style="font-size: 11px; color: #fff; font-weight: 600;">10 · Internal</span><span style="font-size: 10px; color: #94a3b8;">.10.0/24</span></div></div>
+        <div style="background: rgba(255,255,255,0.04); border-radius: 8px; padding: 8px; margin-bottom: 6px;"><div style="display: flex; justify-content: space-between;"><span style="font-size: 11px; color: #fff; font-weight: 600;">20 · Homelab</span><span style="font-size: 10px; color: #94a3b8;">.20.0/24</span></div></div>
+        <div style="background: rgba(255,255,255,0.04); border-radius: 8px; padding: 8px; margin-bottom: 6px;"><div style="display: flex; justify-content: space-between;"><span style="font-size: 11px; color: #fff; font-weight: 600;">30 · IoT</span><span style="font-size: 10px; color: #94a3b8;">.30.0/24</span></div></div>
+        <div style="background: rgba(255,255,255,0.04); border-radius: 8px; padding: 8px; margin-bottom: 6px;"><div style="display: flex; justify-content: space-between;"><span style="font-size: 11px; color: #fff; font-weight: 600;">40 · Production</span><span style="font-size: 10px; color: #94a3b8;">.40.0/24</span></div></div>
+        <div style="background: rgba(255,255,255,0.04); border-radius: 8px; padding: 8px; margin-bottom: 6px;"><div style="display: flex; justify-content: space-between;"><span style="font-size: 11px; color: #fff; font-weight: 600;">50 · Guest</span><span style="font-size: 10px; color: #94a3b8;">.50.0/24</span></div></div>
+        <div style="background: rgba(255,255,255,0.04); border-radius: 8px; padding: 8px; margin-bottom: 6px;"><div style="display: flex; justify-content: space-between;"><span style="font-size: 11px; color: #fff; font-weight: 600;">60 · Sonos</span><span style="font-size: 10px; color: #94a3b8;">.60.0/24</span></div></div>
+        <div style="background: rgba(255,255,255,0.04); border-radius: 8px; padding: 8px; margin-bottom: 6px;"><div style="display: flex; justify-content: space-between;"><span style="font-size: 11px; color: #fff; font-weight: 600;">90 · Mgmt</span><span style="font-size: 10px; color: #94a3b8;">.90.0/24</span></div></div>
+    - type: custom-api
+      title: PoE Power
+      cache: 1m
+      url: http://192.168.40.13:9090/api/v1/query?query=sum(omada_device_poe_remain_watts)
+      template: |
+        {{ $remain := 0.0 }}
+        {{ range .JSON.Array "data.result" }}{{ $remain = .Float "value.1" }}{{ end }}
+        <div style="background: rgba(255,255,255,0.04); border-left: 3px solid #f59e0b; border-radius: 10px; padding: 12px;">
+          <div style="font-size: 10px; color: #fbbf24; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;">PoE Remaining</div>
+          <div style="font-size: 22px; color: #fff; font-weight: 700;">{{ printf "%.1f" $remain }}<span style="font-size: 11px; color: #94a3b8; margin-left: 3px;">W</span></div>
+        </div>
+    - type: iframe
+      title: Top Clients by Traffic
+      source: https://grafana.hrmsmrflrii.xyz/d/omada-network/omada-network-overview?orgId=1&viewPanel=51&kiosk=tv&theme=transparent&refresh=30s
+      height: 380
+
+# ==================== MEDIA PAGE ====================
+- name: "🎬 Media"
+  columns:
+  - size: small
+    widgets:
+    - type: custom-api
+      title: Library Summary
+      cache: 5m
+      url: http://192.168.40.11:7878/api/v3/movie
+      headers:
+        X-Api-Key: "${RADARR_API_KEY}"
+      template: |
+        {{ $movies := len (.JSON.Array "") }}
+        {{ $totalBytes := 0.0 }}{{ $monitored := 0 }}{{ $available := 0 }}
+        {{ range .JSON.Array "" }}
+        {{ $totalBytes = add $totalBytes (.Float "sizeOnDisk") }}
+        {{ if .Bool "monitored" }}{{ $monitored = add $monitored 1 }}{{ end }}
+        {{ if .Bool "hasFile" }}{{ $available = add $available 1 }}{{ end }}
+        {{ end }}
+        {{ $tb := div $totalBytes 1099511627776.0 }}
+        <div style="background: rgba(245,158,11,0.08); border-left: 3px solid #f59e0b; border-radius: 10px; padding: 14px; margin-bottom: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span style="font-size: 11px; color: #fbbf24; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600;">🎬 Movies</span>
+            <span style="font-size: 10px; color: #94a3b8;">{{ $available }} / {{ $movies }}</span>
+          </div>
+          <div style="font-size: 26px; color: #fff; font-weight: 700;">{{ printf "%.2f" $tb }}<span style="font-size: 12px; color: #94a3b8; margin-left: 4px;">TB</span></div>
+          <div style="font-size: 10px; color: #888; margin-top: 4px;">{{ $monitored }} monitored · {{ sub $movies $available }} missing</div>
+        </div>
+    - type: custom-api
+      title: TV Library
+      cache: 5m
+      url: http://192.168.40.11:8989/api/v3/series
+      headers:
+        X-Api-Key: "${SONARR_API_KEY}"
+      template: |
+        {{ $series := len (.JSON.Array "") }}
+        {{ $totalBytes := 0.0 }}{{ $monitored := 0 }}{{ $epAvailable := 0 }}{{ $epTotal := 0 }}
+        {{ range .JSON.Array "" }}
+        {{ $totalBytes = add $totalBytes (.Float "statistics.sizeOnDisk") }}
+        {{ if .Bool "monitored" }}{{ $monitored = add $monitored 1 }}{{ end }}
+        {{ $epAvailable = add $epAvailable (.Int "statistics.episodeFileCount") }}
+        {{ $epTotal = add $epTotal (.Int "statistics.episodeCount") }}
+        {{ end }}
+        {{ $tb := div $totalBytes 1099511627776.0 }}
+        <div style="background: rgba(139,92,246,0.08); border-left: 3px solid #8b5cf6; border-radius: 10px; padding: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span style="font-size: 11px; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600;">📺 TV Series</span>
+            <span style="font-size: 10px; color: #94a3b8;">{{ $series }} shows</span>
+          </div>
+          <div style="font-size: 26px; color: #fff; font-weight: 700;">{{ printf "%.2f" $tb }}<span style="font-size: 12px; color: #94a3b8; margin-left: 4px;">TB</span></div>
+          <div style="font-size: 10px; color: #888; margin-top: 4px;">{{ $epAvailable }} / {{ $epTotal }} episodes · {{ $monitored }} monitored</div>
+        </div>
+    - type: custom-api
+      title: NAS Media Storage
+      cache: 2m
+      url: http://192.168.40.11:7878/api/v3/diskspace
+      headers:
+        X-Api-Key: "${RADARR_API_KEY}"
+      template: |
+        {{ $found := false }}{{ $free := 0.0 }}{{ $total := 0.0 }}
+        {{ range .JSON.Array "" }}
+        {{ if eq (.String "path") "/movies" }}
+        {{ $found = true }}{{ $free = .Float "freeSpace" }}{{ $total = .Float "totalSpace" }}
+        {{ end }}
+        {{ end }}
+        {{ $used := sub $total $free }}
+        {{ $pct := 0.0 }}{{ if gt $total 0.0 }}{{ $pct = div (mul $used 100.0) $total }}{{ end }}
+        {{ $usedTB := div $used 1099511627776.0 }}
+        {{ $totalTB := div $total 1099511627776.0 }}
+        <div style="background: rgba(255,255,255,0.04); border-radius: 10px; padding: 12px;">
+          <div style="font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">NAS · Proxmox-Media</div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
+            <span style="font-size: 18px; color: #fff; font-weight: 700;">{{ printf "%.1f" $usedTB }}<span style="font-size: 10px; color: #94a3b8; margin-left: 3px;">TB</span></span>
+            <span style="font-size: 11px; color: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; font-weight: 600;">{{ printf "%.1f" $pct }}%</span>
+          </div>
+          <div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 6px; overflow: hidden;">
+            <div style="background: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; height: 6px; width: {{ printf "%.1f" $pct }}%;"></div>
+          </div>
+          <div style="font-size: 10px; color: #888; margin-top: 4px;">{{ printf "%.1f" (div $free 1099511627776.0) }} TB free of {{ printf "%.1f" $totalTB }} TB</div>
+        </div>
+    - type: monitor
+      title: Service Status
+      cache: 1m
+      sites:
+      - title: Sonarr
+        url: http://192.168.40.11:8989/ping
+        icon: si:sonarr
+      - title: Radarr
+        url: http://192.168.40.11:7878/ping
+        icon: si:radarr
+      - title: Jellyfin
+        url: http://192.168.40.11:8096/health
+        icon: si:jellyfin
+      - title: Prowlarr
+        url: http://192.168.40.11:9696/ping
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/prowlarr.png
+      - title: Deluge
+        url: http://192.168.40.11:8112
+        icon: si:deluge
+      - title: SABnzbd
+        url: http://192.168.40.11:8081
+        icon: si:sabnzbd
     - type: bookmarks
-      title: Media Apps
+      title: Quick Links
       groups:
-      - title: Arr Stack
+      - title: Apps
         links:
-        - title: Radarr
-          url: https://radarr.hrmsmrflrii.xyz
-          icon: si:radarr
+        - title: Jellyfin
+          url: https://jellyfin.hrmsmrflrii.xyz
+          icon: si:jellyfin
+        - title: Jellyseerr
+          url: https://jellyseerr.hrmsmrflrii.xyz
+          icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/jellyseerr.png
         - title: Sonarr
           url: https://sonarr.hrmsmrflrii.xyz
           icon: si:sonarr
-        - title: Lidarr
-          url: https://lidarr.hrmsmrflrii.xyz
-          icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/lidarr.png
+        - title: Radarr
+          url: https://radarr.hrmsmrflrii.xyz
+          icon: si:radarr
         - title: Prowlarr
           url: https://prowlarr.hrmsmrflrii.xyz
           icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/prowlarr.png
         - title: Bazarr
           url: https://bazarr.hrmsmrflrii.xyz
           icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/bazarr.png
-        - title: Jellyseerr
-          url: https://jellyseerr.hrmsmrflrii.xyz
-          icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/jellyseerr.png
-      - title: Media Players
-        links:
-        - title: Jellyfin
-          url: https://jellyfin.hrmsmrflrii.xyz
-          icon: si:jellyfin
-        - title: Tdarr
-          url: https://tdarr.hrmsmrflrii.xyz
-          icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/tdarr.png
       - title: Downloads
         links:
         - title: Deluge
@@ -1070,23 +1592,203 @@ pages:
         - title: MeTube
           url: https://metube.hrmsmrflrii.xyz
           icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/metube.png
-    - type: monitor
-      title: Services Status
+        - title: Tdarr
+          url: https://tdarr.hrmsmrflrii.xyz
+          icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/tdarr.png
+  - size: full
+    widgets:
+    - type: custom-api
+      title: Currently Downloading
+      cache: 30s
+      url: http://192.168.40.11:8989/api/v3/queue?pageSize=50&includeUnknownSeriesItems=true
+      headers:
+        X-Api-Key: "${SONARR_API_KEY}"
+      template: |
+        {{ $sonarrCount := .JSON.Int "totalRecords" }}
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0 2px;">
+          <span style="font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 0.06em;">Sonarr Queue</span>
+          <span style="font-size: 10px; color: #94a3b8;"><span style="color: #8b5cf6; font-weight: 600;">{{ $sonarrCount }}</span> items</span>
+        </div>
+        {{ if eq $sonarrCount 0 }}
+        <div style="text-align: center; color: #666; font-style: italic; padding: 20px;">No TV downloads queued</div>
+        {{ else }}
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          {{ range .JSON.Array "records" }}
+          {{ $size := .Float "size" }}{{ $left := .Float "sizeleft" }}
+          {{ $pct := 0.0 }}{{ if gt $size 0.0 }}{{ $pct = div (mul (sub $size $left) 100.0) $size }}{{ end }}
+          {{ $statusColor := "#94a3b8" }}
+          {{ if eq (.String "status") "completed" }}{{ $statusColor = "#22c55e" }}{{ end }}
+          {{ if eq (.String "status") "downloading" }}{{ $statusColor = "#3b82f6" }}{{ end }}
+          {{ if eq (.String "status") "warning" }}{{ $statusColor = "#f59e0b" }}{{ end }}
+          {{ if eq (.String "trackedDownloadStatus") "warning" }}{{ $statusColor = "#f59e0b" }}{{ end }}
+          <div style="background: rgba(255,255,255,0.04); border-left: 3px solid {{ $statusColor }}; border-radius: 8px; padding: 10px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+              <span style="font-size: 11px; color: #fff; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 70%;">
+                <span style="font-size: 8px; color: #8b5cf6; background: rgba(139,92,246,0.15); padding: 1px 5px; border-radius: 3px; margin-right: 6px;">TV</span>
+                {{ .String "title" }}
+              </span>
+              <span style="font-size: 10px; color: {{ $statusColor }}; font-weight: 600; text-transform: uppercase;">{{ .String "status" }}</span>
+            </div>
+            <div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 5px; overflow: hidden;">
+              <div style="background: {{ $statusColor }}; height: 5px; width: {{ printf "%.1f" $pct }}%;"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-top: 4px;">
+              <span style="font-size: 9px; color: #888;">{{ printf "%.1f" (div $size 1073741824.0) }} GB · {{ .String "protocol" }}</span>
+              <span style="font-size: 9px; color: #94a3b8;">{{ printf "%.1f" $pct }}%</span>
+            </div>
+          </div>
+          {{ end }}
+        </div>
+        {{ end }}
+    - type: custom-api
+      title: Movie Queue (Radarr)
+      cache: 30s
+      url: http://192.168.40.11:7878/api/v3/queue?pageSize=50
+      headers:
+        X-Api-Key: "${RADARR_API_KEY}"
+      template: |
+        {{ $radarrCount := .JSON.Int "totalRecords" }}
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0 2px;">
+          <span style="font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 0.06em;">Radarr Queue</span>
+          <span style="font-size: 10px; color: #94a3b8;"><span style="color: #f59e0b; font-weight: 600;">{{ $radarrCount }}</span> items</span>
+        </div>
+        {{ if eq $radarrCount 0 }}
+        <div style="text-align: center; color: #666; font-style: italic; padding: 20px;">No movie downloads queued</div>
+        {{ else }}
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          {{ range .JSON.Array "records" }}
+          {{ $size := .Float "size" }}{{ $left := .Float "sizeleft" }}
+          {{ $pct := 0.0 }}{{ if gt $size 0.0 }}{{ $pct = div (mul (sub $size $left) 100.0) $size }}{{ end }}
+          {{ $statusColor := "#94a3b8" }}
+          {{ if eq (.String "status") "completed" }}{{ $statusColor = "#22c55e" }}{{ end }}
+          {{ if eq (.String "status") "downloading" }}{{ $statusColor = "#3b82f6" }}{{ end }}
+          {{ if eq (.String "status") "warning" }}{{ $statusColor = "#f59e0b" }}{{ end }}
+          {{ if eq (.String "trackedDownloadStatus") "warning" }}{{ $statusColor = "#f59e0b" }}{{ end }}
+          <div style="background: rgba(255,255,255,0.04); border-left: 3px solid {{ $statusColor }}; border-radius: 8px; padding: 10px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+              <span style="font-size: 11px; color: #fff; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 70%;">
+                <span style="font-size: 8px; color: #f59e0b; background: rgba(245,158,11,0.15); padding: 1px 5px; border-radius: 3px; margin-right: 6px;">MOVIE</span>
+                {{ .String "title" }}
+              </span>
+              <span style="font-size: 10px; color: {{ $statusColor }}; font-weight: 600; text-transform: uppercase;">{{ .String "status" }}</span>
+            </div>
+            <div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 5px; overflow: hidden;">
+              <div style="background: {{ $statusColor }}; height: 5px; width: {{ printf "%.1f" $pct }}%;"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-top: 4px;">
+              <span style="font-size: 9px; color: #888;">{{ printf "%.1f" (div $size 1073741824.0) }} GB · {{ .String "protocol" }}</span>
+              <span style="font-size: 9px; color: #94a3b8;">{{ printf "%.1f" $pct }}%</span>
+            </div>
+          </div>
+          {{ end }}
+        </div>
+        {{ end }}
+    - type: custom-api
+      title: Recently Added — TV
+      cache: 5m
+      url: http://192.168.40.11:8989/api/v3/history?pageSize=12&eventType=3&sortKey=date&sortDirection=descending
+      headers:
+        X-Api-Key: "${SONARR_API_KEY}"
+      template: |
+        {{ $count := .JSON.Int "totalRecords" }}
+        {{ if eq $count 0 }}
+        <div style="text-align: center; color: #666; font-style: italic; padding: 20px;">No recent imports</div>
+        {{ else }}
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+          {{ range .JSON.Array "records" }}
+          <div style="background: rgba(255,255,255,0.04); border-radius: 8px; padding: 10px;">
+            <div style="font-size: 11px; color: #fff; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 4px;">
+              <span style="font-size: 8px; color: #8b5cf6; background: rgba(139,92,246,0.15); padding: 1px 4px; border-radius: 3px; margin-right: 5px;">TV</span>
+              {{ .String "sourceTitle" }}
+            </div>
+            <div style="font-size: 9px; color: #888;">{{ .String "date" }}</div>
+          </div>
+          {{ end }}
+        </div>
+        {{ end }}
+    - type: rss
+      title: Movie & TV News
+      collapse-after: 3
+      limit: 8
+      feeds:
+      - title: Deadline
+        url: https://deadline.com/feed/
+      - title: Variety
+        url: https://variety.com/feed/
+  - size: small
+    widgets:
+    - type: custom-api
+      title: Indexer Health
       cache: 1m
-      sites:
-      - title: Radarr
-        url: http://192.168.40.11:7878/ping
-        icon: si:radarr
-      - title: Sonarr
-        url: http://192.168.40.11:8989/ping
-        icon: si:sonarr
-      - title: Jellyfin
-        url: http://192.168.40.11:8096/health
-        icon: si:jellyfin
-      - title: Deluge
-        url: http://192.168.40.11:8112
-        icon: si:deluge
-- name: 📰 News
+      url: http://192.168.40.11:9696/api/v1/indexerstatus
+      headers:
+        X-Api-Key: "${PROWLARR_API_KEY}"
+      template: |
+        {{ $total := len (.JSON.Array "") }}
+        {{ $failing := 0 }}
+        {{ range .JSON.Array "" }}{{ if .String "disabledTill" }}{{ $failing = add $failing 1 }}{{ end }}{{ end }}
+        <div style="background: rgba(255,255,255,0.04); border-radius: 10px; padding: 12px; margin-bottom: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
+            <span style="font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;">Failing Indexers</span>
+            <span style="font-size: 22px; color: {{ if eq $failing 0 }}#22c55e{{ else }}#ef4444{{ end }}; font-weight: 700;">{{ $failing }}</span>
+          </div>
+          <div style="font-size: 10px; color: #888;">{{ $total }} indexers tracked by Prowlarr</div>
+        </div>
+        {{ range .JSON.Array "" }}
+        {{ if .String "disabledTill" }}
+        <div style="background: rgba(239,68,68,0.08); border-left: 3px solid #ef4444; border-radius: 8px; padding: 8px; margin-bottom: 6px;">
+          <div style="font-size: 10px; color: #fff; font-weight: 600;">Indexer #{{ .Int "indexerId" }}</div>
+          <div style="font-size: 9px; color: #f87171; margin-top: 2px;">{{ .String "mostRecentFailure" }}</div>
+        </div>
+        {{ end }}
+        {{ end }}
+    - type: custom-api
+      title: Sonarr Alerts
+      cache: 2m
+      url: http://192.168.40.11:8989/api/v3/health
+      headers:
+        X-Api-Key: "${SONARR_API_KEY}"
+      template: |
+        {{ $count := len (.JSON.Array "") }}
+        {{ if eq $count 0 }}
+        <div style="background: rgba(34,197,94,0.08); border-left: 3px solid #22c55e; border-radius: 8px; padding: 12px;">
+          <div style="font-size: 11px; color: #fff; font-weight: 600;">✓ Sonarr healthy</div>
+          <div style="font-size: 10px; color: #94a3b8; margin-top: 2px;">No issues</div>
+        </div>
+        {{ else }}
+        {{ range .JSON.Array "" }}
+        {{ $color := "#f59e0b" }}{{ if eq (.String "type") "error" }}{{ $color = "#ef4444" }}{{ end }}
+        <div style="background: rgba(255,255,255,0.04); border-left: 3px solid {{ $color }}; border-radius: 8px; padding: 10px; margin-bottom: 6px;">
+          <div style="font-size: 9px; color: {{ $color }}; text-transform: uppercase; font-weight: 600;">{{ .String "type" }}</div>
+          <div style="font-size: 10px; color: #fff; margin-top: 3px;">{{ .String "message" }}</div>
+        </div>
+        {{ end }}
+        {{ end }}
+    - type: custom-api
+      title: Radarr Alerts
+      cache: 2m
+      url: http://192.168.40.11:7878/api/v3/health
+      headers:
+        X-Api-Key: "${RADARR_API_KEY}"
+      template: |
+        {{ $count := len (.JSON.Array "") }}
+        {{ if eq $count 0 }}
+        <div style="background: rgba(34,197,94,0.08); border-left: 3px solid #22c55e; border-radius: 8px; padding: 12px;">
+          <div style="font-size: 11px; color: #fff; font-weight: 600;">✓ Radarr healthy</div>
+          <div style="font-size: 10px; color: #94a3b8; margin-top: 2px;">No issues</div>
+        </div>
+        {{ else }}
+        {{ range .JSON.Array "" }}
+        {{ $color := "#f59e0b" }}{{ if eq (.String "type") "error" }}{{ $color = "#ef4444" }}{{ end }}
+        <div style="background: rgba(255,255,255,0.04); border-left: 3px solid {{ $color }}; border-radius: 8px; padding: 10px; margin-bottom: 6px;">
+          <div style="font-size: 9px; color: {{ $color }}; text-transform: uppercase; font-weight: 600;">{{ .String "type" }}</div>
+          <div style="font-size: 10px; color: #fff; margin-top: 3px;">{{ .String "message" }}</div>
+        </div>
+        {{ end }}
+        {{ end }}
+
+# ==================== NEWS PAGE (Split from Web) ====================
+- name: "\U0001F4F0 News"
   columns:
   - size: full
     widgets:
@@ -1209,794 +1911,4 @@ pages:
         - title: Ars Technica
           url: https://arstechnica.com
           icon: si:arstechnica
-- name: 💰 Finance
-  columns:
-  - size: full
-    widgets:
-    - type: rss
-      title: Big Tech News
-      collapse-after: 4
-      limit: 8
-      style: horizontal-cards
-      feeds:
-      - title: r/microsoft
-        url: https://www.reddit.com/r/microsoft/.rss
-      - title: r/NVIDIA
-        url: https://www.reddit.com/r/NVIDIA/.rss
-      - title: r/google
-        url: https://www.reddit.com/r/google/.rss
-      - title: r/apple
-        url: https://www.reddit.com/r/apple/.rss
-      - title: r/Meta
-        url: https://www.reddit.com/r/Meta/.rss
-    - type: rss
-      title: Stock Market Discussion
-      collapse-after: 5
-      limit: 10
-      style: horizontal-cards
-      feeds:
-      - title: r/stocks
-        url: https://www.reddit.com/r/stocks/.rss
-      - title: r/investing
-        url: https://www.reddit.com/r/investing/.rss
-      - title: r/wallstreetbets
-        url: https://www.reddit.com/r/wallstreetbets/.rss
-    - type: rss
-      title: Crypto News
-      collapse-after: 5
-      limit: 10
-      style: horizontal-cards
-      feeds:
-      - title: r/cryptocurrency
-        url: https://www.reddit.com/r/cryptocurrency/.rss
-      - title: r/Bitcoin
-        url: https://www.reddit.com/r/Bitcoin/.rss
-      - title: r/ethereum
-        url: https://www.reddit.com/r/ethereum/.rss
-  - size: small
-    widgets:
-    - type: markets
-      title: Tech Stocks
-      sort-by: change
-      markets:
-      - symbol: MSFT
-        name: Microsoft
-      - symbol: NVDA
-        name: NVIDIA
-      - symbol: ORCL
-        name: Oracle
-      - symbol: AMZN
-        name: Amazon
-      - symbol: GOOGL
-        name: Alphabet
-      - symbol: META
-        name: Meta
-      - symbol: AAPL
-        name: Apple
-      - symbol: TSLA
-        name: Tesla
-    - type: markets
-      title: Crypto
-      sort-by: change
-      markets:
-      - symbol: BTC-USD
-        name: Bitcoin
-      - symbol: ETH-USD
-        name: Ethereum
-      - symbol: XRP-USD
-        name: XRP
-      - symbol: SOL-USD
-        name: Solana
-      - symbol: DOGE-USD
-        name: Dogecoin
-      - symbol: ADA-USD
-        name: Cardano
-    - type: bookmarks
-      title: Quick Links
-      groups:
-      - title: Finance
-        links:
-        - title: Yahoo Finance
-          url: https://finance.yahoo.com
-          icon: si:yahoo
-        - title: CoinMarketCap
-          url: https://coinmarketcap.com
-          icon: si:coinmarketcap
-        - title: TradingView
-          url: https://tradingview.com
-          icon: si:tradingview
-- name: 🤖 Reddit
-  columns:
-  - size: full
-    widgets:
-    - type: custom-api
-      title: Reddit Feed
-      cache: 5m
-      url: http://172.17.0.1:5053/api/feed
-      template: |
-        <div style="padding: 12px;">
-        {{ if .JSON.Array "groups" }}
-        {{ range .JSON.Array "groups" }}
-        <div style="margin-bottom: 24px;">
-          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">
-            <svg viewBox="0 0 24 24" fill="#ff4500" style="width: 22px; height: 22px;">
-              <path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/>
-            </svg>
-            <span style="font-size: 16px; font-weight: 600; color: #ff4500;">r/{{ .String "name" }}</span>
-          </div>
-          {{ range .Array "posts" }}
-          <a href="{{ .String "url" }}" target="_blank" style="display: flex; gap: 14px; padding: 12px; margin-bottom: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; text-decoration: none; transition: background 0.2s;">
-            {{ if .String "thumbnail" }}
-            <img src="{{ .String "thumbnail" }}" alt="" style="width: 80px; height: 60px; object-fit: cover; border-radius: 8px; flex-shrink: 0;" onerror="this.style.display='none'">
-            {{ end }}
-            <div style="flex: 1; min-width: 0;">
-              <div style="color: #eee; font-size: 14px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">{{ .String "title" }}</div>
-              <div style="display: flex; gap: 14px; margin-top: 8px; font-size: 12px; color: #888;">
-                <span style="color: #ff4500;">{{ .Int "score" }} pts</span>
-                <span>{{ .Int "comments" }} comments</span>
-              </div>
-            </div>
-          </a>
-          {{ end }}
-        </div>
-        {{ end }}
-        {{ else }}
-        <div style="text-align: center; color: #666; padding: 40px;">Loading Reddit feed...</div>
-        {{ end }}
-        </div>
-        <div style="text-align: center; padding: 12px;">
-          <a href="http://172.17.0.1:5053" target="_blank" style="color: #ff4500; text-decoration: none; font-size: 13px;">Manage Subreddits</a>
-        </div>
-  - size: small
-    widgets:
-    - type: reddit
-      title: r/technology
-      subreddit: technology
-      style: vertical-list
-      show-thumbnails: true
-      limit: 8
-      collapse-after: 4
-      sort-by: hot
-    - type: reddit
-      title: r/programming
-      subreddit: programming
-      style: vertical-list
-      show-thumbnails: true
-      limit: 6
-      collapse-after: 3
-      sort-by: hot
-    - type: reddit
-      title: r/sysadmin
-      subreddit: sysadmin
-      style: vertical-list
-      show-thumbnails: true
-      limit: 6
-      collapse-after: 3
-      sort-by: hot
-    - type: bookmarks
-      title: Subreddits
-      groups:
-      - title: Tech
-        links:
-        - title: r/homelab
-          url: https://reddit.com/r/homelab
-          icon: si:reddit
-        - title: r/selfhosted
-          url: https://reddit.com/r/selfhosted
-          icon: si:reddit
-        - title: r/datahoarder
-          url: https://reddit.com/r/datahoarder
-          icon: si:reddit
-        - title: r/netsec
-          url: https://reddit.com/r/netsec
-          icon: si:reddit
-      - title: Hobby
-        links:
-        - title: r/pcmasterrace
-          url: https://reddit.com/r/pcmasterrace
-          icon: si:reddit
-        - title: r/mechanicalkeyboards
-          url: https://reddit.com/r/mechanicalkeyboards
-          icon: si:reddit
-        - title: r/buildapc
-          url: https://reddit.com/r/buildapc
-          icon: si:reddit
-- name: 🏀 Sports
-  columns:
-  - size: small
-    widgets:
-    - type: custom-api
-      title: Today's NBA Games
-      cache: 2m
-      url: http://192.168.40.13:5060/games
-      template: |
-        <div style="font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
-          <div style="color: #888; font-size: 12px; margin-bottom: 12px;">{{ .JSON.String "dateDisplay" }}</div>
-          {{ if eq (.JSON.Int "gamesCount") 0 }}
-          <div style="color: #666; text-align: center; padding: 24px;">No games scheduled today</div>
-          {{ else }}
-          {{ range .JSON.Array "games" }}
-          <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 12px; margin-bottom: 10px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <div style="flex: 1;">
-                <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                  <img src="{{ .String "awayTeam.logo" }}" style="width: 26px; height: 26px; margin-right: 10px;">
-                  <span style="font-weight: 600; {{ if .Bool "awayTeam.winner" }}color: #22c55e;{{ end }}">{{ .String "awayTeam.abbreviation" }}</span>
-                  <span style="color: #888; font-size: 10px; margin-left: 8px;">{{ .String "awayTeam.record" }}</span>
-                </div>
-                <div style="display: flex; align-items: center;">
-                  <img src="{{ .String "homeTeam.logo" }}" style="width: 26px; height: 26px; margin-right: 10px;">
-                  <span style="font-weight: 600; {{ if .Bool "homeTeam.winner" }}color: #22c55e;{{ end }}">{{ .String "homeTeam.abbreviation" }}</span>
-                  <span style="color: #888; font-size: 10px; margin-left: 8px;">{{ .String "homeTeam.record" }}</span>
-                </div>
-              </div>
-              <div style="text-align: right;">
-                <div style="font-size: 20px; font-weight: bold; {{ if .Bool "awayTeam.winner" }}color: #22c55e;{{ end }}">{{ .String "awayTeam.score" }}</div>
-                <div style="font-size: 20px; font-weight: bold; {{ if .Bool "homeTeam.winner" }}color: #22c55e;{{ end }}">{{ .String "homeTeam.score" }}</div>
-              </div>
-            </div>
-            <div style="color: #f59e0b; font-size: 11px; margin-top: 8px; text-align: center;">{{ .String "status.detail" }}{{ if .String "broadcast" }} | {{ .String "broadcast" }}{{ end }}</div>
-          </div>
-          {{ end }}
-          {{ end }}
-        </div>
-    - type: custom-api
-      title: Injury Report
-      cache: 15m
-      url: http://192.168.40.13:5060/injuries
-      template: |
-        <div style="font-family: -apple-system, sans-serif; font-size: 11px;">
-          {{ if .JSON.String "error" }}
-          <div style="color: #888; text-align: center;">Error loading injuries</div>
-          {{ else }}
-          <div style="color: #888; margin-bottom: 8px;">{{ .JSON.Int "total" }} players injured</div>
-          {{ range .JSON.Array "injuries" }}
-          <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 8px; margin-bottom: 6px; display: flex; align-items: center;">
-            <img src="{{ .String "headshot" }}" style="width: 36px; height: 36px; border-radius: 50%; margin-right: 10px; object-fit: cover;">
-            <div style="flex: 1;">
-              <div style="font-weight: 600;">{{ .String "name" }}</div>
-              <div style="color: #888; font-size: 10px;">{{ .String "team" }} | {{ .String "position" }}</div>
-            </div>
-            <div style="text-align: right;">
-              <div style="{{ if eq (.String "status") "Out" }}color: #ef4444;{{ else if eq (.String "status") "Day-To-Day" }}color: #f59e0b;{{ else }}color: #888;{{ end }} font-weight: bold;">{{ .String "status" }}</div>
-              <div style="color: #888; font-size: 9px;">{{ .String "type" }}</div>
-            </div>
-          </div>
-          {{ end }}
-          {{ end }}
-        </div>
-  - size: full
-    widgets:
-    - type: custom-api
-      title: NBA Standings
-      cache: 30m
-      url: http://192.168.40.13:5060/standings
-      template: |
-        <div style="font-family: -apple-system, BlinkMacSystemFont, sans-serif; display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-          <div>
-            <h3 style="color: #3b82f6; font-size: 14px; margin-bottom: 12px; border-bottom: 2px solid #3b82f6; padding-bottom: 6px;">Eastern Conference</h3>
-            <table style="width: 100%; font-size: 11px;">
-              <thead>
-                <tr style="color: #666;">
-                  <th style="text-align: left; padding: 4px;">#</th>
-                  <th style="text-align: left; padding: 4px;">Team</th>
-                  <th style="text-align: center; padding: 4px;">W</th>
-                  <th style="text-align: center; padding: 4px;">L</th>
-                  <th style="text-align: center; padding: 4px;">GB</th>
-                </tr>
-              </thead>
-              <tbody>
-                {{ range .JSON.Array "eastern" }}
-                <tr style="border-top: 1px solid rgba(255,255,255,0.05); {{ if le (.Int "rank") 6 }}background: rgba(34,197,94,0.1);{{ else if le (.Int "rank") 10 }}background: rgba(245,158,11,0.1);{{ end }}">
-                  <td style="padding: 4px; font-weight: bold;">{{ .Int "rank" }}</td>
-                  <td style="padding: 4px;"><img src="{{ .String "logo" }}" style="width: 18px; height: 18px; margin-right: 6px; vertical-align: middle;"><span style="font-weight: 500;">{{ .String "abbreviation" }}</span></td>
-                  <td style="padding: 4px; text-align: center; color: #22c55e;">{{ .Int "wins" }}</td>
-                  <td style="padding: 4px; text-align: center; color: #ef4444;">{{ .Int "losses" }}</td>
-                  <td style="padding: 4px; text-align: center; color: #888;">{{ .Float "gamesBehind" }}</td>
-                </tr>
-                {{ end }}
-              </tbody>
-            </table>
-          </div>
-          <div>
-            <h3 style="color: #ef4444; font-size: 14px; margin-bottom: 12px; border-bottom: 2px solid #ef4444; padding-bottom: 6px;">Western Conference</h3>
-            <table style="width: 100%; font-size: 11px;">
-              <thead>
-                <tr style="color: #666;">
-                  <th style="text-align: left; padding: 4px;">#</th>
-                  <th style="text-align: left; padding: 4px;">Team</th>
-                  <th style="text-align: center; padding: 4px;">W</th>
-                  <th style="text-align: center; padding: 4px;">L</th>
-                  <th style="text-align: center; padding: 4px;">GB</th>
-                </tr>
-              </thead>
-              <tbody>
-                {{ range .JSON.Array "western" }}
-                <tr style="border-top: 1px solid rgba(255,255,255,0.05); {{ if le (.Int "rank") 6 }}background: rgba(34,197,94,0.1);{{ else if le (.Int "rank") 10 }}background: rgba(245,158,11,0.1);{{ end }}">
-                  <td style="padding: 4px; font-weight: bold;">{{ .Int "rank" }}</td>
-                  <td style="padding: 4px;"><img src="{{ .String "logo" }}" style="width: 18px; height: 18px; margin-right: 6px; vertical-align: middle;"><span style="font-weight: 500;">{{ .String "abbreviation" }}</span></td>
-                  <td style="padding: 4px; text-align: center; color: #22c55e;">{{ .Int "wins" }}</td>
-                  <td style="padding: 4px; text-align: center; color: #ef4444;">{{ .Int "losses" }}</td>
-                  <td style="padding: 4px; text-align: center; color: #888;">{{ .Float "gamesBehind" }}</td>
-                </tr>
-                {{ end }}
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div style="color: #666; font-size: 10px; margin-top: 12px; text-align: center;">
-          Green = Playoff spot (1-6) | Yellow = Play-in (7-10)
-        </div>
-    - type: custom-api
-      title: NBA News
-      cache: 15m
-      url: http://192.168.40.13:5060/news
-      template: |
-        <div style="font-family: -apple-system, sans-serif; font-size: 12px;">
-          {{ if .JSON.String "error" }}
-          <div style="color: #888; text-align: center;">Error loading news</div>
-          {{ else }}
-          {{ range .JSON.Array "articles" }}
-          <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 12px; margin-bottom: 10px; display: flex; gap: 14px;">
-            {{ if .String "image" }}
-            <img src="{{ .String "image" }}" style="width: 80px; height: 60px; border-radius: 8px; object-fit: cover;">
-            {{ end }}
-            <div style="flex: 1;">
-              <div style="font-weight: 600; color: #fff; margin-bottom: 6px;">{{ .String "headline" }}</div>
-              <div style="color: #888; font-size: 10px; line-height: 1.4;">{{ .String "description" }}</div>
-            </div>
-          </div>
-          {{ end }}
-          {{ end }}
-        </div>
-  - size: small
-    widgets:
-    - type: custom-api
-      title: Fantasy League
-      cache: 30m
-      url: http://192.168.40.13:5060/fantasy
-      template: |
-        <div style="font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
-          {{ if .JSON.String "error" }}
-          <div style="color: #888; text-align: center; padding: 24px; font-size: 12px;">
-            Fantasy not configured
-          </div>
-          {{ else }}
-          <div style="color: #888; font-size: 11px; margin-bottom: 10px;">{{ .JSON.String "leagueName" }}</div>
-          <table style="width: 100%; font-size: 12px;">
-            <thead>
-              <tr style="color: #666;">
-                <th style="text-align: left; padding: 6px;">#</th>
-                <th style="text-align: left; padding: 6px;">Team</th>
-                <th style="text-align: center; padding: 6px;">W</th>
-                <th style="text-align: center; padding: 6px;">L</th>
-              </tr>
-            </thead>
-            <tbody>
-              {{ range .JSON.Array "teams" }}
-              <tr style="border-top: 1px solid rgba(255,255,255,0.1);">
-                <td style="padding: 6px; color: {{ if le (.Int "rank") 4 }}#22c55e{{ else if le (.Int "rank") 8 }}#f59e0b{{ else }}#888{{ end }};">{{ .Int "rank" }}</td>
-                <td style="padding: 6px;">{{ .String "name" }}</td>
-                <td style="padding: 6px; text-align: center;">{{ .Int "wins" }}</td>
-                <td style="padding: 6px; text-align: center;">{{ .Int "losses" }}</td>
-              </tr>
-              {{ end }}
-            </tbody>
-          </table>
-          {{ end }}
-        </div>
-    - type: custom-api
-      title: Week Matchups
-      cache: 10m
-      url: http://192.168.40.13:5060/fantasy/matchups
-      template: |
-        <div style="font-family: -apple-system, sans-serif; font-size: 11px;">
-          {{ if .JSON.String "error" }}
-          <div style="color: #888; text-align: center;">Error</div>
-          {{ else }}
-          <div style="color: #888; margin-bottom: 8px;">Week {{ .JSON.Int "week" }}</div>
-          {{ range .JSON.Array "matchups" }}
-          <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 8px; margin-bottom: 6px;">
-            <div style="display: flex; justify-content: space-between;">
-              <span style="{{ if gt (.Float "team1.points") (.Float "team2.points") }}color: #22c55e;{{ end }}">{{ .String "team1.name" }}</span>
-              <span style="font-weight: bold; {{ if gt (.Float "team1.points") (.Float "team2.points") }}color: #22c55e;{{ end }}">{{ .Float "team1.points" }}</span>
-            </div>
-            <div style="display: flex; justify-content: space-between;">
-              <span style="{{ if gt (.Float "team2.points") (.Float "team1.points") }}color: #22c55e;{{ end }}">{{ .String "team2.name" }}</span>
-              <span style="font-weight: bold; {{ if gt (.Float "team2.points") (.Float "team1.points") }}color: #22c55e;{{ end }}">{{ .Float "team2.points" }}</span>
-            </div>
-          </div>
-          {{ end }}
-          {{ end }}
-        </div>
-    - type: custom-api
-      title: Hot Pickups
-      cache: 1h
-      url: http://192.168.40.13:5060/fantasy/recommendations
-      template: |
-        <div style="font-family: -apple-system, sans-serif; font-size: 11px;">
-          {{ if .JSON.String "error" }}
-          <div style="color: #888; text-align: center;">{{ .JSON.String "error" }}</div>
-          {{ else }}
-          <div style="color: #888; margin-bottom: 8px;">Top Available Players</div>
-          {{ range .JSON.Array "hotPickups" }}
-          <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 8px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;">
-            <div>
-              <div style="font-weight: 600;">{{ .String "name" }}</div>
-              <div style="color: #888; font-size: 10px;">{{ .String "team" }} | {{ .String "position" }}</div>
-            </div>
-            <div style="text-align: right;">
-              <div style="color: #22c55e; font-weight: bold;">{{ printf "%.1f" (.Float "pts") }} PTS</div>
-              <div style="color: #888; font-size: 10px;">{{ printf "%.1f" (.Float "ast") }}A {{ printf "%.1f" (.Float "reb") }}R</div>
-            </div>
-          </div>
-          {{ end }}
-          {{ end }}
-        </div>
-- name: Health
-  columns:
-  - size: small
-    widgets:
-    - type: custom-api
-      title: Weekly Exercise
-      cache: 5m
-      url: http://192.168.40.13:5062/api/activities/weekly
-      template: |
-        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
-          <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 12px;">
-            <span style="font-size: 32px; font-weight: 700; color: {{ .JSON.String "status_color" }};">{{ .JSON.Int "active_days" }}</span>
-            <span style="font-size: 14px; color: #71717a;">/7 days active</span>
-          </div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-            <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 6px;">
-              <div style="font-size: 10px; color: #71717a;">Activities</div>
-              <div style="font-size: 16px; font-weight: 600; color: #d4d4d8;">{{ .JSON.Int "total_activities" }}</div>
-            </div>
-            <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 6px;">
-              <div style="font-size: 10px; color: #71717a;">Time</div>
-              <div style="font-size: 16px; font-weight: 600; color: #d4d4d8;">{{ .JSON.String "total_time" }}</div>
-            </div>
-            <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 6px;">
-              <div style="font-size: 10px; color: #71717a;">Rides</div>
-              <div style="font-size: 16px; font-weight: 600; color: #60a5fa;">{{ .JSON.Int "rides" }}</div>
-            </div>
-            <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 6px;">
-              <div style="font-size: 10px; color: #71717a;">Gym</div>
-              <div style="font-size: 16px; font-weight: 600; color: #a78bfa;">{{ .JSON.Int "gym_sessions" }}</div>
-            </div>
-          </div>
-          {{ if .JSON.String "total_distance" }}
-          <div style="font-size: 11px; color: #71717a; margin-top: 8px;">
-            Distance: {{ .JSON.String "total_distance" }}
-            {{ if gt (.JSON.Int "total_calories") 0 }} &middot; {{ .JSON.Int "total_calories" }} cal{{ end }}
-          </div>
-          {{ end }}
-        </div>
-    - type: custom-api
-      title: Weight Progress
-      cache: 10m
-      url: http://192.168.40.13:5062/api/weight
-      template: |
-        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
-          {{ if .JSON.Float "current_weight" }}
-          <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px;">
-            <span style="font-size: 28px; font-weight: 700; color: #d4d4d8;">{{ .JSON.Float "current_weight" }}</span>
-            <span style="font-size: 13px; color: #71717a;">{{ .JSON.String "unit" }}</span>
-          </div>
-          {{ if .JSON.Float "goal_weight" }}
-          <div style="font-size: 11px; color: #71717a; margin-bottom: 8px;">
-            Goal: {{ .JSON.Float "goal_weight" }} {{ .JSON.String "unit" }}
-          </div>
-          {{ end }}
-          <div style="display: flex; gap: 12px; font-size: 12px;">
-            {{ if .JSON.Float "weekly_change" }}
-            <div>
-              <span style="color: #71717a;">Week: </span>
-              <span style="color: {{ if lt (.JSON.Float "weekly_change") 0.0 }}#22c55e{{ else }}#f59e0b{{ end }}; font-weight: 600;">
-                {{ .JSON.Float "weekly_change" }} {{ .JSON.String "unit" }}
-              </span>
-            </div>
-            {{ end }}
-            {{ if .JSON.Float "total_change" }}
-            <div>
-              <span style="color: #71717a;">Total: </span>
-              <span style="color: {{ if lt (.JSON.Float "total_change") 0.0 }}#22c55e{{ else }}#f59e0b{{ end }}; font-weight: 600;">
-                {{ .JSON.Float "total_change" }} {{ .JSON.String "unit" }}
-              </span>
-            </div>
-            {{ end }}
-          </div>
-          {{ else }}
-          <div style="color: #52525b; text-align: center; padding: 20px; font-size: 12px;">
-            No weight data yet
-          </div>
-          {{ end }}
-        </div>
-    - type: custom-api
-      title: Strava
-      cache: 10m
-      url: http://192.168.40.13:5062/api/strava/status
-      template: |
-        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
-          {{ if .JSON.Bool "connected" }}
-          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-            <div style="width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,0.6);"></div>
-            <span style="font-size: 12px; color: #22c55e; font-weight: 500;">Connected</span>
-          </div>
-          <div style="font-size: 12px; color: #d4d4d8; margin-bottom: 4px;">{{ .JSON.String "athlete" }}</div>
-          <div style="font-size: 11px; color: #71717a;">
-            Last sync: {{ .JSON.String "last_sync" }}<br>
-            {{ .JSON.Int "activities_cached" }} activities cached
-          </div>
-          {{ else }}
-          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-            <div style="width: 8px; height: 8px; border-radius: 50%; background: #ef4444;"></div>
-            <span style="font-size: 12px; color: #ef4444; font-weight: 500;">Not Connected</span>
-          </div>
-          <div style="font-size: 11px; color: #71717a;">
-            Visit the setup page to connect Strava
-          </div>
-          {{ end }}
-        </div>
-    - type: bookmarks
-      groups:
-      - title: Health Links
-        links:
-        - title: Strava Dashboard
-          url: https://www.strava.com/dashboard
-        - title: Health Tracker Setup
-          source: https://health-api.hrmsmrflrii.xyz/page/setup
-        - title: Log Weight
-          source: https://health-api.hrmsmrflrii.xyz/page/weight
-  - size: full
-    widgets:
-    - type: iframe
-      title: Exercise Calendar
-      source: https://health-api.hrmsmrflrii.xyz/page/calendar
-      height: 280
-    - type: iframe
-      title: Weight Tracker
-      source: https://health-api.hrmsmrflrii.xyz/page/weight
-      height: 420
-    - type: iframe
-      title: Strava Stats
-      source: https://health-api.hrmsmrflrii.xyz/page/stats
-      height: 500
-    - type: iframe
-      title: Recent Activities
-      source: https://health-api.hrmsmrflrii.xyz/page/activities
-      height: 380
-server:
-  port: 8080
-  assets-path: /app/assets
-theme:
-  background-color: 240 21 15
-  primary-color: 267 84 81
-  positive-color: 115 54 76
-  negative-color: 343 81 75
-  contrast-multiplier: 1.2
-  custom-css-file: /app/assets/custom-themes.css
-  document-width: 100%
-  presets:
-    catppuccin-mocha:
-      background-color: 240 21 15
-      primary-color: 267 84 81
-      positive-color: 115 54 76
-      negative-color: 343 81 75
-      contrast-multiplier: 1.2
-    classic-dark:
-      background-color: 240 8 9
-      primary-color: 43 50 70
-      positive-color: 43 50 70
-      negative-color: 0 70 70
-      contrast-multiplier: 1.0
-    cyberpunk:
-      background-color: 240 33 8
-      primary-color: 300 100 50
-      positive-color: 158 100 50
-      negative-color: 340 100 50
-      contrast-multiplier: 1.4
-    dracula:
-      background-color: 231 15 18
-      primary-color: 265 89 78
-      positive-color: 135 94 65
-      negative-color: 0 100 67
-      contrast-multiplier: 1.2
-    gruvbox-dark:
-      background-color: 0 0 16
-      primary-color: 43 95 58
-      positive-color: 61 66 44
-      negative-color: 5 96 59
-      contrast-multiplier: 1.2
-    midnight-blue:
-      background-color: 213 58 10
-      primary-color: 227 95 67
-      positive-color: 162 82 40
-      negative-color: 0 94 65
-      contrast-multiplier: 1.2
-    monokai:
-      background-color: 70 8 15
-      primary-color: 338 95 56
-      positive-color: 80 76 53
-      negative-color: 338 95 56
-      contrast-multiplier: 1.3
-    nord:
-      background-color: 220 16 22
-      primary-color: 193 43 67
-      positive-color: 92 28 65
-      negative-color: 354 42 56
-      contrast-multiplier: 1.1
-    solarized-dark:
-      background-color: 192 100 11
-      primary-color: 205 69 49
-      positive-color: 68 100 30
-      negative-color: 1 71 52
-      contrast-multiplier: 1.1
-    tokyo-night:
-      background-color: 235 21 13
-      primary-color: 218 87 73
-      positive-color: 85 56 61
-      negative-color: 348 86 70
-      contrast-multiplier: 1.2
-    one-dark:
-      background-color: 220 13 18
-      primary-color: 207 82 66
-      positive-color: 95 38 62
-      negative-color: 355 65 65
-      contrast-multiplier: 1.2
-    material-ocean:
-      background-color: 234 23 16
-      primary-color: 199 95 74
-      positive-color: 122 39 49
-      negative-color: 357 68 64
-      contrast-multiplier: 1.2
-    ayu-dark:
-      background-color: 210 22 13
-      primary-color: 36 90 65
-      positive-color: 114 55 64
-      negative-color: 9 91 58
-      contrast-multiplier: 1.3
-    ayu-mirage:
-      background-color: 220 25 18
-      primary-color: 40 90 70
-      positive-color: 166 78 60
-      negative-color: 14 90 63
-      contrast-multiplier: 1.2
-    synthwave-84:
-      background-color: 260 40 12
-      primary-color: 325 80 65
-      positive-color: 177 70 60
-      negative-color: 340 85 60
-      contrast-multiplier: 1.4
-    night-owl:
-      background-color: 207 45 14
-      primary-color: 330 64 52
-      positive-color: 145 68 55
-      negative-color: 2 70 55
-      contrast-multiplier: 1.2
-    palenight:
-      background-color: 229 25 20
-      primary-color: 261 67 67
-      positive-color: 127 70 66
-      negative-color: 339 71 63
-      contrast-multiplier: 1.2
-    horizon:
-      background-color: 350 15 14
-      primary-color: 351 67 67
-      positive-color: 92 61 68
-      negative-color: 351 67 67
-      contrast-multiplier: 1.3
-    everforest:
-      background-color: 150 11 17
-      primary-color: 142 40 60
-      positive-color: 165 44 53
-      negative-color: 2 54 52
-      contrast-multiplier: 1.1
-    rose-pine:
-      background-color: 249 22 12
-      primary-color: 280 30 60
-      positive-color: 197 53 55
-      negative-color: 343 76 68
-      contrast-multiplier: 1.2
-    rose-pine-moon:
-      background-color: 246 24 17
-      primary-color: 267 55 67
-      positive-color: 197 48 60
-      negative-color: 343 76 68
-      contrast-multiplier: 1.2
-    kanagawa:
-      background-color: 227 25 16
-      primary-color: 212 80 73
-      positive-color: 151 50 60
-      negative-color: 0 65 65
-      contrast-multiplier: 1.2
-    catppuccin-macchiato:
-      background-color: 232 23 18
-      primary-color: 266 85 86
-      positive-color: 105 48 72
-      negative-color: 351 74 73
-      contrast-multiplier: 1.2
-    catppuccin-frappe:
-      background-color: 229 19 23
-      primary-color: 266 84 81
-      positive-color: 96 44 68
-      negative-color: 359 68 71
-      contrast-multiplier: 1.1
-    github-dark:
-      background-color: 215 21 11
-      primary-color: 212 92 58
-      positive-color: 137 66 52
-      negative-color: 355 78 60
-      contrast-multiplier: 1.2
-    github-dimmed:
-      background-color: 215 20 16
-      primary-color: 212 75 58
-      positive-color: 137 55 55
-      negative-color: 355 65 60
-      contrast-multiplier: 1.1
-    vesper:
-      background-color: 30 10 10
-      primary-color: 35 80 60
-      positive-color: 145 50 55
-      negative-color: 0 70 55
-      contrast-multiplier: 1.3
-    poimandres:
-      background-color: 236 30 12
-      primary-color: 189 90 70
-      positive-color: 166 80 60
-      negative-color: 350 75 65
-      contrast-multiplier: 1.3
-    vitesse-dark:
-      background-color: 220 10 12
-      primary-color: 35 80 60
-      positive-color: 140 60 60
-      negative-color: 0 70 60
-      contrast-multiplier: 1.2
-    oxocarbon:
-      background-color: 240 25 8
-      primary-color: 285 65 75
-      positive-color: 150 70 60
-      negative-color: 330 75 65
-      contrast-multiplier: 1.4
-    mellow:
-      background-color: 240 15 12
-      primary-color: 30 70 70
-      positive-color: 150 50 60
-      negative-color: 0 60 60
-      contrast-multiplier: 1.2
-    aurora:
-      background-color: 220 25 12
-      primary-color: 180 70 55
-      positive-color: 100 70 60
-      negative-color: 350 70 60
-      contrast-multiplier: 1.3
-    fairy-floss:
-      background-color: 280 25 18
-      primary-color: 330 60 70
-      positive-color: 120 50 60
-      negative-color: 0 65 65
-      contrast-multiplier: 1.2
-    blue-matrix:
-      background-color: 210 60 8
-      primary-color: 195 100 50
-      positive-color: 195 100 50
-      negative-color: 0 80 50
-      contrast-multiplier: 1.5
-    green-matrix:
-      background-color: 120 40 5
-      primary-color: 120 100 45
-      positive-color: 120 100 45
-      negative-color: 0 80 50
-      contrast-multiplier: 1.5
-    amber-terminal:
-      background-color: 30 20 8
-      primary-color: 35 100 50
-      positive-color: 35 100 50
-      negative-color: 0 80 50
-      contrast-multiplier: 1.4
-    high-contrast:
-      background-color: 0 0 4
-      primary-color: 210 100 60
-      positive-color: 120 100 50
-      negative-color: 0 100 50
-      contrast-multiplier: 1.6
+

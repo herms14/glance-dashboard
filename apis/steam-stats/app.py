@@ -1,27 +1,8 @@
-#!/usr/bin/env python3
-"""
-Steam Stats API
-Fetches Steam profile data for Glance dashboard widget.
-
-Features:
-- Recently played games with thumbnails and playtime
-- Total games owned count
-- Wishlist sale notifications
-- Caching to avoid rate limiting
-
-Environment Variables:
-- STEAM_API_KEY: Steam Web API key from https://steamcommunity.com/dev/apikey
-- STEAM_ID: Steam64 ID (17-digit number) from https://steamid.io/
-
-Deployment:
-    ansible-playbook glance/deploy-steam-stats-api.yml \
-        -e "steam_api_key=YOUR_KEY steam_id=YOUR_ID"
-"""
-
 from flask import Flask, jsonify
 import requests
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
+from functools import lru_cache
 import time
 
 app = Flask(__name__)
@@ -34,7 +15,6 @@ STEAM_ID = os.environ.get('STEAM_ID', '')
 CACHE_DURATION = 300  # 5 minutes
 cache_data = {}
 cache_time = {}
-
 
 def get_cached(key, fetch_func):
     """Simple time-based cache"""
@@ -52,10 +32,9 @@ def get_cached(key, fetch_func):
             return cache_data[key]
         raise e
 
-
 def fetch_recently_played():
     """Fetch recently played games from Steam API"""
-    url = "https://api.steampowered.com/IPlayerService/GetRecentlyPlayedGames/v1/"
+    url = f"https://api.steampowered.com/IPlayerService/GetRecentlyPlayedGames/v1/"
     params = {
         'key': STEAM_API_KEY,
         'steamid': STEAM_ID,
@@ -65,24 +44,22 @@ def fetch_recently_played():
     response.raise_for_status()
     return response.json().get('response', {})
 
-
 def fetch_owned_games():
-    """Fetch total owned games count"""
-    url = "https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/"
+    """Fetch owned games with app info for sorting by playtime"""
+    url = f"https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/"
     params = {
         'key': STEAM_API_KEY,
         'steamid': STEAM_ID,
-        'include_appinfo': 0,
+        'include_appinfo': 1,
         'include_played_free_games': 1
     }
     response = requests.get(url, params=params, timeout=10)
     response.raise_for_status()
     return response.json().get('response', {})
 
-
 def fetch_player_summary():
     """Fetch player profile info"""
-    url = "https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/"
+    url = f"https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/"
     params = {
         'key': STEAM_API_KEY,
         'steamids': STEAM_ID
@@ -92,19 +69,18 @@ def fetch_player_summary():
     players = response.json().get('response', {}).get('players', [])
     return players[0] if players else {}
 
-
 def fetch_wishlist():
     """Fetch wishlist (public wishlists only)"""
+    # Steam wishlist API (works for public wishlists)
     url = f"https://store.steampowered.com/wishlist/profiles/{STEAM_ID}/wishlistdata/"
     params = {'p': 0}
     try:
         response = requests.get(url, params=params, timeout=10)
         if response.status_code == 200:
             return response.json()
-    except Exception:
+    except:
         pass
     return {}
-
 
 def format_playtime(minutes):
     """Format playtime in hours and minutes"""
@@ -113,7 +89,6 @@ def format_playtime(minutes):
     if hours > 0:
         return f"{hours}h {mins}m"
     return f"{mins}m"
-
 
 def format_last_played(timestamp):
     """Format last played timestamp"""
@@ -134,7 +109,6 @@ def format_last_played(timestamp):
         return f"{weeks} week{'s' if weeks > 1 else ''} ago"
     else:
         return dt.strftime("%b %d, %Y")
-
 
 @app.route('/stats')
 def stats():
@@ -161,6 +135,22 @@ def stats():
                 'playtime_2weeks_minutes': game.get('playtime_2weeks', 0),
                 'last_played': format_last_played(game.get('rtime_last_played', 0)),
                 'last_played_timestamp': game.get('rtime_last_played', 0)
+            })
+
+        # Process top 5 most played games (sorted by total playtime)
+        all_games = owned.get('games', [])
+        sorted_games = sorted(all_games, key=lambda x: x.get('playtime_forever', 0), reverse=True)
+        top_played = []
+        for game in sorted_games[:5]:
+            appid = game.get('appid')
+            playtime_mins = game.get('playtime_forever', 0)
+            top_played.append({
+                'name': game.get('name', 'Unknown'),
+                'appid': appid,
+                'thumbnail': f"https://cdn.cloudflare.steamstatic.com/steam/apps/{appid}/header.jpg",
+                'playtime': format_playtime(playtime_mins),
+                'playtime_minutes': playtime_mins,
+                'playtime_hours': round(playtime_mins / 60, 1)
             })
 
         # Process wishlist for sales
@@ -191,6 +181,7 @@ def stats():
             },
             'total_games': owned.get('game_count', 0),
             'recent_games': games,
+            'top_played': top_played,
             'wishlist_on_sale': wishlist_on_sale[:5],  # Top 5 sales
             'wishlist_sale_count': len(wishlist_on_sale),
             'total_playtime_2weeks': format_playtime(recent.get('total_count', 0)),
@@ -202,18 +193,14 @@ def stats():
             'profile': {'name': 'Error', 'status': 'Unknown'},
             'total_games': 0,
             'recent_games': [],
+            'top_played': [],
             'wishlist_on_sale': [],
             'wishlist_sale_count': 0
         }), 500
 
-
 @app.route('/health')
 def health():
-    return jsonify({
-        "status": "healthy",
-        "steam_id": STEAM_ID[:4] + "..." if STEAM_ID else "not configured"
-    })
-
+    return jsonify({"status": "healthy", "steam_id": STEAM_ID[:4] + "..." if STEAM_ID else "not configured"})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5055)
+    app.run(host='0.0.0.0', port=5054)

@@ -1,0 +1,14 @@
+services:
+  proxmox-nodes-api:
+    image: python:3.11-slim
+    container_name: proxmox-nodes-api
+    restart: unless-stopped
+    working_dir: /app
+    command: >
+      sh -c "pip install --quiet flask requests && python proxmox-nodes-api.py"
+    volumes:
+      - ./proxmox-nodes-api.py:/app/proxmox-nodes-api.py:ro
+    ports:
+      - "5061:5061"
+    security_opt:
+      - apparmor=unconfined

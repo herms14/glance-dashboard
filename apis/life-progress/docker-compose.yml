@@ -1,0 +1,18 @@
+services:
+  life-progress:
+    build: .
+    container_name: life-progress
+    restart: unless-stopped
+    ports:
+      - "5051:5051"
+    environment:
+      - TZ=Asia/Manila
+      - BIRTH_DATE=${BIRTH_DATE:-1990-01-01}
+      - TARGET_AGE=${TARGET_AGE:-80}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5051/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

@@ -1,0 +1,16 @@
+services:
+  steam-stats:
+    build: .
+    container_name: steam-stats
+    restart: unless-stopped
+    ports:
+      - "5055:5055"
+    environment:
+      - TZ=Asia/Manila
+      - STEAM_API_KEY=${STEAM_API_KEY}
+      - STEAM_ID=${STEAM_ID}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5055/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

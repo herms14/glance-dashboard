@@ -27,42 +27,24 @@ PBS_MAIN_PATH = "/backup"
 # VM/CT Name mapping (VMID -> Name)
 VM_NAMES = {
     "100": "pbs-server",
-    "101": "docker-lxc-glance",
-    "103": "pihole-lxc",
-    "104": "traefik-lxc",
-    "105": "authentik-lxc",
-    "106": "gitlab-lxc",
-    "107": "immich-lxc",
-    "108": "karakeep-lxc",
-    "109": "uptime-kuma-lxc",
-    "110": "lagident-lxc",
-    "116": "wizarr-lxc",
-    "117": "tracearr-lxc",
-    "118": "linkwarden-lxc",
-    "119": "hoarder-lxc",
-    "120": "homebox-lxc",
-    "121": "windows-11-mgmt",
-    "200": "ansible-controller",
-    "201": "docker-media",
-    "202": "docker-utils",
-    "203": "linux-syslog",
-    "204": "docker-n8n",
-    "205": "plex-meta-mgr",
-    "206": "frigate-nvr",
-    "207": "github-runner",
-    "300": "DC01",
-    "301": "DC02",
-    "302": "FS01",
-    "303": "FS02",
-    "304": "SQL01",
-    "305": "AADCON01",
-    "306": "AADPP01",
-    "307": "AADPP02",
-    "308": "CLIENT01",
-    "309": "CLIENT02",
-    "310": "IIS01",
-    "311": "IIS02",
-    "1000": "windows-server",
+    "103": "ansible-controller01",
+    "106": "gitlab-vm01",
+    "107": "docker-vm-core-utilities01",
+    "108": "immich-vm01",
+    "121": "gitlab-runner-vm01",
+    "200": "docker-lxc-glance",
+    "201": "docker-lxc-bots",
+    "202": "pihole",
+    "203": "traefik-lxc",
+    "204": "authentik-lxc",
+    "205": "docker-lxc-media",
+    "206": "homeassistant-lxc",
+    "207": "chronicle-lxc",
+    "208": "ghostfolio-lxc",
+    "209": "homepage-lxc",
+    "1000": "tpl-ubuntuv24.04-v1",
+    "9022": "WS2022-Template",
+    "9025": "WS2025-Template",
 }
 
 # Cache configuration
@@ -179,7 +161,7 @@ def get_backup_job_status():
 
     for datastore, path in [("daily", PBS_DAILY_PATH), ("main", PBS_MAIN_PATH)]:
         # Get latest backup
-        cmd = f"find {path} -maxdepth 4 -type d -name '20*T*' 2>/dev/null | sort -r | head -1"
+        cmd = f"find {path} -maxdepth 4 -type d -name '20*T*' -printf '%f\\t%p\\n' 2>/dev/null | sort -r | head -1 | cut -f2"
         output, rc = run_ssh_command(cmd)
         if rc == 0 and output:
             match = re.search(r'(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})', output)
@@ -195,7 +177,7 @@ def get_backup_job_status():
 
         # Get backup job duration - find the most recent contiguous job
         # (backups within 1 hour of each other are considered part of the same job)
-        recent_cmd = f"find {path} -maxdepth 4 -type d -name '20*T*' 2>/dev/null | sort -r | head -100"
+        recent_cmd = f"find {path} -maxdepth 4 -type d -name '20*T*' -printf '%f\\t%p\\n' 2>/dev/null | sort -r | head -100 | cut -f2"
         recent_out, rc = run_ssh_command(recent_cmd)
         if rc == 0 and recent_out:
             timestamps = []
@@ -291,7 +273,7 @@ def fetch_status():
         "main_size": main_size,
         "daily_size": daily_size,
         "nas_sync_duration": nas_duration,
-        "nas_target": "192.168.20.31:/volume2/ProxmoxData/pbs-offsite",
+        "nas_target": "192.168.20.32:/volume2/ProxmoxData/pbs-offsite",
         "schedule": "Daily at 2:00 AM",
         "job_status": job_status
     }

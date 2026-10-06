@@ -1,14 +1,3 @@
-#!/usr/bin/env python3
-"""
-Life Progress API
-Calculates year, month, day, and life progress percentages.
-Displays daily motivational quotes about time.
-
-Configuration:
-  - BIRTH_DATE: Your birth date
-  - TARGET_AGE: Target lifespan for life progress calculation
-"""
-
 from flask import Flask, jsonify
 from datetime import datetime, date
 import calendar
@@ -16,13 +5,9 @@ import os
 
 app = Flask(__name__)
 
-# Configuration (can be overridden via environment variables)
-BIRTH_YEAR = int(os.getenv('BIRTH_YEAR', 1996))
-BIRTH_MONTH = int(os.getenv('BIRTH_MONTH', 10))
-BIRTH_DAY = int(os.getenv('BIRTH_DAY', 14))
-TARGET_AGE = int(os.getenv('TARGET_AGE', 80))
-
-BIRTH_DATE = date(BIRTH_YEAR, BIRTH_MONTH, BIRTH_DAY)
+# Configuration
+BIRTH_DATE = date.fromisoformat(os.getenv("BIRTH_DATE", "1990-01-01"))
+TARGET_AGE = int(os.getenv("TARGET_AGE", "80"))
 
 # 30 motivational quotes about time and mortality
 QUOTES = [
@@ -58,27 +43,25 @@ QUOTES = [
     "The future is something which everyone reaches at the rate of 60 minutes an hour. - C.S. Lewis"
 ]
 
-
 def get_daily_quote():
     today = date.today()
     day_of_year = today.timetuple().tm_yday
     return QUOTES[day_of_year % len(QUOTES)]
 
-
 def calculate_progress():
     now = datetime.now()
     today = date.today()
 
-    # Year progress
+    # Year progress (includes time of day)
     year_start = datetime(now.year, 1, 1)
     year_end = datetime(now.year + 1, 1, 1)
     year_progress = ((now - year_start).total_seconds() / (year_end - year_start).total_seconds()) * 100
 
-    # Month progress
+    # Month progress (includes time of day)
     days_in_month = calendar.monthrange(now.year, now.month)[1]
     month_progress = ((now.day - 1 + now.hour/24 + now.minute/1440) / days_in_month) * 100
 
-    # Day progress
+    # Day progress (includes seconds)
     day_progress = ((now.hour * 3600 + now.minute * 60 + now.second) / 86400) * 100
 
     # Life progress
@@ -99,16 +82,13 @@ def calculate_progress():
         "target_age": TARGET_AGE
     }
 
-
 @app.route('/progress')
 def progress():
     return jsonify(calculate_progress())
 
-
 @app.route('/health')
 def health():
     return jsonify({"status": "healthy"})
-
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5051)

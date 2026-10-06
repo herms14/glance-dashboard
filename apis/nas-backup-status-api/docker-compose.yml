@@ -1,0 +1,15 @@
+name: nas-backup-status-api
+services:
+  nas-backup-status-api:
+    build: .
+    container_name: nas-backup-status-api
+    restart: unless-stopped
+    ports:
+      - "9102:9102"
+    volumes:
+      - /home/hermes-admin/.ssh:/root/.ssh:ro
+    environment:
+      - TZ=America/New_York
+    command: ["gunicorn", "-b", "0.0.0.0:9102", "--timeout", "120", "--workers", "2", "app:app"]
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"

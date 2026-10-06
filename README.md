@@ -1,279 +1,151 @@
-# Glance Dashboard - GitOps Repository
+# Glance Homelab Dashboard
 
-Comprehensive homelab dashboard with 12 pages featuring emoji navigation icons, 35 themes, and extensive infrastructure monitoring.
+Configuration, custom CSS and helper APIs for the [Glance](https://github.com/glanceapp/glance) dashboard that fronts my homelab. It is the first screen I open: one page for life/home widgets, then one page per infrastructure area (services, compute, storage, backup, network, media) and a news page.
 
-## Overview
+**Status (2026-10-06): in daily use.** Glance runs on `docker-lxc-glance` (CT200, 192.168.40.12) and is published at `https://glance.hrmsmrflrii.xyz` through Traefik. This repo was re-synced from the live host on 2026-10-06 with secrets replaced by `${ENV}` placeholders.
 
 | Property | Value |
 |----------|-------|
-| **Service** | Glance Dashboard |
-| **Version** | 2.2.0 |
-| **Target Host** | docker-lxc-glance (192.168.40.12) |
-| **Port** | 8080 |
-| **URL** | https://glance.hrmsmrflrii.xyz |
-| **Themes** | 35 available |
+| Host | `docker-lxc-glance` (LXC CT200 on node01), 192.168.40.12 |
+| Install path | `/opt/glance` |
+| Port | 8080 |
+| Image | `glanceapp/glance:latest` |
+| Config size | ~145 KB `glance.yml`, 8 pages, 81 widgets |
+| Helper APIs | 6 live (see [`apis/`](apis/README.md)) |
 
-## Dashboard Pages (12 Tabs)
+## Pages
 
-| Tab | Icon | Description | Key Widgets |
-|-----|------|-------------|-------------|
-| **Home** | 🏠 | Central dashboard with life tracking | Chess.com stats, Steam top/last played, weather, calendar, GitHub contributions, life progress, power control |
-| **Services** | 🛠 | Infrastructure health monitors | Proxmox nodes, PBS server, Synology NAS, Docker containers status |
-| **Compute** | 💻 | Proxmox cluster monitoring | Proxmox Cluster Health (Grafana), Container Monitoring (Grafana), Immich Host Health (Grafana), Gaming PC stats |
-| **Storage** | 💾 | NAS storage metrics | Synology NAS Storage dashboard (Grafana) with RAID status, disk health, temps |
-| **Backup** | 📦 | PBS backup monitoring | Backup Jobs Overview with durations, VM/CT backup status with names, Drive health, PBS Grafana |
-| **Network** | 🌐 | Network infrastructure | Network Utilization (Grafana), Omada Network Overview (Grafana), speedtest |
-| **Media** | 🎬 | Media server stats | Media Stats grid (Radarr/Sonarr), recent movies, RSS feeds, arr stack bookmarks |
-| **News** | 📰 | Tech news aggregator | Hacker News, tech RSS feeds, headline aggregation |
-| **Finance** | 💰 | Financial markets | Stock markets, crypto prices, financial widgets |
-| **Reddit** | 🤖 | Reddit feed manager | Dynamic multi-subreddit feed with thumbnails, native Reddit widgets |
-| **Sports** | 🏀 | NBA and fantasy sports | Today's games, standings, injury report, Yahoo Fantasy league |
-| **Health** | 💪 | Fitness tracking with Strava | Weekly exercise, weight progress, Strava stats, exercise calendar, weight chart, recent activities |
+| Page | Highlights |
+|------|-----------|
+| 🏠 **Home** | Chess.com stats, clock, weather, sunrise/sunset, calendar, Steam top played, life progress, GitHub contributions, infrastructure status, crypto and stock markets |
+| 🛠 **Services** | Health and version of every service grouped as Critical Infrastructure, Auth & Identity, Core Applications, Media Stack, Monitoring & Observability, Custom APIs & Bots, plus a summary and one-click **Update** buttons (service-version-api) |
+| 💻 **Compute** | Proxmox cluster nodes, running VMs, VM and container status (Proxmox API), Container Monitoring (Grafana) |
+| 💾 **Storage** | Synology DS923+ overview, capacity, system health, temperatures, drive health, RAID volumes, Proxmox storage pools per node and aggregate, Grafana history panels |
+| 📦 **Backup** | Backup services monitor, drive health, PBS backup jobs overview, per-VM/CT backup status (nas-backup-status-api), PBS Grafana dashboard |
+| 🌐 **Network** | Internet speed and latency (Speedtest Tracker), Pi-hole DNS stats, Omada devices, memory and uptime, connected clients, VLAN map, PoE power, Grafana panels for bandwidth, Wi-Fi quality, switch ports and top clients |
+| 🎬 **Media** | Library summary, TV library, NAS media storage, service status, current downloads, Radarr queue, recently added TV, indexer health (Prowlarr), Sonarr/Radarr alerts, movie and TV news |
+| 📰 **News** | Tech YouTube plus RSS for tech, AI/ML, cloud, gaming, Android, PC hardware and travel |
 
-## Custom APIs
+Removed on 2026-08-29: Finance, Reddit, Sports and Health pages.
 
-The dashboard integrates with several custom APIs running on `docker-vm-core-utilities01` (192.168.40.13):
+### Embedded Grafana dashboards
 
-| API | Port | Purpose | Traefik Domain |
-|-----|------|---------|----------------|
-| Life Progress API | 5051 | Birthday countdown, life milestones | — |
-| Steam Stats API | 5055 | Steam profile, top/recent games | — |
-| Gaming PC Stats | 5056 | LibreHardwareMonitor data (CPU/GPU/RAM) | — |
-| Power Control API | 5057 | Wake-on-LAN, shutdown, backup triggering | `power.hrmsmrflrii.xyz` |
-| Media Stats API | 5054 | Combined Radarr/Sonarr statistics | — |
-| NBA Stats API | 5060 | NBA games, standings, fantasy data | — |
-| Health Tracker API | 5062 | Strava OAuth2, weight logging, exercise tracking | `health-api.hrmsmrflrii.xyz` |
-| Reddit Manager | 5053 | Multi-subreddit feed aggregation | — |
-| NAS Backup Status API | 9102 | PBS backup status with durations and VM names | — |
+| Dashboard UID | Used on |
+|---------------|---------|
+| `containers-modern` | Compute |
+| `synology-nas-modern` | Storage (4 panels) |
+| `pbs-backup-status` | Backup |
+| `network-utilization` | Network |
+| `omada-network` | Network (4 panels) |
 
-## Embedded Grafana Dashboards
+## Architecture
 
-| Dashboard | UID | Height | Tab |
-|-----------|-----|--------|-----|
-| Proxmox Cluster Health | `proxmox-cluster-health` | 2400px | Compute |
-| Container Monitoring | `containers-modern` | 1800px | Compute |
-| Immich Host Health | `immich-host-health` | 900px | Compute |
-| Synology NAS Storage | `synology-nas-modern` | 1350px | Storage |
-| Network Utilization | `network-utilization` | 1100px | Network |
-| Omada Network | `omada-network` | 2200px | Network |
-| PBS Backup Status | `pbs-backup-status` | 1000px | Backup |
+```mermaid
+flowchart LR
+    U[Browser] -->|https://glance.hrmsmrflrii.xyz| T[Traefik<br/>traefik-lxc .20]
+    T --> G[Glance :8080<br/>docker-lxc-glance .12]
+    G --> PH[pihole-stats-api :5055<br/>same LXC]
+    PH --> PI[Pi-hole .90.53]
+    subgraph CU[docker-vm-core-utilities01 .13]
+        SV[service-version-api :5070]
+        NB[nas-backup-status-api :9102]
+        LP[life-progress :5051]
+        ST[steam-stats :5055]
+        PR[Prometheus :9090]
+        SP[Speedtest Tracker :3000]
+        GR[Grafana]
+    end
+    G --> CU
+    G --> PX[Proxmox API<br/>node01-03]
+    G --> PBS[PBS .20.50:8007]
+    G --> NAS[Synology DSM .20.32:5001]
+    G --> ARR[Radarr / Sonarr / Prowlarr<br/>docker-lxc-media .11]
+    NB -->|SSH| PBS
+    SV -->|SSH| HOSTS[Docker hosts]
+```
 
-## Repository Structure
+## Repository layout
 
 ```
-glance-homelab/
-├── .gitlab-ci.yml          # CI/CD pipeline definition
-├── service.yml             # GitOps metadata (target, ports, secrets)
+.
 ├── config/
-│   ├── docker-compose.yml  # Container definition
-│   └── glance.yml          # Dashboard configuration (~1800 lines)
+│   ├── glance.yml          # full dashboard config (synced from /opt/glance/config)
+│   ├── docker-compose.yml  # Glance container
+│   └── .env.example        # variables referenced as ${VAR} in glance.yml
 ├── assets/
-│   └── custom-themes.css   # Custom styling (full-width, hidden scrollbars)
-├── apis/                   # Custom API source code
-│   ├── docker-stats-exporter.py
-│   ├── health-tracker-api.py
-│   ├── life-progress-api.py
-│   ├── media-stats-api.py
-│   ├── nas-backup-status-api.py
-│   ├── nba-stats-api.py
-│   ├── power-control-api.py
-│   ├── steam-stats-api.py
-│   └── README.md
-└── README.md
+│   └── custom-themes.css   # layout and widget styling
+├── apis/                   # helper APIs (one folder each, with Dockerfile/compose)
+│   └── _retired/           # APIs no longer wired into the dashboard
+├── service.yml             # legacy GitOps metadata (see below)
+├── .gitlab-ci.yml          # legacy GitLab pipeline (see below)
+└── CHANGELOG.md
 ```
 
-## Deployment
+## Deploy
 
-### Automatic (GitLab CI/CD)
+1. Create an LXC or VM with Docker (CT200 is an LXC; `security_opt: apparmor=unconfined` is needed for Docker inside it).
+2. Copy the files:
+   ```bash
+   sudo mkdir -p /opt/glance && sudo chown $USER /opt/glance
+   cp config/docker-compose.yml /opt/glance/
+   mkdir -p /opt/glance/config /opt/glance/assets
+   cp config/glance.yml /opt/glance/config/
+   cp assets/custom-themes.css /opt/glance/assets/
+   cp config/.env.example /opt/glance/.env && chmod 600 /opt/glance/.env   # fill in values
+   ```
+3. Start it: `cd /opt/glance && docker compose up -d`.
+4. Deploy the helper APIs you want from [`apis/`](apis/README.md) (`docker compose up -d --build` in each folder).
+5. Add a Traefik router for `glance.<domain>` pointing at `http://192.168.40.12:8080`.
 
-Push to `main` branch triggers automatic deployment:
+Glance reloads `glance.yml` automatically when the file changes; a restart is only needed after changing `.env` or `docker-compose.yml`.
 
-1. **Validate** - YAML syntax and Docker Compose validation
-2. **Deploy** - Files copied to target host, container updated
-3. **Configure** - Traefik route updated for HTTPS access
-4. **Verify** - Health check confirms service is running
-5. **Notify** - Discord notification sent
+### Secrets
 
-### Manual
+`glance.yml` references these variables; Glance refuses to start if one is missing:
+
+| Variable | Purpose |
+|----------|---------|
+| `PROXMOX_API_TOKEN` | `user@realm!tokenid=secret` for Compute/Storage widgets (read-only `PVEAuditor` is enough) |
+| `RADARR_API_KEY`, `SONARR_API_KEY`, `PROWLARR_API_KEY` | Media page |
+| `SERVICE_VERSION_API_KEY` | Update buttons on the Services page (must match the API's `UPDATE_API_KEY`) |
+
+## Making changes
+
+The live host is the source of truth today: edit `/opt/glance/config/glance.yml` (keep a dated `.bak` copy), check the page, then sync the file back here and replace any secret with its `${VAR}`.
 
 ```bash
-# SSH to Glance LXC
-ssh root@192.168.40.12
-
-# Update config and restart
-cd /opt/glance
-docker compose restart
+# from a workstation
+scp docker-lxc-glance:/opt/glance/config/glance.yml config/glance.yml
+grep -nE 'X-Api-Key: "[0-9a-f]|PVEAPIToken=[^$]|key=[^$]' config/glance.yml   # must print nothing
 ```
 
-## Configuration
-
-### Theme
-
-The dashboard uses a dark theme with full-width display:
-
-```yaml
-theme:
-  background-color: 15 15 20
-  primary-color: 139 92 246
-  contrast-multiplier: 1.2
-  document-width: 100%
-```
-
-### Custom CSS
-
-Full-width display is enabled via `custom-themes.css`:
-
-```css
-.content-bounds {
-  max-width: 100% !important;
-  width: 100% !important;
-}
-```
-
-## Making Changes
-
-### Edit Dashboard
-
-1. Modify `config/glance.yml`
-2. Commit and push to `main`
-3. Pipeline deploys automatically
-
-### Add New Service Monitor
-
-Add to the relevant page's monitor widget in `config/glance.yml`:
-
-```yaml
-- type: monitor
-  sites:
-    - title: New Service
-      url: https://service.hrmsmrflrii.xyz
-      icon: si:iconname
-```
-
-### Add Custom API Widget
+Example custom API widget:
 
 ```yaml
 - type: custom-api
-  title: Widget Title
+  title: Backup Jobs
   cache: 5m
-  url: http://192.168.40.13:PORT/endpoint
+  url: http://192.168.40.13:9102/status
   template: |
-    <div>{{ .JSON.String "field" }}</div>
+    <div>{{ .JSON.String "nas_sync_duration" }}</div>
 ```
 
-## CI/CD Variables
+## Legacy GitLab pipeline
 
-### Group Level (homelab group)
-
-| Variable | Description |
-|----------|-------------|
-| `SSH_PRIVATE_KEY` | SSH key for deployment |
-| `DISCORD_WEBHOOK_URL` | Discord notifications |
-
-### Project Level
-
-| Variable | Description |
-|----------|-------------|
-| `GLANCE_RADARR_API_KEY` | Radarr API key |
-| `GLANCE_SONARR_API_KEY` | Sonarr API key |
+`.gitlab-ci.yml` and `service.yml` came from the GitOps setup on the self-hosted GitLab (`homelab/glance-homelab`). They have not been used for recent changes: the live `.env` the pipeline writes is empty and the config has been edited on the host since. They are kept for reference and still mention OPNsense, which was replaced by TP-Link Omada.
 
 ## Troubleshooting
 
-### Dashboard Not Loading
+| Symptom | Check |
+|---------|-------|
+| Page blank / 502 via domain | `ssh docker-lxc-glance "docker ps; docker logs --tail 50 glance"`, then Traefik |
+| Glance exits on start | A `${VAR}` in `glance.yml` is not set in `.env` |
+| Widget shows "error" | `curl` the widget's URL from the Glance host; most APIs live on .13 |
+| Pi-hole widget empty | `curl -s localhost:5055/api/pihole/stats` on CT200; Pi-hole v6 password changed? |
+| Update button does nothing | `SERVICE_VERSION_API_KEY` doesn't match the API's `UPDATE_API_KEY` |
 
-```bash
-# Check container status
-ssh root@192.168.40.12 "docker ps -a | grep glance"
+## Related
 
-# Check container logs
-ssh root@192.168.40.12 "docker logs glance --tail 100"
-
-# Restart container
-ssh root@192.168.40.12 "cd /opt/glance && docker compose restart"
-```
-
-### Widget Showing Error
-
-- Check URL accessibility from the Glance container
-- Verify API keys are configured
-- Check cache settings (increase if API is slow)
-
-### Iframe Not Loading (Mixed Content)
-
-- Glance is served over HTTPS — all iframe `source:` URLs must also be HTTPS
-- HTTP iframes will be silently blocked by the browser (mixed content)
-- Solution: Route APIs through Traefik with HTTPS (e.g., `health-api.hrmsmrflrii.xyz`, `power.hrmsmrflrii.xyz`)
-- Note: Glance iframe widgets use `source:` (not `url:`). Using `url:` causes "source is required" errors
-
-### Grafana Iframe Not Loading
-
-- Verify Grafana is accessible at `https://grafana.hrmsmrflrii.xyz`
-- Check dashboard UID matches
-- Ensure `kiosk` and `theme=transparent` parameters are set
-
-### Custom API Timeout Error
-
-- If a custom-api widget shows "context deadline exceeded", the upstream API is too slow
-- Glance has a ~5 second HTTP timeout for custom-api widgets
-- Fix: Reduce connection timeouts in the API (e.g., gaming-pc-stats uses 2s timeout for offline hosts)
-
-## Links
-
-- [Glance Documentation](https://github.com/glanceapp/glance)
-- [Dashboard URL](https://glance.hrmsmrflrii.xyz)
-- [Grafana](https://grafana.hrmsmrflrii.xyz)
-- [GitLab Pipeline](https://gitlab.hrmsmrflrii.xyz/homelab/glance-homelab/-/pipelines)
-
-## Available Themes (35)
-
-The dashboard includes 35 color themes:
-
-**Original Themes:** deep-purple, purple-rain, dark-modern, charcoal, midnight-blue, forest-green, ocean-blue, sunset, nord, dracula
-
-**Editor Themes:** one-dark, material-ocean, ayu-dark, ayu-mirage, synthwave-84, night-owl, palenight, horizon, everforest
-
-**Rose Pine:** rose-pine, rose-pine-moon
-
-**Catppuccin:** catppuccin-macchiato, catppuccin-frappe
-
-**GitHub:** github-dark, github-dimmed
-
-**Modern:** kanagawa, vesper, poimandres, vitesse-dark, oxocarbon, mellow, aurora, fairy-floss
-
-**Terminal:** blue-matrix, green-matrix, amber-terminal, high-contrast
-
-## Recent Updates
-
-See [CHANGELOG.md](CHANGELOG.md) for full version history.
-
-### v2.2.0 (February 16, 2026) - Health & Fitness Page
-- **New Health page** (12th tab) with Strava integration and weight tracking
-- Health Tracker API (port 5062) with Strava OAuth2, activity caching, weight logging
-- Strava Stats dashboard: Last 4 Weeks, Best Efforts, Year to Date, All-Time
-- Exercise Calendar: 60-day GitHub-style heatmap
-- Weight Tracker: Chart.js line chart with goal line and logging form
-- Weekly Exercise summary with rolling 7-day active days count
-- HTTPS routing via Traefik (`health-api.hrmsmrflrii.xyz`)
-- **Home page improvements**: Steam "Last Played" game, Power Control via HTTPS
-- **Compute page fix**: Gaming PC widget timeout reduced (2s instead of 5s)
-- Added Immich Host Health Grafana dashboard to Compute page
-
-### v2.1.0 (January 20, 2026) - Power Control Panel
-- Added Power Control widget on Home page with interactive buttons
-- Wake-on-LAN, Shutdown, and Backup Now functionality
-- Real-time node status indicators
-- Power Control API (port 5057) with embedded web UI
-
-### v2.0.0 (January 20, 2026) - Major UI Redesign
-- Added page icons/emojis for all 11 pages
-- Created new Services page consolidating health monitors
-- Split Web page into News and Finance
-- Added 25 new themes (now 35 total)
-- Standardized widget styling (padding: 12px, border-radius: 8px)
-- Optimized iframe heights
-
-### v1.5.0 (January 15, 2026)
-- Enhanced Backup page with job durations (daily, main, NAS sync)
-- VM/CT backup status now shows names instead of just VMIDs
-- Restructured Backup layout with sidebar and main column
-- PBS Grafana iframe height increased to 1400px
+- [homelab-infrastructure](https://github.com/herms14/homelab-infrastructure): the rest of the homelab
+- Blog post: [Building Glance Into Something Useful](https://herms14.github.io/Clustered-Thoughts/posts/building-glance-into-something-useful/)
+- [Glance docs](https://github.com/glanceapp/glance/blob/main/docs/configuration.md)

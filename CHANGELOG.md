@@ -5,6 +5,24 @@ All notable changes to the Glance Dashboard will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2026-10-06
+
+### Changed
+- Re-synced `config/glance.yml`, `config/docker-compose.yml` and `assets/custom-themes.css` from the live host (`docker-lxc-glance`, CT200).
+- Dashboard is now 8 pages: Home, Services, Compute, Storage, Backup, Network, Media, News.
+- Secrets in `glance.yml` replaced with `${PROXMOX_API_TOKEN}`, `${RADARR_API_KEY}`, `${SONARR_API_KEY}`, `${PROWLARR_API_KEY}`, `${SERVICE_VERSION_API_KEY}`; added `config/.env.example`.
+- `apis/` restructured to one folder per API with its live Dockerfile and compose file.
+- `life-progress` reads `BIRTH_DATE`/`TARGET_AGE` from the environment; `pihole-stats-api` reads `PIHOLE_PASSWORD`; `steam-stats` and `service-version-api` take keys from `.env`.
+- README rewritten for the current setup; GitLab pipeline documented as legacy.
+
+### Added
+- `apis/service-version-api` (5070): service health, versions and one-click updates for the Services page.
+- `apis/pihole-stats-api` (5055 on CT200) and `apis/proxmox-nodes-api` (5061 on CT200).
+
+### Removed
+- Finance, Reddit, Sports and Health pages (removed live on 2026-08-29).
+- Power control panel from Home.
+- health-tracker, nba-stats, media-stats, docker-stats-exporter and power-control APIs moved to `apis/_retired/`.
 ## [2.1.0] - 2026-01-20
 
 ### Added

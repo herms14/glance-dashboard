@@ -1,0 +1,15 @@
+services:
+  pihole-stats-api:
+    container_name: pihole-stats-api
+    image: python:3.11-slim
+    working_dir: /app
+    command: >
+      sh -c "pip install --quiet flask requests && python pihole-stats-api.py"
+    volumes:
+      - ./pihole-stats-api.py:/app/pihole-stats-api.py:ro
+    ports:
+      - "5055:5055"
+    env_file: .env
+    restart: unless-stopped
+    security_opt:
+      - apparmor=unconfined

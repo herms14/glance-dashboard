@@ -1,3 +1,4 @@
+# LEGACY (2026-10-06): not used for current deployments; see README > Legacy GitLab pipeline.
 # Glance Dashboard - GitOps Service Definition
 # =============================================
 # This file defines how Glance is deployed via GitLab CI/CD
@@ -8,7 +9,7 @@
 service:
   name: glance
   display_name: Glance Dashboard
-  description: "Homelab dashboard with service monitoring, media stats, sports scores, and more"
+  description: "Homelab dashboard with service monitoring, infrastructure pages, media stats and news"
   category: dashboard
   version: "0.7.0"
 
@@ -30,8 +31,12 @@ deployment:
       source: GLANCE_RADARR_API_KEY
     - name: SONARR_API_KEY
       source: GLANCE_SONARR_API_KEY
-    - name: OPNSENSE_API_CREDENTIALS
-      source: GLANCE_OPNSENSE_CREDENTIALS
+    - name: PROWLARR_API_KEY
+      source: GLANCE_PROWLARR_API_KEY
+    - name: PROXMOX_API_TOKEN
+      source: GLANCE_PROXMOX_API_TOKEN
+    - name: SERVICE_VERSION_API_KEY
+      source: GLANCE_SERVICE_VERSION_API_KEY
 
   # Health check configuration
   healthcheck:
@@ -62,7 +67,7 @@ traefik:
   headers:
     frame_deny: false  # Allow other services to embed Glance
 
-# DNS configuration (auto-add to OPNsense)
+# DNS configuration (OPNsense automation is obsolete; DNS is Pi-hole)
 dns:
   enabled: true
   hostname: glance

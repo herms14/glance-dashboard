@@ -1,9 +1,26 @@
 /*
  * Glance Dashboard Custom Themes CSS
  * ==================================
- * Additional styling enhancements for all themes.
+ * This file provides additional styling enhancements for all themes.
  * Theme colors are controlled via glance.yml presets.
+ * Custom CSS provides layout, animation, and widget-specific styling.
+ *
+ * Available themes (select via picker icon in top-right):
+ * - Midnight Blue: Deep blue professional
+ * - Nord: Arctic cool colors
+ * - Dracula: Popular purple theme
+ * - Monokai: Classic code editor
+ * - Catppuccin Mocha: Soft pastel (default)
+ * - Gruvbox Dark: Warm retro
+ * - Solarized Dark: Classic dark
+ * - Tokyo Night: VSCode inspired
+ * - Cyberpunk: Neon futuristic
+ * - Classic Dark: Original theme
  */
+
+/* ========================================
+   Base Enhancements
+   ======================================== */
 
 /* Smooth theme transitions */
 * {
@@ -22,7 +39,11 @@
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
-/* Clock widget */
+/* ========================================
+   Widget-Specific Styling
+   ======================================== */
+
+/* Clock widget enhancements */
 .widget-type-clock {
   text-align: center;
 }
@@ -32,7 +53,16 @@
   letter-spacing: -0.02em;
 }
 
+/* Weather widget */
+.widget-type-weather {
+  padding: 1rem;
+}
+
 /* Bookmarks styling */
+.widget-type-bookmarks .bookmark-group {
+  margin-bottom: 0.75rem;
+}
+
 .widget-type-bookmarks a {
   border-radius: 6px;
   padding: 0.5rem 0.75rem;
@@ -43,7 +73,13 @@
   transform: translateX(4px);
 }
 
-/* Monitor widget status */
+/* Monitor widget status indicators */
+.widget-type-monitor .monitor-site {
+  border-radius: 8px;
+  padding: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
 .widget-type-monitor .status-online {
   border-left: 3px solid hsl(var(--color-positive));
 }
@@ -52,13 +88,34 @@
   border-left: 3px solid hsl(var(--color-negative));
 }
 
+/* Markets widget */
+.widget-type-markets .market-item {
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+/* RSS feed cards */
+.widget-type-rss .rss-card {
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.widget-type-rss .rss-card:hover {
+  transform: scale(1.02);
+}
+
 /* iFrame widgets */
 .widget-type-iframe iframe {
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Page navigation */
+/* ========================================
+   Page Navigation Styling
+   ======================================== */
+
+/* Tab navigation enhancement */
 .page-navigation {
   backdrop-filter: blur(10px);
   border-radius: 12px;
@@ -75,7 +132,127 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
-/* Animation */
+.page-navigation a.active {
+  font-weight: 600;
+}
+
+/* ========================================
+   Theme Picker Enhancement
+   ======================================== */
+
+/* Make theme picker more visible */
+.theme-picker-button {
+  opacity: 0.7;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.theme-picker-button:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.theme-picker-dropdown {
+  border-radius: 12px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.theme-picker-option {
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin: 0.25rem;
+  transition: all 0.2s ease;
+}
+
+.theme-picker-option:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ========================================
+   Custom API Widget Styling
+   ======================================== */
+
+/* Life Progress widget specific */
+.widget-type-custom-api .progress-bar {
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* Reddit feed custom styling */
+.widget-type-custom-api .reddit-post {
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+
+.widget-type-custom-api .reddit-post:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* ========================================
+   Media Stats Grid Layout
+   ======================================== */
+
+/* 3-column grid container for media stat cards */
+.media-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  padding: 8px;
+}
+
+/* Individual stat card tile */
+.media-stat-card {
+  height: 120px;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.media-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive: 2 columns on medium screens */
+@media (max-width: 1199px) {
+  .media-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Responsive: 1 column on small screens */
+@media (max-width: 767px) {
+  .media-stats-grid {
+    grid-template-columns: 1fr;
+  }
+  .media-stat-card {
+    height: 100px;
+  }
+}
+
+/* ========================================
+   Responsive Adjustments
+   ======================================== */
+
+@media (max-width: 768px) {
+  .widget {
+    border-radius: 8px !important;
+  }
+
+  .widget:hover {
+    transform: none;
+  }
+}
+
+/* ========================================
+   Animation Classes
+   ======================================== */
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
@@ -85,7 +262,17 @@
   animation: fadeIn 0.3s ease-out;
 }
 
-/* Scrollbar */
+/* Stagger animation for multiple widgets */
+.column > .widget:nth-child(1) { animation-delay: 0.05s; }
+.column > .widget:nth-child(2) { animation-delay: 0.1s; }
+.column > .widget:nth-child(3) { animation-delay: 0.15s; }
+.column > .widget:nth-child(4) { animation-delay: 0.2s; }
+.column > .widget:nth-child(5) { animation-delay: 0.25s; }
+
+/* ========================================
+   Scrollbar Styling
+   ======================================== */
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -104,12 +291,107 @@
   background: rgba(255, 255, 255, 0.3);
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .widget {
-    border-radius: 8px !important;
-  }
-  .widget:hover {
-    transform: none;
-  }
+/* ========================================
+   Utility Classes
+   ======================================== */
+
+.glow {
+  box-shadow: 0 0 20px rgba(var(--color-primary), 0.3);
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ========================================
+   Iframe Scrollbar Removal
+   ======================================== */
+
+iframe {
+  overflow: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+iframe::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.widget-type-iframe iframe {
+  overflow: hidden !important;
+}
+
+/* ========================================
+   Full Width Layout Override
+   ======================================== */
+
+/* Remove max-width constraints on main container */
+.page-container,
+.page-content,
+.page,
+main,
+.content {
+  max-width: 100% !important;
+  width: 100% !important;
+  padding-left: 10px !important;
+  padding-right: 10px !important;
+}
+
+/* Reduce side margins/padding on columns */
+.page-columns,
+.columns-container {
+  max-width: 100% !important;
+  padding-left: 5px !important;
+  padding-right: 5px !important;
+  gap: 10px !important;
+}
+
+/* Make columns stretch */
+.column {
+  padding: 5px !important;
+}
+
+/* Body full width */
+body {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* ========================================
+   ACTUAL Full Width Fix - content-bounds
+   ======================================== */
+
+.content-bounds {
+  max-width: 100% !important;
+  width: 100% !important;
+  margin-left: 10px !important;
+  margin-right: 10px !important;
+}
+
+.header-container.content-bounds {
+  max-width: 100% !important;
+}
+
+/* ========================================
+   Transparent Iframe Backgrounds
+   ======================================== */
+
+/* Make all iframes transparent */
+.widget-type-iframe iframe {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+.widget-type-iframe {
+  background: transparent !important;
+}
+
+/* Specifically for Power Control iframe */
+iframe[src*='5057'] {
+  background: transparent !important;
+  background-color: transparent !important;
 }

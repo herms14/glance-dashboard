@@ -1,240 +1,64 @@
 # Glance Dashboard APIs
 
-Custom Python APIs that provide data to the Glance dashboard widgets.
+Small Flask services that turn awkward upstream APIs into flat JSON that Glance `custom-api` widgets can template easily.
 
-## APIs
+## Live APIs
 
-| API | Port | Endpoint | Description |
-|-----|------|----------|-------------|
-| **Life Progress** | 5051 | `/progress` | Year, month, day, life progress percentages with daily quotes |
-| **Media Stats** | 5054 | `/api/stats` | Combined Radarr/Sonarr statistics (wanted, downloading, downloaded) |
-| **Steam Stats** | 5055 | `/stats` | Steam profile, top 5 most played games, wishlist sales |
-| **Gaming PC Stats** | 5056 | `/stats` | Gaming PC hardware metrics via LibreHardwareMonitor middleware |
-| **NAS Backup Status** | 9102 | `/status`, `/backups` | PBS backup status with job durations and VM names |
-| **NBA Stats** | 5060 | `/games`, `/standings`, `/fantasy` | NBA games, standings, Yahoo Fantasy integration |
-| **Docker Stats Exporter** | 9417 | `/metrics` | Prometheus metrics for Docker containers |
+| API | Host | Port | Endpoints | Used by (page) |
+|-----|------|------|-----------|----------------|
+| [service-version-api](service-version-api/) | docker-vm-core-utilities01 (192.168.40.13) | 5070 | `/api/services`, `/api/services/<category>`, `/api/summary`, `/api/update/<name>?key=`, `/api/update-status/<id>`, `/refresh`, `/health` | Services (health, versions, one-click updates) |
+| [nas-backup-status-api](nas-backup-status-api/) | 192.168.40.13 | 9102 | `/status`, `/backups`, `/job-status`, `/refresh`, `/health` | Backup |
+| [life-progress](life-progress/) | 192.168.40.13 | 5051 | `/progress`, `/health` | Home |
+| [steam-stats](steam-stats/) | 192.168.40.13 | 5055 | `/stats`, `/health` | Home |
+| [pihole-stats-api](pihole-stats-api/) | docker-lxc-glance (192.168.40.12) | 5055 | `/api/pihole/stats`, `/health` | Network (called from the Glance container via `172.17.0.1:5055`) |
+| [proxmox-nodes-api](proxmox-nodes-api/) | docker-lxc-glance (192.168.40.12) | 5061 | `/api/nodes`, `/health` | Running, but no longer referenced by `glance.yml` |
 
-## Deployment
+Glance also reads Prometheus (`192.168.40.13:9090`), the Proxmox and PBS APIs, the Radarr/Sonarr/Prowlarr APIs, Speedtest Tracker (`192.168.40.13:3000`) and embeds Grafana dashboards. Those are standard services and are not in this folder.
 
-All APIs run on `docker-vm-core-utilities01` (192.168.40.13) except:
-- Docker Stats Exporter runs on each Docker host (192.168.40.13, 192.168.40.11)
+## Configuration
 
-### Deploy via Ansible
+| API | Variables |
+|-----|-----------|
+| service-version-api | `UPDATE_API_KEY` (shared secret for update buttons; must match `SERVICE_VERSION_API_KEY` in Glance's `.env`). Mounts `~/.ssh` read-only to query and update containers on other hosts over SSH. |
+| nas-backup-status-api | None. Mounts `~/.ssh` read-only and SSHes to PBS (`192.168.20.50`). |
+| life-progress | `BIRTH_DATE` (ISO date), `TARGET_AGE` |
+| steam-stats | `STEAM_API_KEY`, `STEAM_ID` (Steam64). Get a key at https://steamcommunity.com/dev/apikey |
+| pihole-stats-api | `PIHOLE_PASSWORD` (required), `PIHOLE_URL` (default `http://192.168.90.53`). Pi-hole v6 API. |
+| proxmox-nodes-api | None. Reads node status from Prometheus. |
+
+Put variables in a `.env` next to each `docker-compose.yml` (never commit it).
+
+## Deploy
 
 ```bash
-# From ansible controller
-cd ~/ansible
-
-# Deploy individual APIs
-ansible-playbook glance/deploy-life-progress-api.yml
-ansible-playbook glance/deploy-media-stats-api.yml
-ansible-playbook glance/deploy-steam-stats-api.yml -e "steam_api_key=YOUR_KEY steam_id=YOUR_ID"
-ansible-playbook glance/deploy-gaming-pc-api.yml
-ansible-playbook glance/deploy-nas-backup-status-api.yml
-ansible-playbook glance/deploy-nba-stats-api.yml
-ansible-playbook monitoring/deploy-docker-exporter.yml
+# on the target host
+sudo mkdir -p /opt/<api> && sudo chown $USER /opt/<api>
+cp -r apis/<api>/* /opt/<api>/
+cd /opt/<api> && nano .env   # if the API needs variables
+docker compose up -d --build
+curl -s localhost:<port>/health
 ```
 
-## API Details
+`pihole-stats-api` and `proxmox-nodes-api` don't need a build; they bind-mount the script into `python:3.11-slim`.
 
-### Life Progress API (port 5051)
+## Retired
 
-Calculates time-based progress metrics for the Life Progress widget.
+[`_retired/`](_retired/) keeps APIs that are no longer wired into the dashboard, kept for reference:
 
-**Environment Variables:**
-- `BIRTH_YEAR`, `BIRTH_MONTH`, `BIRTH_DAY` - Birth date
-- `TARGET_AGE` - Target lifespan (default: 80)
-
-**Response:**
-```json
-{
-  "year": 4.1,
-  "month": 48.3,
-  "day": 62.5,
-  "life": 35.2,
-  "age": 28.3,
-  "remaining_years": 51.7,
-  "remaining_days": 18879,
-  "quote": "Time is the most valuable thing...",
-  "target_age": 80
-}
-```
-
-### Media Stats API (port 5054)
-
-Aggregates Radarr and Sonarr statistics into a single endpoint.
-
-**Environment Variables:**
-- `RADARR_URL`, `RADARR_API_KEY`
-- `SONARR_URL`, `SONARR_API_KEY`
-
-**Response:**
-```json
-{
-  "stats": [
-    {"label": "WANTED MOVIES", "value": 15, "color": "#f59e0b"},
-    {"label": "MOVIES DOWNLOADING", "value": 9, "color": "#3b82f6"},
-    ...
-  ],
-  "radarr": {"wanted": 15, "downloading": 9, "downloaded": 850},
-  "sonarr": {"wanted": 1906, "downloading": 98, "downloaded": 12500}
-}
-```
-
-### Steam Stats API (port 5055)
-
-Fetches Steam profile data for Glance dashboard widget. Shows top 5 most played games sorted by total playtime.
-
-**Prerequisites:**
-1. Steam API Key: https://steamcommunity.com/dev/apikey
-2. Steam64 ID: https://steamid.io/
-
-**Environment Variables:**
-- `STEAM_API_KEY` - Steam Web API key
-- `STEAM_ID` - Steam64 ID (17-digit number)
-
-**Endpoints:**
-- `/stats` - Full profile data with top played games and wishlist
-- `/health` - Health check
-
-**Response (`/stats`):**
-```json
-{
-  "profile": {
-    "name": "username",
-    "avatar": "https://...",
-    "status": "Online"
-  },
-  "total_games": 250,
-  "top_played": [
-    {
-      "name": "Cities: Skylines",
-      "thumbnail": "https://cdn.cloudflare.steamstatic.com/steam/apps/255710/header.jpg",
-      "playtime": "594h 30m",
-      "playtime_hours": 594.5
-    }
-  ],
-  "recent_games": [...],
-  "wishlist_on_sale": [
-    {"name": "Game", "discount": 50, "price": 14.99}
-  ],
-  "wishlist_sale_count": 3
-}
-```
-
-**Note:** Wishlist requires Steam profile privacy settings to be set to Public.
-
-### Gaming PC Stats API (port 5056)
-
-Middleware API that fetches and simplifies LibreHardwareMonitor JSON data for Glance. Located on Compute page sidebar.
-
-**Why a Middleware API?**
-- LibreHardwareMonitor's JSON is deeply nested and complex
-- Glance's template engine doesn't support `hasPrefix`, `hasSuffix`, `contains` functions
-- The middleware pre-processes the data into a clean, flat JSON structure
-
-**Prerequisites:**
-- LibreHardwareMonitor running on Windows PC with HTTP server enabled (port 8085)
-- Windows Firewall allowing port 8085
-
-**Endpoints:**
-- `/stats` - Hardware metrics (CPU, GPU, Memory, Storage, Fans)
-- `/health` - Health check
-
-**Response (`/stats`):**
-```json
-{
-  "online": true,
-  "hostname": "GAMING-PC",
-  "cpu": {"temp": "65°C", "load": "25%", "name": "AMD Ryzen 7 9800X3D"},
-  "gpu": {"temp": "55°C", "load": "10%", "vram": "2.1 GB", "name": "NVIDIA RTX 4080"},
-  "memory": {"load": "45%", "used": "28.8 GB", "available": "35.2 GB"},
-  "fans": [{"name": "CPU Fan", "speed": "1200 RPM"}],
-  "storage": [{"name": "Samsung 990 Pro", "temp": "45°C", "used": "512 GB"}]
-}
-```
-
-**When PC is offline:**
-```json
-{
-  "online": false,
-  "error": "Could not connect to Gaming PC"
-}
-```
-
-### NAS Backup Status API (port 9102)
-
-Monitors PBS backups and NAS sync status with job durations.
-
-**Endpoints:**
-- `/status` - Sync status, job durations, datastore sizes
-- `/backups` - List of VMs/CTs with names and last backup times
-- `/job-status` - Just the job status portion
-- `/health` - Health check with cache status
-- `/refresh` - Force cache refresh
-
-**Response (`/status`):**
-```json
-{
-  "status": "success",
-  "last_sync": "2026-01-15 02:31:27",
-  "nas_sync_duration": "28m 51s",
-  "job_status": {
-    "daily": {"last_backup": "2026-01-14 18:33", "duration": "3h 39m", "count": 90},
-    "main": {"last_backup": "2026-01-14 17:48", "duration": "4h 49m", "count": 57}
-  }
-}
-```
-
-### NBA Stats API (port 5060)
-
-Provides NBA data and Yahoo Fantasy league integration.
-
-**Endpoints:**
-- `/games` - Today's NBA games with scores
-- `/standings` - Eastern/Western conference standings
-- `/injuries` - Injury report with player photos
-- `/news` - NBA news headlines
-- `/fantasy` - Yahoo Fantasy league standings
-- `/fantasy/matchups` - Current week matchups
-- `/fantasy/recommendations` - Top available free agents
-
-### Docker Stats Exporter (port 9417)
-
-Prometheus exporter for Docker container metrics.
-
-**Metrics:**
-- `docker_container_running` - Container status (1=running)
-- `docker_container_cpu_percent` - CPU usage
-- `docker_container_memory_percent` - Memory usage
-- `docker_container_memory_usage_bytes` - Memory in bytes
-- `docker_container_uptime_seconds` - Container uptime
+| API | Why retired |
+|-----|-------------|
+| health-tracker-api (5062) | Health page removed 2026-08-29 |
+| nba-stats-api (5060) | Sports page removed 2026-08-29 |
+| media-stats-api (5054) | Media page now queries Radarr/Sonarr directly |
+| docker-stats-exporter (9417) | Not running; container metrics come from cAdvisor + Prometheus |
+| power-control-api (5057) | Power panel removed from Home; the container still runs on .13 |
 
 ## Testing
 
 ```bash
-# Life Progress
-curl http://192.168.40.13:5051/progress | jq .
-
-# Media Stats
-curl http://192.168.40.13:5054/api/stats | jq .
-
-# Steam Stats
-curl http://192.168.40.13:5055/stats | jq .
-curl http://192.168.40.13:5055/health
-
-# Gaming PC Stats
-curl http://192.168.40.13:5056/stats | jq .
-curl http://192.168.40.13:5056/health
-
-# NAS Backup Status
-curl http://192.168.40.13:9102/status | jq .
-curl http://192.168.40.13:9102/backups | jq .
-
-# NBA Stats
-curl http://192.168.40.13:5060/games | jq .
-curl http://192.168.40.13:5060/standings | jq .
-
-# Docker Stats (Prometheus format)
-curl http://192.168.40.13:9417/metrics
+curl -s http://192.168.40.13:5070/api/summary | jq .
+curl -s http://192.168.40.13:9102/status | jq .
+curl -s http://192.168.40.13:5051/progress | jq .
+curl -s http://192.168.40.13:5055/stats | jq .
+curl -s http://192.168.40.12:5055/api/pihole/stats | jq .
 ```

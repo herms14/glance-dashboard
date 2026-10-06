@@ -31,3 +31,7 @@ logs/
 # Local testing
 docker-compose.override.yml
 docker-compose.local.yml
+
+# Python
+__pycache__/
+*.pyc
