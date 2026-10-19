@@ -1,0 +1,117 @@
+- name: News
+  slug: news
+  columns:
+    - size: full
+      widgets:
+      - type: videos
+        title: Tech YouTube
+        channels:
+        - UCBJycsmduvYEL83R_U4JriQ
+        - UCXuqSBlHAE6Xw-yeJA0Tunw
+        - UCMiJRAwDNSNzuYeN2uWa0pA
+        - UCVYamHliCI9rw1tHR1xbkfw
+        - UCXGgrKt94gR6lmN4aN3mYTg
+        - UCWFKCr40YwOZQx8FHU_ZqqQ
+        - UCsBjURrPoezykLs9EqgamOA
+        limit: 12
+        collapse-after: 6
+        style: horizontal-cards
+      - type: rss
+        cache: 2h
+        title: Tech News
+        card-height: 27
+        collapse-after: 6
+        thumbnail-height: 10
+        limit: 12
+        style: horizontal-cards
+        feeds:
+        - title: The Verge
+          url: https://www.theverge.com/rss/index.xml
+        - title: XDA
+          url: https://www.xda-developers.com/feed/
+        - title: TechCrunch
+          url: https://techcrunch.com/feed/
+        - title: Ars Technica
+          url: https://feeds.arstechnica.com/arstechnica/technology-lab
+      - type: rss
+        cache: 2h
+        title: AI & Machine Learning
+        collapse-after: 5
+        limit: 10
+        style: horizontal-cards
+        feeds:
+        - title: TechCrunch AI
+          url: https://techcrunch.com/category/artificial-intelligence/feed/
+        - title: Reddit · r/artificial, r/MachineLearning, r/LocalLLaMA
+          url: https://www.reddit.com/r/artificial+MachineLearning+LocalLLaMA/.rss
+      - type: rss
+        cache: 2h
+        title: Cloud & Enterprise
+        collapse-after: 4
+        limit: 8
+        style: horizontal-cards
+        feeds:
+        - title: AWS Blog
+          url: https://aws.amazon.com/blogs/aws/feed/
+        - title: Reddit · r/aws, r/AZURE, r/googlecloud
+          url: https://www.reddit.com/r/aws+AZURE+googlecloud/.rss
+      - type: rss
+        cache: 2h
+        title: Gaming
+        collapse-after: 4
+        limit: 8
+        style: horizontal-cards
+        feeds:
+        - title: Reddit · r/gaming, r/pcgaming, r/Games
+          url: https://www.reddit.com/r/gaming+pcgaming+Games/.rss
+        - title: Ars Gaming
+          url: https://feeds.arstechnica.com/arstechnica/gaming
+    - size: small
+      widgets:
+      - type: rss
+        cache: 2h
+        title: Android & Mobile
+        collapse-after: 4
+        limit: 6
+        feeds:
+        - title: XDA Mobile
+          url: https://www.xda-developers.com/feed/
+        - title: r/Android
+          url: https://www.reddit.com/r/Android/.rss
+      - type: rss
+        cache: 2h
+        title: PC Builds & Hardware
+        collapse-after: 4
+        limit: 6
+        feeds:
+        - title: Tom's Hardware
+          url: https://www.tomshardware.com/feeds/all
+        - title: Reddit · r/buildapc, r/pcmasterrace, r/hardware
+          url: https://www.reddit.com/r/buildapc+pcmasterrace+hardware/.rss
+      - type: rss
+        cache: 2h
+        title: Travel
+        collapse-after: 3
+        limit: 5
+        feeds:
+        - title: Nomadic Matt
+          url: https://www.nomadicmatt.com/feed/
+        - title: Reddit · r/travel, r/solotravel
+          url: https://www.reddit.com/r/travel+solotravel/.rss
+      - type: bookmarks
+        title: Quick Links
+        groups:
+        - title: News Sites
+          links:
+          - title: The Verge
+            url: https://www.theverge.com
+            icon: si:theverge
+          - title: XDA
+            url: https://www.xda-developers.com
+            icon: si:xdadevelopers
+          - title: TechCrunch
+            url: https://techcrunch.com
+            icon: si:techcrunch
+          - title: Ars Technica
+            url: https://arstechnica.com
+            icon: si:arstechnica

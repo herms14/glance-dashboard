@@ -1,0 +1,244 @@
+- name: Overview
+  slug: home
+  columns:
+    - size: small
+      widgets:
+      - type: clock
+        hour-format: 24h
+        timezone: Asia/Manila
+      - type: weather
+        location: Manila, Philippines
+        units: metric
+        hour-format: 24h
+      - type: custom-api
+        title: Sun Times
+        cache: 6h
+        url: https://api.sunrise-sunset.org/json?lat=14.5995&lng=120.9842&formatted=0&tzid=Asia/Manila
+        template: |
+          <div style="display: flex; justify-content: space-around; padding: 12px;">
+            <div style="text-align: center;">
+              <div style="font-size: 24px; margin-bottom: 6px;">🌅</div>
+              <div style="font-size: 10px; color: #888; text-transform: uppercase; margin-bottom: 4px;">Sunrise</div>
+              <div style="font-size: 14px; font-weight: 600; color: #f59e0b;">{{ .JSON.String "results.sunrise" | parseTime "2006-01-02T15:04:05-07:00" | formatTime "3:04 PM" }}</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 24px; margin-bottom: 6px;">🌇</div>
+              <div style="font-size: 10px; color: #888; text-transform: uppercase; margin-bottom: 4px;">Sunset</div>
+              <div style="font-size: 14px; font-weight: 600; color: #8b5cf6;">{{ .JSON.String "results.sunset" | parseTime "2006-01-02T15:04:05-07:00" | formatTime "3:04 PM" }}</div>
+            </div>
+          </div>
+      - type: calendar
+        first-day-of-week: monday
+      - type: custom-api
+        title: Chess.com
+        cache: 1h
+        url: https://api.chess.com/pub/player/hrmsmrflrii/stats
+        headers:
+          User-Agent: Glance Dashboard/1.0
+        template: |
+          <div style="padding: 12px;">
+            <a href="https://www.chess.com/member/hrmsmrflrii" target="_blank" style="text-decoration: none; color: inherit;">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
+                <img src="https://images.chesscomfiles.com/uploads/v1/user/500559429.e3139af7.200x200o.989ed98f1384.jpg" alt="Profile" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;">
+                <div>
+                  <span style="font-weight: 600; color: #fff;">hrmsmrflrii</span>
+                  <div style="font-size: 11px; color: #888;">Chess.com</div>
+                </div>
+              </div>
+            </a>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 8px; padding: 12px; text-align: center;">
+                <div style="font-size: 10px; color: rgba(255,255,255,0.8); text-transform: uppercase; margin-bottom: 4px;">Blitz</div>
+                <div style="font-size: 22px; font-weight: bold; color: #fff;">{{ .JSON.Int "chess_blitz.last.rating" }}</div>
+                <div style="font-size: 10px; color: rgba(255,255,255,0.7); margin-top: 4px;">
+                  {{ .JSON.Int "chess_blitz.record.win" }}W / {{ .JSON.Int "chess_blitz.record.loss" }}L
+                </div>
+              </div>
+              <div style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border-radius: 8px; padding: 12px; text-align: center;">
+                <div style="font-size: 10px; color: rgba(255,255,255,0.8); text-transform: uppercase; margin-bottom: 4px;">Rapid</div>
+                <div style="font-size: 22px; font-weight: bold; color: #fff;">{{ .JSON.Int "chess_rapid.last.rating" }}</div>
+                <div style="font-size: 10px; color: rgba(255,255,255,0.7); margin-top: 4px;">
+                  {{ .JSON.Int "chess_rapid.record.win" }}W / {{ .JSON.Int "chess_rapid.record.loss" }}L
+                </div>
+              </div>
+            </div>
+          </div>
+      - type: custom-api
+        title: Steam Top Played
+        cache: 2h
+        url: http://192.168.40.13:5055/stats
+        template: |
+          <div style="padding: 12px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+              {{ if .JSON.String "profile.avatar" }}
+              <img src="{{ .JSON.String "profile.avatar" }}" style="width: 32px; height: 32px; border-radius: 8px;">
+              {{ end }}
+              <div>
+                <div style="font-weight: 600; font-size: 13px; color: #66c0f4;">{{ .JSON.String "profile.name" }}</div>
+                <div style="font-size: 11px; color: #888;">{{ .JSON.Int "total_games" }} games</div>
+              </div>
+            </div>
+            {{ range .JSON.Array "top_played" }}
+            <div style="display: flex; align-items: center; gap: 10px; padding: 8px; margin-bottom: 6px; background: rgba(102,192,244,0.08); border-radius: 8px;">
+              <img src="{{ .String "thumbnail" }}" style="width: 46px; height: 22px; border-radius: 4px; object-fit: cover;">
+              <div style="flex: 1; min-width: 0;">
+                <div style="font-size: 11px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ .String "name" }}</div>
+                <div style="font-size: 10px; color: #66c0f4;">{{ .String "playtime" }}</div>
+              </div>
+            </div>
+            {{ end }}
+          </div>
+    - size: full
+      widgets:
+      - type: custom-api
+        title: Lab Status
+        cache: 1m
+        url: http://192.168.40.16:8790/api/overview
+        headers:
+          X-Labfeed-Token: ${LABFEED_TOKEN}
+        template: |
+          <div class="lf-banner lf-{{ .JSON.String "state" }}">
+            <span class="lf-dot{{ if ne (.JSON.String "state") "ok" }} lf-pulse{{ end }}"></span>
+            <span class="lf-banner-text">{{ .JSON.String "headline" }}</span>
+            <span class="lf-sub margin-left-auto">updated {{ .JSON.String "time" }}</span>
+          </div>
+          <div class="lf-kpis">
+            <a class="lf-kpi lf-{{ .JSON.String "cluster.state" }}" href="/compute">
+              <span class="lf-dot"></span><div class="lf-label">Cluster</div>
+              <div class="lf-value">{{ .JSON.Int "cluster.nodes_up" }}<small>/ {{ .JSON.Int "cluster.nodes_total" }}</small></div>
+              <div class="lf-sub">Proxmox nodes online</div>
+            </a>
+            <a class="lf-kpi lf-{{ .JSON.String "cluster.state" }}" href="/compute">
+              <span class="lf-dot"></span><div class="lf-label">Guests</div>
+              <div class="lf-value">{{ add (.JSON.Int "cluster.vms_running") (.JSON.Int "cluster.cts_running") }}<small>/ {{ add (.JSON.Int "cluster.vms_total") (.JSON.Int "cluster.cts_total") }}</small></div>
+              <div class="lf-sub">{{ .JSON.Int "cluster.vms_running" }} VMs · {{ .JSON.Int "cluster.cts_running" }} LXCs running</div>
+            </a>
+            <a class="lf-kpi lf-{{ .JSON.String "nas.state" }}" href="/storage">
+              <span class="lf-dot"></span><div class="lf-label">NAS</div>
+              <div class="lf-value">{{ .JSON.Float "nas.volume.used_pct" | printf "%.0f" }}<small>% used</small></div>
+              <div class="lf-sub">{{ .JSON.Int "nas.disks_ok" }}/{{ .JSON.Int "nas.disks_total" }} disks healthy · {{ .JSON.Int "nas.hottest_c" }}°C</div>
+              <div class="lf-bar"><i style="width: {{ .JSON.Float "nas.volume.used_pct" }}%"></i></div>
+            </a>
+            <a class="lf-kpi lf-{{ .JSON.String "backups.state" }}" href="/backup">
+              <span class="lf-dot"></span><div class="lf-label">Backups</div>
+              <div class="lf-value">{{ .JSON.Float "backups.jobs.0.age_h" | printf "%.0f" }}<small>h ago</small></div>
+              <div class="lf-sub">last daily · NAS sync {{ .JSON.String "backups.sync_status" }}</div>
+            </a>
+            <a class="lf-kpi lf-{{ .JSON.String "services.state" }}" href="/services">
+              <span class="lf-dot"></span><div class="lf-label">Services</div>
+              <div class="lf-value">{{ .JSON.Int "services.online" }}<small>/ {{ .JSON.Int "services.total" }}</small></div>
+              <div class="lf-sub">{{ .JSON.Int "services.updates_available" }} updates available</div>
+            </a>
+            <a class="lf-kpi lf-{{ .JSON.String "network.state" }}" href="/network">
+              <span class="lf-dot"></span><div class="lf-label">Network</div>
+              <div class="lf-value">{{ .JSON.Float "network.speedtest.download" | printf "%.0f" }}<small>Mbps</small></div>
+              <div class="lf-sub">{{ .JSON.Int "network.clients" }} clients · {{ .JSON.Int "network.devices" }} Omada devices</div>
+            </a>
+            <a class="lf-kpi {{ if gt (.JSON.Int "attention.incidents") 0 }}lf-warn{{ else }}lf-ok{{ end }}" href="/roundtable">
+              <span class="lf-dot"></span><div class="lf-label">Attention</div>
+              <div class="lf-value">{{ add (.JSON.Int "attention.incidents") (.JSON.Int "attention.findings") }}</div>
+              <div class="lf-sub">{{ .JSON.Int "attention.incidents" }} incidents · {{ .JSON.Int "attention.findings" }} findings</div>
+            </a>
+          </div>
+      - type: custom-api
+        title: Roundtable
+        title-url: https://roundtable.hrmsmrflrii.xyz
+        cache: 1m
+        url: http://192.168.40.16:8790/api/roundtable
+        headers:
+          X-Labfeed-Token: ${LABFEED_TOKEN}
+        template: |
+          {{ $spent := .JSON.Float "cost.month" }}{{ $cap := .JSON.Float "cost.budget" }}
+          <div class="lf-kpis">
+            <a class="lf-kpi {{ if gt (.JSON.Int "working") 0 }}lf-ok{{ else }}lf-info{{ end }}" href="/roundtable">
+              <div class="lf-label">Working now</div>
+              <div class="lf-value">{{ .JSON.Int "working" }}<small>/ {{ .JSON.Int "agents" }} agents</small></div>
+              <div class="lf-sub">{{ if gt (.JSON.Int "working") 0 }}{{ range .JSON.Array "team" }}{{ if .Bool "working" }}{{ .String "name" }} {{ end }}{{ end }}{{ else }}all idle{{ end }}</div>
+            </a>
+            <a class="lf-kpi {{ if gt (.JSON.Int "attention.counts.approvals") 0 }}lf-warn{{ else }}lf-ok{{ end }}" href="/roundtable">
+              <div class="lf-label">Needs your ✅</div>
+              <div class="lf-value">{{ .JSON.Int "attention.counts.approvals" }}</div>
+              <div class="lf-sub">pending approvals</div>
+            </a>
+            <a class="lf-kpi {{ if gt (.JSON.Int "attention.counts.high_findings") 0 }}lf-crit{{ else if gt (.JSON.Int "attention.counts.incidents") 0 }}lf-warn{{ else }}lf-ok{{ end }}" href="/roundtable">
+              <div class="lf-label">Open issues</div>
+              <div class="lf-value">{{ .JSON.Int "attention.counts.incidents" }}<small>incidents</small></div>
+              <div class="lf-sub">{{ .JSON.Int "attention.counts.findings" }} security · {{ .JSON.Int "attention.counts.access_gaps" }} access gaps</div>
+            </a>
+            <a class="lf-kpi {{ if gt $spent (mul $cap 0.9) }}lf-crit{{ else if gt $spent (mul $cap 0.75) }}lf-warn{{ else }}lf-ok{{ end }}" href="/roundtable">
+              <div class="lf-label">AI spend</div>
+              <div class="lf-value">&#36;{{ printf "%.0f" $spent }}<small>/ &#36;{{ printf "%.0f" $cap }}</small></div>
+              <div class="lf-sub">&#36;{{ .JSON.Float "cost.today" | printf "%.2f" }} today</div>
+              <div class="lf-bar"><i style="width: {{ div (mul $spent 100.0) $cap }}%"></i></div>
+            </a>
+          </div>
+          {{ if gt (.JSON.Int "attention.counts.approvals") 0 }}
+          <div class="lf-section"><span>Waiting for you</span><span>react ✅ in Discord</span></div>
+          <div class="lf-list">
+            {{ range .JSON.Array "attention.approvals" }}
+            <div class="lf-row lf-warn"><span class="lf-pill">#{{ .Int "id" }}</span><span class="lf-main">{{ .String "title" }}</span><span class="lf-meta lf-hide-sm">{{ .String "agent" }} · {{ .String "since" }}</span></div>
+            {{ end }}
+          </div>
+          {{ end }}
+          <div class="lf-section"><span>Coming up</span></div>
+          <div class="lf-pills">
+            {{ range $i, $t := .JSON.Array "timers" }}{{ if lt $i 6 }}<span class="lf-pill lf-info">{{ $t.String "next" }} · {{ $t.String "unit" }}</span>{{ end }}{{ end }}
+          </div>
+      - type: custom-api
+        title: Life Progress
+        cache: 6h
+        url: http://192.168.40.13:5051/progress
+        template: |
+          <div class="text-center margin-bottom-15">
+            <span class="size-h2 color-highlight">{{ .JSON.Int "remaining_days" | formatNumber }}</span>
+            <span class="color-subdue"> days remaining until age {{ .JSON.Int "target_age" }}</span>
+          </div>
+          <div class="lf-life lf-crit"><b class="lf-c">Year</b><div class="lf-bar"><i style="width: {{ .JSON.Float "year" }}%"></i></div><span class="text-right">{{ .JSON.Float "year" | printf "%.0f" }}%</span></div>
+          <div class="lf-life lf-warn"><b class="lf-c">Month</b><div class="lf-bar"><i style="width: {{ .JSON.Float "month" }}%"></i></div><span class="text-right">{{ .JSON.Float "month" | printf "%.0f" }}%</span></div>
+          <div class="lf-life lf-ok"><b class="lf-c">Day</b><div class="lf-bar"><i style="width: {{ .JSON.Float "day" }}%"></i></div><span class="text-right">{{ .JSON.Float "day" | printf "%.0f" }}%</span></div>
+          <div class="lf-life lf-info"><b class="lf-c">Life</b><div class="lf-bar"><i style="width: {{ .JSON.Float "life" }}%"></i></div><span class="text-right">{{ .JSON.Float "life" | printf "%.0f" }}%</span></div>
+          <div class="lf-quote">"{{ .JSON.String "quote" }}"</div>
+      - type: custom-api
+        title: GitHub Contributions
+        cache: 12h
+        url: https://api.github.com/users/herms14
+        template: |
+          <div style="text-align: center; padding: 12px;">
+            <img src="https://ghchart.rshah.org/40c463/herms14" alt="GitHub Contributions" style="width: 100%; border-radius: 8px; filter: invert(1) hue-rotate(180deg);">
+            <div style="margin-top: 12px; color: #a6adc8; font-size: 12px;">
+              <span style="color: #a6e3a1; font-weight: bold;">{{ .JSON.Int "public_repos" }}</span> repos |
+              <span style="color: #89b4fa; font-weight: bold;">{{ .JSON.Int "followers" }}</span> followers |
+              <span style="color: #fab387; font-weight: bold;">{{ .JSON.Int "following" }}</span> following
+            </div>
+          </div>
+    - size: small
+      widgets:
+      - type: markets
+        title: Crypto
+        markets:
+        - symbol: BTC-USD
+          name: Bitcoin
+        - symbol: ETH-USD
+          name: Ethereum
+        - symbol: XRP-USD
+          name: XRP
+        - symbol: SOL-USD
+          name: Solana
+        - symbol: ADA-USD
+          name: Cardano
+      - type: markets
+        title: Stocks
+        sort-by: change
+        markets:
+        - symbol: MSFT
+          name: Microsoft
+        - symbol: NVDA
+          name: Nvidia
+        - symbol: AAPL
+          name: Apple
+        - symbol: GOOGL
+          name: Google
+        - symbol: TSLA
+          name: Tesla
+        - symbol: AMZN
+          name: Amazon

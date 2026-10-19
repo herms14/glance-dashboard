@@ -1,0 +1,252 @@
+- name: Network
+  slug: network
+  columns:
+    - size: small
+      widgets:
+      - type: custom-api
+        title: Internet
+        title-url: https://speedtest.hrmsmrflrii.xyz
+        cache: 10m
+        url: http://192.168.40.13:3000/api/speedtest/latest
+        template: |
+          {{ $ping := .JSON.Float "data.ping" }}
+          <div class="lf-grid-2">
+            <div class="lf-kpi lf-info"><div class="lf-label">⬇ Download</div><div class="lf-value">{{ .JSON.Float "data.download" | printf "%.0f" }}<small>Mbps</small></div></div>
+            <div class="lf-kpi lf-ok"><div class="lf-label">⬆ Upload</div><div class="lf-value">{{ .JSON.Float "data.upload" | printf "%.0f" }}<small>Mbps</small></div></div>
+            <div class="lf-kpi {{ if gt $ping 50.0 }}lf-crit{{ else if gt $ping 20.0 }}lf-warn{{ else }}lf-ok{{ end }}"><div class="lf-label">Ping</div><div class="lf-value">{{ printf "%.1f" $ping }}<small>ms</small></div></div>
+            <div class="lf-kpi lf-info"><div class="lf-label">Last test</div><div class="lf-value" style="font-size:13px;margin-top:8px">{{ .JSON.String "data.server_name" }}</div>
+              <div class="lf-sub">{{ .JSON.String "data.created_at" | parseTime "rfc3339" | toRelativeTime }}</div></div>
+          </div>
+      - type: custom-api
+        title: Technitium DNS (primary)
+        title-url: https://dns.hrmsmrflrii.xyz
+        cache: 2m
+        url: http://192.168.90.60:5380/api/dashboard/stats/get?type=LastHour
+        headers:
+          Authorization: "Bearer ${GLANCE_TECHNITIUM_TOKEN}"
+        template: |
+          {{ if ne (.JSON.String "status") "ok" }}
+          <p class="color-negative">Technitium API: {{ .JSON.String "errorMessage" }}</p>
+          {{ else }}
+          <div class="lf-grid-2">
+            <div class="lf-kpi lf-info"><div class="lf-label">Queries (1 h)</div><div class="lf-value">{{ .JSON.Int "response.stats.totalQueries" | formatNumber }}</div></div>
+            <div class="lf-kpi lf-crit"><div class="lf-label">Blocked</div><div class="lf-value">{{ .JSON.Int "response.stats.totalBlocked" | formatNumber }}</div></div>
+            <div class="lf-kpi lf-ok"><div class="lf-label">Cached</div><div class="lf-value">{{ .JSON.Int "response.stats.totalCached" | formatNumber }}</div></div>
+            <div class="lf-kpi lf-info"><div class="lf-label">Clients</div><div class="lf-value">{{ .JSON.Int "response.stats.totalClients" }}</div></div>
+            <div class="lf-kpi {{ if gt (.JSON.Int "response.stats.totalServerFailure") 50 }}lf-warn{{ else }}lf-ok{{ end }}"><div class="lf-label">SERVFAIL</div><div class="lf-value">{{ .JSON.Int "response.stats.totalServerFailure" | formatNumber }}</div></div>
+            <div class="lf-kpi lf-info"><div class="lf-label">NXDOMAIN</div><div class="lf-value">{{ .JSON.Int "response.stats.totalNxDomain" | formatNumber }}</div></div>
+          </div>
+          <div class="lf-sub" style="margin-top:6px">homelab-dns01 · 192.168.90.60 · recursive + DNSSEC · Pi-hole .53 is secondary</div>
+          {{ end }}
+      - type: custom-api
+        title: Pi-hole DNS (secondary)
+        cache: 2m
+        url: http://172.17.0.1:5055/api/pihole/stats
+        template: |
+          {{ $total := .JSON.Int "queries.total" }}
+          {{ $blocked := .JSON.Int "queries.blocked" }}
+          {{ $pct := .JSON.Float "queries.percent_blocked" }}
+          {{ $clients := .JSON.Int "clients.active" }}
+          {{ $cached := .JSON.Int "queries.cached" }}
+          {{ $blocklist := .JSON.Int "gravity.domains_being_blocked" }}
+          <div style="background: rgba(239,68,68,0.08); border-left: 3px solid #ef4444; border-radius: 10px; padding: 14px; margin-bottom: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
+              <span style="font-size: 10px; color: #f87171; text-transform: uppercase; letter-spacing: 0.05em;">Queries Today</span>
+              <span style="font-size: 22px; color: #fff; font-weight: 700;">{{ $total | formatNumber }}</span>
+            </div>
+            <div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 7px; overflow: hidden; margin-bottom: 6px;">
+              <div style="background: #ef4444; height: 7px; width: {{ printf "%.1f" $pct }}%;"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 10px; color: #94a3b8;">
+              <span><span style="color: #ef4444; font-weight: 600;">{{ $blocked | formatNumber }}</span> blocked</span>
+              <span style="color: #ef4444; font-weight: 600;">{{ printf "%.1f" $pct }}%</span>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <div style="background: rgba(59,130,246,0.08); border-left: 3px solid #3b82f6; border-radius: 8px; padding: 10px;">
+              <div style="font-size: 9px; color: #93c5fd; text-transform: uppercase; letter-spacing: 0.05em;">Active Clients</div>
+              <div style="font-size: 18px; color: #fff; font-weight: 700; margin-top: 4px;">{{ $clients }}</div>
+            </div>
+            <div style="background: rgba(34,197,94,0.08); border-left: 3px solid #22c55e; border-radius: 8px; padding: 10px;">
+              <div style="font-size: 9px; color: #4ade80; text-transform: uppercase; letter-spacing: 0.05em;">Cached</div>
+              <div style="font-size: 18px; color: #fff; font-weight: 700; margin-top: 4px;">{{ $cached | formatNumber }}</div>
+            </div>
+          </div>
+          <div style="background: rgba(255,255,255,0.04); border-radius: 8px; padding: 10px; margin-top: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 10px; color: #94a3b8;">Blocklist Domains</span>
+              <span style="font-size: 14px; color: #f59e0b; font-weight: 700;">{{ $blocklist | formatNumber }}</span>
+            </div>
+          </div>
+      - type: monitor
+        title: Service Status
+        cache: 1m
+        sites:
+        - title: Core Router
+          url: http://192.168.0.1
+          icon: si:tplink
+          allow-insecure: true
+        - title: Omada Controller
+          url: https://192.168.0.101
+          icon: si:tplink
+          allow-insecure: true
+        - title: Technitium DNS
+          url: http://192.168.90.60:5380
+          icon: mdi:dns
+        - title: Pi-hole DNS
+          url: http://192.168.90.53/admin
+          icon: si:pihole
+        - title: Traefik
+          url: https://traefik.hrmsmrflrii.xyz
+          icon: si:traefikproxy
+          allow-insecure: true
+      - type: bookmarks
+        title: Quick Links
+        groups:
+        - title: Network
+          links:
+          - title: Omada Controller
+            url: https://192.168.0.101
+            icon: si:tplink
+          - title: TP-Link Router
+            url: http://192.168.0.1
+            icon: si:tplink
+          - title: Technitium DNS
+            url: https://dns.hrmsmrflrii.xyz
+            icon: mdi:dns
+          - title: Pi-hole Admin
+            url: http://192.168.90.53/admin
+            icon: si:pihole
+        - title: Dashboards
+          links:
+          - title: Network Utilization
+            url: https://grafana.hrmsmrflrii.xyz/d/network-utilization
+            icon: si:grafana
+          - title: Omada Overview
+            url: https://grafana.hrmsmrflrii.xyz/d/omada-network
+            icon: si:grafana
+          - title: Speedtest Tracker
+            url: https://speedtest.hrmsmrflrii.xyz
+            icon: si:speedtest
+    - size: full
+      widgets:
+      - type: custom-api
+        title: Network Devices (Omada)
+        cache: 30s
+        url: http://192.168.40.13:9090/api/v1/query?query=omada_device_cpu_percentage
+        template: |
+          <div style="font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; padding: 0 2px;">8 Devices · Live from Omada Controller</div>
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+            {{ range .JSON.Array "data.result" }}
+            {{ $cpu := .Float "value.1" }}
+            {{ $cpuColor := "#22c55e" }}
+            {{ if gt $cpu 50.0 }}{{ $cpuColor = "#f59e0b" }}{{ end }}
+            {{ if gt $cpu 80.0 }}{{ $cpuColor = "#ef4444" }}{{ end }}
+            {{ $devType := .String "metric.device_type" }}
+            {{ $accent := "#3b82f6" }}
+            {{ if eq $devType "gateway" }}{{ $accent = "#a78bfa" }}{{ end }}
+            {{ if eq $devType "switch" }}{{ $accent = "#3b82f6" }}{{ end }}
+            {{ if eq $devType "ap" }}{{ $accent = "#06b6d4" }}{{ end }}
+            <div style="background: rgba(255,255,255,0.04); border-left: 3px solid {{ $accent }}; border-radius: 10px; padding: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <div style="display: flex; align-items: center; gap: 5px; min-width: 0; overflow: hidden;">
+                  <span style="font-size: 8px; color: {{ $accent }}; background: rgba(255,255,255,0.07); padding: 1px 5px; border-radius: 3px; text-transform: uppercase; font-weight: 600;">{{ $devType }}</span>
+                  <span style="font-size: 11px; font-weight: 600; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ .String "metric.device" }}</span>
+                </div>
+                <span style="font-size: 10px; color: #22c55e; font-weight: 600;">●</span>
+              </div>
+              <div style="margin-bottom: 6px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+                  <span style="font-size: 9px; color: #60a5fa;">CPU</span>
+                  <span style="font-size: 9px; color: #fff;">{{ printf "%.0f" $cpu }}%</span>
+                </div>
+                <div style="background: rgba(255,255,255,0.08); border-radius: 3px; height: 4px;">
+                  <div style="background: {{ $cpuColor }}; border-radius: 3px; height: 4px; width: {{ printf "%.1f" $cpu }}%;"></div>
+                </div>
+              </div>
+            </div>
+            {{ end }}
+          </div>
+      - type: custom-api
+        title: Device Memory & Uptime
+        cache: 30s
+        url: http://192.168.40.13:9090/api/v1/query?query=omada_device_mem_percentage
+        template: |
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+            {{ range .JSON.Array "data.result" }}
+            {{ $mem := .Float "value.1" }}
+            {{ $color := "#22c55e" }}
+            {{ if gt $mem 60.0 }}{{ $color = "#f59e0b" }}{{ end }}
+            {{ if gt $mem 80.0 }}{{ $color = "#ef4444" }}{{ end }}
+            <div style="background: rgba(255,255,255,0.04); border-radius: 8px; padding: 10px;">
+              <div style="font-size: 10px; color: #fff; font-weight: 600; margin-bottom: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ .String "metric.device" }}</div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+                <span style="font-size: 9px; color: #a78bfa;">RAM</span>
+                <span style="font-size: 9px; color: #fff;">{{ printf "%.0f" $mem }}%</span>
+              </div>
+              <div style="background: rgba(255,255,255,0.08); border-radius: 3px; height: 4px;">
+                <div style="background: {{ $color }}; border-radius: 3px; height: 4px; width: {{ printf "%.1f" $mem }}%;"></div>
+              </div>
+            </div>
+            {{ end }}
+          </div>
+      - type: iframe
+        title: Cluster Bandwidth (24h)
+        source: https://grafana.hrmsmrflrii.xyz/d/network-utilization/network-utilization?orgId=1&viewPanel=9&kiosk=tv&theme=transparent&refresh=30s
+        height: 350
+      - type: iframe
+        title: WiFi Signal Quality
+        source: https://grafana.hrmsmrflrii.xyz/d/omada-network/omada-network-overview?orgId=1&viewPanel=22&kiosk=tv&theme=transparent&refresh=30s
+        height: 320
+      - type: iframe
+        title: Switch Port Traffic
+        source: https://grafana.hrmsmrflrii.xyz/d/omada-network/omada-network-overview?orgId=1&viewPanel=32&kiosk=tv&theme=transparent&refresh=30s
+        height: 320
+      - type: iframe
+        title: Client Connection Trend
+        source: https://grafana.hrmsmrflrii.xyz/d/omada-network/omada-network-overview?orgId=1&viewPanel=50&kiosk=tv&theme=transparent&refresh=30s
+        height: 280
+    - size: small
+      widgets:
+      - type: custom-api
+        title: Connected Clients
+        cache: 30s
+        url: http://192.168.40.13:9090/api/v1/query?query=sum(omada_client_connected_total)
+        template: |
+          {{ $total := 0 }}
+          {{ range .JSON.Array "data.result" }}{{ $total = .Int "value.1" }}{{ end }}
+          <div style="background: rgba(34,197,94,0.08); border-left: 3px solid #22c55e; border-radius: 10px; padding: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+              <span style="font-size: 10px; color: #4ade80; text-transform: uppercase; letter-spacing: 0.06em;">Connected</span>
+              <span style="font-size: 28px; color: #fff; font-weight: 700;">{{ $total }}</span>
+            </div>
+            <div style="font-size: 10px; color: #94a3b8; margin-top: 4px;">Across all VLANs & APs</div>
+          </div>
+      - type: custom-api
+        title: VLAN Map
+        cache: 2m
+        url: http://192.168.40.16:8790/api/network
+        headers:
+          X-Labfeed-Token: ${LABFEED_TOKEN}
+        template: |
+          <div class="lf-list">
+            {{ range .JSON.Array "vlans" }}
+            <div class="lf-row {{ if gt (.Int "clients") 0 }}lf-ok{{ else }}lf-unknown{{ end }}"><span class="lf-pill lf-info">{{ .Int "id" }}</span><span class="lf-main">{{ .String "name" }}</span><span class="lf-meta lf-hide-sm">{{ .String "subnet" }}</span><span class="lf-meta">{{ .Int "clients" }} clients</span></div>
+            {{ end }}
+          </div>
+          <div class="lf-sub margin-top-10">Inter-VLAN ACLs are currently disabled (2026-10-16).</div>
+      - type: custom-api
+        title: PoE Power
+        cache: 1m
+        url: http://192.168.40.13:9090/api/v1/query?query=sum(omada_device_poe_remain_watts)
+        template: |
+          {{ $remain := 0.0 }}
+          {{ range .JSON.Array "data.result" }}{{ $remain = .Float "value.1" }}{{ end }}
+          <div style="background: rgba(255,255,255,0.04); border-left: 3px solid #f59e0b; border-radius: 10px; padding: 12px;">
+            <div style="font-size: 10px; color: #fbbf24; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;">PoE Remaining</div>
+            <div style="font-size: 22px; color: #fff; font-weight: 700;">{{ printf "%.1f" $remain }}<span style="font-size: 11px; color: #94a3b8; margin-left: 3px;">W</span></div>
+          </div>
+      - type: iframe
+        title: Top Clients by Traffic
+        source: https://grafana.hrmsmrflrii.xyz/d/omada-network/omada-network-overview?orgId=1&viewPanel=51&kiosk=tv&theme=transparent&refresh=30s
+        height: 380

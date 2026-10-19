@@ -1,0 +1,33 @@
+# Hermes Lab - Glance dashboard (redesign 2026-10-18)
+# Source of truth: vault agents/glance/ -> deployed to CT200 /opt/glance by deploy.sh. No secrets in these files:
+# Env variables come from /opt/glance/.env (GLANCE_PVE_AUTH, GLANCE_RADARR_KEY, GLANCE_SONARR_KEY, GLANCE_PROWLARR_KEY,
+# LABFEED_TOKEN). Lab health, NAS, VLANs and the Roundtable page are served by Lab Feed on CT211
+# (agents/olympus/labfeed.py, :8790) - the same data the agents read.
+
+server:
+  assets-path: /app/assets
+
+branding:
+  app-name: Hermes Lab
+  logo-text: H
+  hide-footer: true
+
+theme:
+  background-color: 222 22 9
+  primary-color: 38 85 62
+  positive-color: 145 55 50
+  negative-color: 0 72 62
+  contrast-multiplier: 1.15
+  text-saturation-multiplier: 0.9
+  custom-css-file: /assets/lab.css
+
+pages:
+  $include: pages/overview.yml
+  $include: pages/roundtable.yml
+  $include: pages/services.yml
+  $include: pages/compute.yml
+  $include: pages/storage.yml
+  $include: pages/network.yml
+  $include: pages/backup.yml
+  $include: pages/media.yml
+  $include: pages/news.yml

@@ -1,0 +1,147 @@
+- name: Roundtable
+  slug: roundtable
+  columns:
+    - size: small
+      widgets:
+      # Everything here comes from Lab Feed (CT211) - the same data the agents use. Homelab agents only:
+      # Aika's specialists and the personal advisers are never listed.
+      - type: custom-api
+        title: Needs You
+        title-url: https://roundtable.hrmsmrflrii.xyz
+        cache: 1m
+        url: http://192.168.40.16:8790/api/roundtable
+        headers:
+          X-Labfeed-Token: ${LABFEED_TOKEN}
+        template: |
+          <div class="lf-section"><span>Approvals</span><span>react ✅ in Discord</span></div>
+          <div class="lf-list">
+            {{ range .JSON.Array "attention.approvals" }}
+            <div class="lf-row lf-warn"><span class="lf-pill">#{{ .Int "id" }}</span><span class="lf-main" title="{{ .String "title" }}">{{ .String "title" }}</span><span class="lf-meta">{{ .String "since" }}</span></div>
+            {{ else }}<div class="lf-empty">Nothing waiting for you.</div>{{ end }}
+          </div>
+          <div class="lf-section"><span>Access gaps</span><span>{{ .JSON.Int "attention.counts.access_gaps" }}</span></div>
+          <div class="lf-list">
+            {{ range .JSON.Array "attention.access_gaps" }}
+            <div class="lf-row lf-info"><span class="lf-main" title="{{ .String "resource" }}">{{ .String "resource" }}</span><span class="lf-meta">{{ .String "agent" }}</span></div>
+            {{ else }}<div class="lf-empty">No open access requests.</div>{{ end }}
+          </div>
+      - type: custom-api
+        title: Coming Up
+        cache: 2m
+        url: http://192.168.40.16:8790/api/roundtable
+        headers:
+          X-Labfeed-Token: ${LABFEED_TOKEN}
+        template: |
+          <div class="lf-list">
+            {{ range .JSON.Array "timers" }}
+            <div class="lf-row lf-info"><span class="lf-main">{{ .String "unit" }}</span><span class="lf-meta">{{ .String "next" }} · in {{ if gt (.Int "in_min") 90 }}{{ div (.Int "in_min") 60 }}h{{ else }}{{ .Int "in_min" }}m{{ end }}</span></div>
+            {{ end }}
+          </div>
+      - type: custom-api
+        title: AI Spend
+        cache: 5m
+        url: http://192.168.40.16:8790/api/roundtable
+        headers:
+          X-Labfeed-Token: ${LABFEED_TOKEN}
+        template: |
+          {{ $s := .JSON.Float "cost.month" }}{{ $c := .JSON.Float "cost.budget" }}{{ $p := div (mul $s 100.0) $c }}
+          <div class="lf-kpi {{ if gt $p 90.0 }}lf-crit{{ else if gt $p 75.0 }}lf-warn{{ else }}lf-ok{{ end }}">
+            <div class="lf-label">This month</div>
+            <div class="lf-value">&#36;{{ printf "%.2f" $s }}<small>/ &#36;{{ printf "%.0f" $c }}</small></div>
+            <div class="lf-bar lf-thick"><i style="width: {{ $p }}%"></i></div>
+            <div class="lf-sub margin-top-5">&#36;{{ printf "%.2f" (.JSON.Float "cost.today") }} today · {{ printf "%.0f" $p }}% of budget</div>
+          </div>
+          <div class="lf-section"><span>Today by agent</span></div>
+          <div class="lf-list">
+            {{ range .JSON.Array "team" }}{{ if gt (.Float "cost_today") 0.0 }}
+            <div class="lf-row"><span class="lf-main">{{ .String "name" }}</span><span class="lf-meta">{{ .Int "runs_today" }} runs · &#36;{{ printf "%.2f" (.Float "cost_today") }}</span></div>
+            {{ end }}{{ end }}
+          </div>
+    - size: full
+      widgets:
+      - type: custom-api
+        title: The Team
+        title-url: https://roundtable.hrmsmrflrii.xyz/#agents
+        cache: 1m
+        url: http://192.168.40.16:8790/api/roundtable
+        headers:
+          X-Labfeed-Token: ${LABFEED_TOKEN}
+        template: |
+          <div class="lf-section"><span>{{ .JSON.Int "working" }} working · {{ .JSON.Int "agents" }} homelab agents</span><span>click an agent to talk</span></div>
+          <div class="lf-grid" style="--lf-min: 220px">
+            {{ range .JSON.Array "team" }}
+            <a class="lf-agent{{ if .Bool "working" }} lf-working{{ end }}" style="--lf-agent: {{ if .String "color" }}{{ .String "color" }}{{ else }}var(--lf-unknown){{ end }}" href="https://roundtable.hrmsmrflrii.xyz/#agent/{{ .String "id" }}" target="_blank">
+              <span class="lf-emoji">{{ .String "emoji" }}</span>
+              <span class="lf-who">
+                <div class="lf-name">{{ .String "name" }}</div>
+                <div class="lf-role">{{ if .Bool "working" }}{{ .String "doing" }}{{ else }}{{ .String "role" }}{{ end }}</div>
+              </span>
+              <span class="text-right">
+                <span class="lf-pill {{ if .Bool "working" }}lf-ok{{ else if eq (.String "last_status") "error" }}lf-crit{{ else }}lf-unknown{{ end }}">{{ if .Bool "working" }}working{{ else }}idle{{ end }}</span>
+                <div class="lf-sub">{{ if .String "last_run" }}{{ .String "last_run" }}{{ else }}never{{ end }}</div>
+              </span>
+            </a>
+            {{ end }}
+          </div>
+      - type: custom-api
+        title: Recent Activity
+        cache: 1m
+        url: http://192.168.40.16:8790/api/roundtable
+        headers:
+          X-Labfeed-Token: ${LABFEED_TOKEN}
+        template: |
+          <div class="lf-list">
+            {{ range .JSON.Array "activity" }}
+            <div class="lf-row {{ if eq (.String "status") "ok" }}lf-ok{{ else if eq (.String "status") "running" }}lf-info{{ else }}lf-crit{{ end }}">
+              <span class="lf-meta" style="width: 92px">{{ .String "agent" }}</span>
+              <span class="lf-main" title="{{ .String "what" }}">{{ .String "what" }}</span>
+              <span class="lf-meta">{{ .String "when" }}</span>
+            </div>
+            {{ end }}
+          </div>
+    - size: small
+      widgets:
+      - type: custom-api
+        title: Open Issues
+        cache: 1m
+        url: http://192.168.40.16:8790/api/roundtable
+        headers:
+          X-Labfeed-Token: ${LABFEED_TOKEN}
+        template: |
+          <div class="lf-section"><span>Incidents</span><span>{{ .JSON.Int "attention.counts.incidents" }}</span></div>
+          <div class="lf-list">
+            {{ range .JSON.Array "attention.incidents" }}
+            <a class="lf-row lf-warn" href="https://roundtable.hrmsmrflrii.xyz/#agent/medic" target="_blank"><span class="lf-main" title="{{ .String "title" }}">{{ .String "title" }}</span><span class="lf-meta">{{ .String "since" }}</span></a>
+            {{ else }}<div class="lf-empty">No open incidents.</div>{{ end }}
+          </div>
+          <div class="lf-section"><span>Security findings</span><span>{{ .JSON.Int "attention.counts.findings" }}</span></div>
+          <div class="lf-list">
+            {{ range .JSON.Array "attention.findings" }}{{ $sv := .String "severity" }}
+            <a class="lf-row {{ if or (eq $sv "critical") (eq $sv "high") }}lf-crit{{ else if eq $sv "medium" }}lf-warn{{ else }}lf-info{{ end }}" href="https://roundtable.hrmsmrflrii.xyz/#agent/security" target="_blank"><span class="lf-pill">{{ $sv }}</span><span class="lf-main" title="{{ .String "title" }}">{{ .String "title" }}</span></a>
+            {{ else }}<div class="lf-empty">No open findings.</div>{{ end }}
+          </div>
+          <div class="lf-section"><span>Alerts</span><span>{{ .JSON.Int "attention.counts.alerts" }}</span></div>
+          <div class="lf-list">
+            {{ range .JSON.Array "attention.alerts" }}
+            <a class="lf-row lf-crit" href="https://roundtable.hrmsmrflrii.xyz/#agent/watcher" target="_blank"><span class="lf-main">{{ .String "title" }}</span><span class="lf-meta">{{ .String "since" }}</span></a>
+            {{ else }}<div class="lf-empty">No firing alerts.</div>{{ end }}
+          </div>
+      - type: bookmarks
+        title: Talk to
+        groups:
+        - title: Leads
+          links:
+          - title: Gideon · COO
+            url: https://roundtable.hrmsmrflrii.xyz/#agent/boss
+          - title: Corhyn · ITOps
+            url: https://roundtable.hrmsmrflrii.xyz/#agent/medic
+          - title: Loretta · Security
+            url: https://roundtable.hrmsmrflrii.xyz/#agent/security
+          - title: Ranni · Governance
+            url: https://roundtable.hrmsmrflrii.xyz/#agent/governance
+        - title: Portal
+          links:
+          - title: Roundtable portal
+            url: https://roundtable.hrmsmrflrii.xyz
+          - title: Reporting hierarchy
+            url: https://roundtable.hrmsmrflrii.xyz/#hierarchy

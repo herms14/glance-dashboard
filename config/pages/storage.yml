@@ -1,0 +1,260 @@
+- name: Storage
+  slug: storage
+  columns:
+    - size: small
+      widgets:
+      - type: custom-api
+        title: NAS Overview
+        cache: 1m
+        url: http://192.168.40.16:8790/api/nas
+        headers:
+          X-Labfeed-Token: ${LABFEED_TOKEN}
+        template: |
+          <div class="lf-card lf-{{ .JSON.String "state" }}">
+            <div class="lf-card-head"><span style="display:flex;align-items:center;gap:7px"><span class="lf-dot"></span><span class="lf-card-title">Synology DS923+</span></span>
+              <span class="lf-pill">{{ .JSON.String "system" }}</span></div>
+            <div class="lf-sub margin-bottom-10">192.168.20.32 · {{ .JSON.Int "disks_total" }} drives · system {{ .JSON.Int "temp_c" }}°C</div>
+            <div class="lf-kv"><span>{{ .JSON.String "volume.name" }}</span><b>{{ printf "%.1f" (.JSON.Float "volume.used_tb") }} / {{ printf "%.1f" (.JSON.Float "volume.total_tb") }} TB</b></div>
+            <div class="lf-bar lf-thick {{ if gt (.JSON.Float "volume.used_pct") 85.0 }}lf-crit{{ else if gt (.JSON.Float "volume.used_pct") 70.0 }}lf-warn{{ else }}lf-ok{{ end }}"><i style="width: {{ .JSON.Float "volume.used_pct" }}%"></i></div>
+            <div class="lf-kpis margin-top-10" style="grid-template-columns: 1fr 1fr">
+              <div class="lf-kpi lf-{{ if eq (.JSON.Int "disks_ok") (.JSON.Int "disks_total") }}ok{{ else }}crit{{ end }}"><div class="lf-label">Healthy drives</div><div class="lf-value">{{ .JSON.Int "disks_ok" }}<small>/ {{ .JSON.Int "disks_total" }}</small></div></div>
+              <div class="lf-kpi lf-{{ .JSON.String "volume.state" }}"><div class="lf-label">Volume</div><div class="lf-value" style="font-size:16px;margin-top:8px">{{ .JSON.String "volume.status" }}</div></div>
+            </div>
+          </div>
+      - type: custom-api
+        title: Capacity (ProxmoxData)
+        cache: 1m
+        url: https://proxmox.hrmsmrflrii.xyz/api2/json/cluster/resources?type=storage
+        headers:
+          Authorization: "${GLANCE_PVE_AUTH}"
+        template: |
+          {{ $tu := 0.0 }}{{ $tm := 0.0 }}
+          {{ range .JSON.Array "data" }}
+          {{ if and (eq (.String "storage") "ProxmoxData") (eq (.String "node") "node01") }}
+          {{ $tu = .Float "disk" }}
+          {{ $tm = .Float "maxdisk" }}
+          {{ end }}{{ end }}
+          {{ $usedTB := div $tu 1099511627776.0 }}
+          {{ $maxTB := div $tm 1099511627776.0 }}
+          {{ $freeTB := sub $maxTB $usedTB }}
+          {{ $pct := 0.0 }}{{ if gt $tm 0.0 }}{{ $pct = div (mul $tu 100.0) $tm }}{{ end }}
+          <div style="padding: 2px;">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px;">
+              <span style="font-size: 22px; color: #fff; font-weight: 700;">{{ printf "%.2f" $usedTB }}<span style="font-size: 11px; color: #94a3b8; margin-left: 4px;">TB used</span></span>
+              <span style="font-size: 12px; color: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; font-weight: 600;">{{ printf "%.1f" $pct }}%</span>
+            </div>
+            <div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 8px; overflow: hidden; margin-bottom: 6px;">
+              <div style="background: linear-gradient(90deg, {{ if lt $pct 70.0 }}#22c55e, #16a34a{{ else if lt $pct 90.0 }}#f59e0b, #d97706{{ else }}#ef4444, #dc2626{{ end }}); height: 8px; width: {{ printf "%.1f" $pct }}%;"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 10px; color: #94a3b8;">
+              <span>{{ printf "%.2f" $freeTB }} TB free</span>
+              <span>{{ printf "%.2f" $maxTB }} TB total</span>
+            </div>
+          </div>
+      - type: custom-api
+        title: System Temperature
+        cache: 30s
+        url: http://192.168.40.13:9090/api/v1/query?query=synologySystemTemperature
+        template: |
+          {{ $temp := 0.0 }}
+          {{ range .JSON.Array "data.result" }}{{ $temp = .Float "value.1" }}{{ end }}
+          {{ $color := "#22c55e" }}{{ $label := "Cool" }}
+          {{ if gt $temp 55.0 }}{{ $color = "#84cc16" }}{{ $label = "Normal" }}{{ end }}
+          {{ if gt $temp 65.0 }}{{ $color = "#f59e0b" }}{{ $label = "Warm" }}{{ end }}
+          {{ if gt $temp 75.0 }}{{ $color = "#ef4444" }}{{ $label = "Hot" }}{{ end }}
+          <div style="background: rgba(255,255,255,0.04); border-left: 3px solid {{ $color }}; border-radius: 8px; padding: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
+              <span style="font-size: 9px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;">NAS System Temp</span>
+              <span style="font-size: 9px; color: {{ $color }}; font-weight: 600; text-transform: uppercase;">{{ $label }}</span>
+            </div>
+            <div style="font-size: 26px; color: #fff; font-weight: 700;">{{ printf "%.0f" $temp }}<span style="font-size: 13px; color: #94a3b8; margin-left: 4px;">°C</span></div>
+          </div>
+      - type: custom-api
+        title: NAS Memory Used
+        cache: 30s
+        url: http://192.168.40.13:9090/api/v1/query?query=(memTotalReal{instance%3D%22192.168.20.32%22}-memAvailReal{instance%3D%22192.168.20.32%22})/memTotalReal{instance%3D%22192.168.20.32%22}*100
+        template: |
+          {{ $pct := 0.0 }}
+          {{ range .JSON.Array "data.result" }}{{ $pct = .Float "value.1" }}{{ end }}
+          {{ $color := "#22c55e" }}
+          {{ if gt $pct 70.0 }}{{ $color = "#f59e0b" }}{{ end }}
+          {{ if gt $pct 90.0 }}{{ $color = "#ef4444" }}{{ end }}
+          <div style="background: rgba(255,255,255,0.04); border-left: 3px solid {{ $color }}; border-radius: 8px; padding: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
+              <span style="font-size: 9px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;">Total RAM Used</span>
+              <span style="font-size: 22px; color: #fff; font-weight: 700;">{{ printf "%.1f" $pct }}<span style="font-size: 12px; color: #94a3b8; margin-left: 3px;">%</span></span>
+            </div>
+            <div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 7px; overflow: hidden; margin-bottom: 6px;">
+              <div style="background: {{ $color }}; height: 7px; width: {{ printf "%.1f" $pct }}%;"></div>
+            </div>
+            <div style="font-size: 10px; color: #888;">32 GB DDR4 physical</div>
+          </div>
+      - type: monitor
+        title: Storage Systems
+        cache: 1m
+        sites:
+        - title: Synology DSM
+          url: https://192.168.20.32:5001
+          icon: si:synology
+          allow-insecure: true
+        - title: PBS Server
+          url: https://192.168.20.50:8007
+          icon: si:proxmox
+          allow-insecure: true
+        - title: Proxmox Cluster
+          url: https://proxmox.hrmsmrflrii.xyz
+          icon: si:proxmox
+          allow-insecure: true
+      - type: bookmarks
+        title: Quick Links
+        groups:
+        - title: NAS
+          links:
+          - title: Synology DSM
+            url: https://192.168.20.32:5001
+            icon: si:synology
+          - title: File Station
+            url: https://192.168.20.32:5001/?launchApp=SYNO.SDS.App.FileStation3.Instance
+            icon: si:synology
+          - title: Storage Manager
+            url: https://192.168.20.32:5001/?launchApp=SYNO.SDS.StorageManager.Application
+            icon: si:synology
+        - title: Dashboards
+          links:
+          - title: Synology Grafana
+            url: https://grafana.hrmsmrflrii.xyz/d/synology-nas-modern
+            icon: si:grafana
+          - title: Proxmox Cluster
+            url: https://grafana.hrmsmrflrii.xyz/d/proxmox-compute
+            icon: si:grafana
+          - title: PBS Backup Status
+            url: https://grafana.hrmsmrflrii.xyz/d/pbs-backup-status
+            icon: si:grafana
+        - title: Backups
+          links:
+          - title: PBS Web UI
+            url: https://192.168.20.50:8007
+            icon: si:proxmox
+    - size: full
+      widgets:
+      - type: custom-api
+        title: Drive Health (Synology DS923+)
+        cache: 1m
+        url: http://192.168.40.16:8790/api/nas
+        headers:
+          X-Labfeed-Token: ${LABFEED_TOKEN}
+        template: |
+          <div class="lf-section"><span>Drive bays · live SMART status</span><span>{{ .JSON.Int "disks_ok" }} healthy / {{ .JSON.Int "disks_total" }}</span></div>
+          <div class="lf-grid" style="--lf-min: 200px">
+            {{ range .JSON.Array "disks" }}{{ $t := .Int "temp_c" }}
+            <div class="lf-card lf-{{ .String "state" }}">
+              <div class="lf-card-head"><span style="display:flex;align-items:center;gap:6px"><span class="lf-pill lf-info">{{ .String "kind" }}</span><span class="lf-card-title">{{ .String "bay" }}</span></span><span class="lf-pill">{{ .String "health" }}</span></div>
+              <div class="lf-sub">{{ .String "model" }}</div>
+              <div class="lf-kv margin-top-5"><span>Temperature</span><b class="lf-c {{ if gt $t 55 }}lf-crit{{ else if gt $t 48 }}lf-warn{{ else }}lf-ok{{ end }}">{{ $t }}°C</b></div>
+              <div class="lf-kv"><span>Status</span><b>{{ .String "status" }}</b></div>
+            </div>
+            {{ end }}
+          </div>
+      - type: iframe
+        title: Free Storage Over Time
+        source: https://grafana.hrmsmrflrii.xyz/d/synology-nas-modern/synology-nas-storage?orgId=1&viewPanel=40&kiosk=tv&theme=transparent&refresh=30s
+        height: 320
+      - type: iframe
+        title: Memory Usage Over Time
+        source: https://grafana.hrmsmrflrii.xyz/d/synology-nas-modern/synology-nas-storage?orgId=1&viewPanel=31&kiosk=tv&theme=transparent&refresh=30s
+        height: 320
+      - type: iframe
+        title: Disk Temperatures (Live)
+        source: https://grafana.hrmsmrflrii.xyz/d/synology-nas-modern/synology-nas-storage?orgId=1&viewPanel=20&kiosk=tv&theme=transparent&refresh=30s
+        height: 280
+      - type: custom-api
+        title: Proxmox Storage Pools — Per Node
+        cache: 30s
+        url: https://proxmox.hrmsmrflrii.xyz/api2/json/cluster/resources?type=storage
+        headers:
+          Authorization: "${GLANCE_PVE_AUTH}"
+        template: |
+          {{ $pdN01u := -1.0 }}{{ $pdN01m := 0.0 }}{{ $pdN02u := -1.0 }}{{ $pdN02m := 0.0 }}{{ $pdN03u := -1.0 }}{{ $pdN03m := 0.0 }}
+          {{ $vmN01u := -1.0 }}{{ $vmN01m := 0.0 }}{{ $vmN02u := -1.0 }}{{ $vmN02m := 0.0 }}{{ $vmN03u := -1.0 }}{{ $vmN03m := 0.0 }}
+          {{ $lvN01u := -1.0 }}{{ $lvN01m := 0.0 }}{{ $lvN02u := -1.0 }}{{ $lvN02m := 0.0 }}{{ $lvN03u := -1.0 }}{{ $lvN03m := 0.0 }}
+          {{ range .JSON.Array "data" }}
+            {{ $s := .String "storage" }}{{ $n := .String "node" }}{{ $u := .Float "disk" }}{{ $m := .Float "maxdisk" }}
+            {{ if and (eq $s "ProxmoxData") (eq $n "node01") }}{{ $pdN01u = $u }}{{ $pdN01m = $m }}{{ end }}
+            {{ if and (eq $s "ProxmoxData") (eq $n "node02") }}{{ $pdN02u = $u }}{{ $pdN02m = $m }}{{ end }}
+            {{ if and (eq $s "ProxmoxData") (eq $n "node03") }}{{ $pdN03u = $u }}{{ $pdN03m = $m }}{{ end }}
+            {{ if and (eq $s "VMDisks") (eq $n "node01") }}{{ $vmN01u = $u }}{{ $vmN01m = $m }}{{ end }}
+            {{ if and (eq $s "VMDisks") (eq $n "node02") }}{{ $vmN02u = $u }}{{ $vmN02m = $m }}{{ end }}
+            {{ if and (eq $s "VMDisks") (eq $n "node03") }}{{ $vmN03u = $u }}{{ $vmN03m = $m }}{{ end }}
+            {{ if and (eq $s "local-lvm") (eq $n "node01") }}{{ $lvN01u = $u }}{{ $lvN01m = $m }}{{ end }}
+            {{ if and (eq $s "local-lvm") (eq $n "node02") }}{{ $lvN02u = $u }}{{ $lvN02m = $m }}{{ end }}
+            {{ if and (eq $s "local-lvm") (eq $n "node03") }}{{ $lvN03u = $u }}{{ $lvN03m = $m }}{{ end }}
+          {{ end }}
+          <div style="padding: 4px;">
+            <div style="margin-bottom: 16px;">
+              <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; padding-left: 2px;">ProxmoxData</div>
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                {{ if ge $pdN01u 0.0 }}{{ $pct := 0.0 }}{{ if gt $pdN01m 0.0 }}{{ $pct = div (mul $pdN01u 100.0) $pdN01m }}{{ end }}<div style="background: rgba(255,255,255,0.04); border-radius: 8px; padding: 10px; border-left: 3px solid {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }};"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;"><span style="font-size: 11px; color: #d1d5db; font-weight: 600;">node01</span><span style="font-size: 10px; color: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; font-weight: 600;">{{ printf "%.1f" $pct }}%</span></div><div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 6px; margin-bottom: 6px;"><div style="background: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; height: 6px; border-radius: 4px; width: {{ printf "%.1f" $pct }}%;"></div></div><div style="display: flex; justify-content: space-between;"><span style="font-size: 10px; color: #94a3b8;">{{ printf "%.0f" (div $pdN01u 1073741824.0) }} GB used</span><span style="font-size: 10px; color: #888;">{{ printf "%.0f" (div $pdN01m 1073741824.0) }} GB</span></div></div>{{ else }}<div style="background: rgba(255,255,255,0.02); border-radius: 8px; padding: 10px; border: 1px dashed rgba(255,255,255,0.1);"><div style="font-size: 11px; color: #555; font-weight: 600;">node01</div><div style="font-size: 10px; color: #444; margin-top: 4px;">not configured</div></div>{{ end }}
+                {{ if ge $pdN02u 0.0 }}{{ $pct := 0.0 }}{{ if gt $pdN02m 0.0 }}{{ $pct = div (mul $pdN02u 100.0) $pdN02m }}{{ end }}<div style="background: rgba(255,255,255,0.04); border-radius: 8px; padding: 10px; border-left: 3px solid {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }};"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;"><span style="font-size: 11px; color: #d1d5db; font-weight: 600;">node02</span><span style="font-size: 10px; color: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; font-weight: 600;">{{ printf "%.1f" $pct }}%</span></div><div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 6px; margin-bottom: 6px;"><div style="background: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; height: 6px; border-radius: 4px; width: {{ printf "%.1f" $pct }}%;"></div></div><div style="display: flex; justify-content: space-between;"><span style="font-size: 10px; color: #94a3b8;">{{ printf "%.0f" (div $pdN02u 1073741824.0) }} GB used</span><span style="font-size: 10px; color: #888;">{{ printf "%.0f" (div $pdN02m 1073741824.0) }} GB</span></div></div>{{ else }}<div style="background: rgba(255,255,255,0.02); border-radius: 8px; padding: 10px; border: 1px dashed rgba(255,255,255,0.1);"><div style="font-size: 11px; color: #555; font-weight: 600;">node02</div><div style="font-size: 10px; color: #444; margin-top: 4px;">not configured</div></div>{{ end }}
+                {{ if ge $pdN03u 0.0 }}{{ $pct := 0.0 }}{{ if gt $pdN03m 0.0 }}{{ $pct = div (mul $pdN03u 100.0) $pdN03m }}{{ end }}<div style="background: rgba(255,255,255,0.04); border-radius: 8px; padding: 10px; border-left: 3px solid {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }};"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;"><span style="font-size: 11px; color: #d1d5db; font-weight: 600;">node03</span><span style="font-size: 10px; color: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; font-weight: 600;">{{ printf "%.1f" $pct }}%</span></div><div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 6px; margin-bottom: 6px;"><div style="background: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; height: 6px; border-radius: 4px; width: {{ printf "%.1f" $pct }}%;"></div></div><div style="display: flex; justify-content: space-between;"><span style="font-size: 10px; color: #94a3b8;">{{ printf "%.0f" (div $pdN03u 1073741824.0) }} GB used</span><span style="font-size: 10px; color: #888;">{{ printf "%.0f" (div $pdN03m 1073741824.0) }} GB</span></div></div>{{ else }}<div style="background: rgba(255,255,255,0.02); border-radius: 8px; padding: 10px; border: 1px dashed rgba(255,255,255,0.1);"><div style="font-size: 11px; color: #555; font-weight: 600;">node03</div><div style="font-size: 10px; color: #444; margin-top: 4px;">not configured</div></div>{{ end }}
+              </div>
+            </div>
+            <div style="margin-bottom: 16px;">
+              <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; padding-left: 2px;">VMDisks</div>
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                {{ if ge $vmN01u 0.0 }}{{ $pct := 0.0 }}{{ if gt $vmN01m 0.0 }}{{ $pct = div (mul $vmN01u 100.0) $vmN01m }}{{ end }}<div style="background: rgba(255,255,255,0.04); border-radius: 8px; padding: 10px; border-left: 3px solid {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }};"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;"><span style="font-size: 11px; color: #d1d5db; font-weight: 600;">node01</span><span style="font-size: 10px; color: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; font-weight: 600;">{{ printf "%.1f" $pct }}%</span></div><div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 6px; margin-bottom: 6px;"><div style="background: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; height: 6px; border-radius: 4px; width: {{ printf "%.1f" $pct }}%;"></div></div><div style="display: flex; justify-content: space-between;"><span style="font-size: 10px; color: #94a3b8;">{{ printf "%.0f" (div $vmN01u 1073741824.0) }} GB used</span><span style="font-size: 10px; color: #888;">{{ printf "%.0f" (div $vmN01m 1073741824.0) }} GB</span></div></div>{{ else }}<div style="background: rgba(255,255,255,0.02); border-radius: 8px; padding: 10px; border: 1px dashed rgba(255,255,255,0.1);"><div style="font-size: 11px; color: #555; font-weight: 600;">node01</div><div style="font-size: 10px; color: #444; margin-top: 4px;">not configured</div></div>{{ end }}
+                {{ if ge $vmN02u 0.0 }}{{ $pct := 0.0 }}{{ if gt $vmN02m 0.0 }}{{ $pct = div (mul $vmN02u 100.0) $vmN02m }}{{ end }}<div style="background: rgba(255,255,255,0.04); border-radius: 8px; padding: 10px; border-left: 3px solid {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }};"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;"><span style="font-size: 11px; color: #d1d5db; font-weight: 600;">node02</span><span style="font-size: 10px; color: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; font-weight: 600;">{{ printf "%.1f" $pct }}%</span></div><div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 6px; margin-bottom: 6px;"><div style="background: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; height: 6px; border-radius: 4px; width: {{ printf "%.1f" $pct }}%;"></div></div><div style="display: flex; justify-content: space-between;"><span style="font-size: 10px; color: #94a3b8;">{{ printf "%.0f" (div $vmN02u 1073741824.0) }} GB used</span><span style="font-size: 10px; color: #888;">{{ printf "%.0f" (div $vmN02m 1073741824.0) }} GB</span></div></div>{{ else }}<div style="background: rgba(255,255,255,0.02); border-radius: 8px; padding: 10px; border: 1px dashed rgba(255,255,255,0.1);"><div style="font-size: 11px; color: #555; font-weight: 600;">node02</div><div style="font-size: 10px; color: #444; margin-top: 4px;">not configured</div></div>{{ end }}
+                {{ if ge $vmN03u 0.0 }}{{ $pct := 0.0 }}{{ if gt $vmN03m 0.0 }}{{ $pct = div (mul $vmN03u 100.0) $vmN03m }}{{ end }}<div style="background: rgba(255,255,255,0.04); border-radius: 8px; padding: 10px; border-left: 3px solid {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }};"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;"><span style="font-size: 11px; color: #d1d5db; font-weight: 600;">node03</span><span style="font-size: 10px; color: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; font-weight: 600;">{{ printf "%.1f" $pct }}%</span></div><div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 6px; margin-bottom: 6px;"><div style="background: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; height: 6px; border-radius: 4px; width: {{ printf "%.1f" $pct }}%;"></div></div><div style="display: flex; justify-content: space-between;"><span style="font-size: 10px; color: #94a3b8;">{{ printf "%.0f" (div $vmN03u 1073741824.0) }} GB used</span><span style="font-size: 10px; color: #888;">{{ printf "%.0f" (div $vmN03m 1073741824.0) }} GB</span></div></div>{{ else }}<div style="background: rgba(255,255,255,0.02); border-radius: 8px; padding: 10px; border: 1px dashed rgba(255,255,255,0.1);"><div style="font-size: 11px; color: #555; font-weight: 600;">node03</div><div style="font-size: 10px; color: #444; margin-top: 4px;">not configured</div></div>{{ end }}
+              </div>
+            </div>
+            <div style="margin-bottom: 16px;">
+              <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; padding-left: 2px;">local-lvm</div>
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                {{ if ge $lvN01u 0.0 }}{{ $pct := 0.0 }}{{ if gt $lvN01m 0.0 }}{{ $pct = div (mul $lvN01u 100.0) $lvN01m }}{{ end }}<div style="background: rgba(255,255,255,0.04); border-radius: 8px; padding: 10px; border-left: 3px solid {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }};"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;"><span style="font-size: 11px; color: #d1d5db; font-weight: 600;">node01</span><span style="font-size: 10px; color: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; font-weight: 600;">{{ printf "%.1f" $pct }}%</span></div><div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 6px; margin-bottom: 6px;"><div style="background: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; height: 6px; border-radius: 4px; width: {{ printf "%.1f" $pct }}%;"></div></div><div style="display: flex; justify-content: space-between;"><span style="font-size: 10px; color: #94a3b8;">{{ printf "%.0f" (div $lvN01u 1073741824.0) }} GB used</span><span style="font-size: 10px; color: #888;">{{ printf "%.0f" (div $lvN01m 1073741824.0) }} GB</span></div></div>{{ else }}<div style="background: rgba(255,255,255,0.02); border-radius: 8px; padding: 10px; border: 1px dashed rgba(255,255,255,0.1);"><div style="font-size: 11px; color: #555; font-weight: 600;">node01</div><div style="font-size: 10px; color: #444; margin-top: 4px;">not configured</div></div>{{ end }}
+                {{ if ge $lvN02u 0.0 }}{{ $pct := 0.0 }}{{ if gt $lvN02m 0.0 }}{{ $pct = div (mul $lvN02u 100.0) $lvN02m }}{{ end }}<div style="background: rgba(255,255,255,0.04); border-radius: 8px; padding: 10px; border-left: 3px solid {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }};"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;"><span style="font-size: 11px; color: #d1d5db; font-weight: 600;">node02</span><span style="font-size: 10px; color: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; font-weight: 600;">{{ printf "%.1f" $pct }}%</span></div><div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 6px; margin-bottom: 6px;"><div style="background: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; height: 6px; border-radius: 4px; width: {{ printf "%.1f" $pct }}%;"></div></div><div style="display: flex; justify-content: space-between;"><span style="font-size: 10px; color: #94a3b8;">{{ printf "%.0f" (div $lvN02u 1073741824.0) }} GB used</span><span style="font-size: 10px; color: #888;">{{ printf "%.0f" (div $lvN02m 1073741824.0) }} GB</span></div></div>{{ else }}<div style="background: rgba(255,255,255,0.02); border-radius: 8px; padding: 10px; border: 1px dashed rgba(255,255,255,0.1);"><div style="font-size: 11px; color: #555; font-weight: 600;">node02</div><div style="font-size: 10px; color: #444; margin-top: 4px;">not configured</div></div>{{ end }}
+                {{ if ge $lvN03u 0.0 }}{{ $pct := 0.0 }}{{ if gt $lvN03m 0.0 }}{{ $pct = div (mul $lvN03u 100.0) $lvN03m }}{{ end }}<div style="background: rgba(255,255,255,0.04); border-radius: 8px; padding: 10px; border-left: 3px solid {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }};"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;"><span style="font-size: 11px; color: #d1d5db; font-weight: 600;">node03</span><span style="font-size: 10px; color: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; font-weight: 600;">{{ printf "%.1f" $pct }}%</span></div><div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 6px; margin-bottom: 6px;"><div style="background: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; height: 6px; border-radius: 4px; width: {{ printf "%.1f" $pct }}%;"></div></div><div style="display: flex; justify-content: space-between;"><span style="font-size: 10px; color: #94a3b8;">{{ printf "%.0f" (div $lvN03u 1073741824.0) }} GB used</span><span style="font-size: 10px; color: #888;">{{ printf "%.0f" (div $lvN03m 1073741824.0) }} GB</span></div></div>{{ else }}<div style="background: rgba(255,255,255,0.02); border-radius: 8px; padding: 10px; border: 1px dashed rgba(255,255,255,0.1);"><div style="font-size: 11px; color: #555; font-weight: 600;">node03</div><div style="font-size: 10px; color: #444; margin-top: 4px;">not configured</div></div>{{ end }}
+              </div>
+            </div>
+          </div>
+    - size: small
+      widgets:
+      - type: custom-api
+        title: RAID Volumes
+        cache: 1m
+        url: http://192.168.40.16:8790/api/nas
+        headers:
+          X-Labfeed-Token: ${LABFEED_TOKEN}
+        template: |
+          <div class="lf-list">
+            {{ range .JSON.Array "raids" }}
+            <div class="lf-card lf-{{ .String "state" }}">
+              <div class="lf-card-head"><span class="lf-card-title">{{ .String "name" }}</span><span class="lf-pill">{{ .String "status" }}</span></div>
+              {{ if .Bool "is_volume" }}
+              <div class="lf-kv"><span>Used</span><b>{{ printf "%.1f" (.Float "used_tb") }} / {{ printf "%.1f" (.Float "total_tb") }} TB · {{ printf "%.0f" (.Float "used_pct") }}%</b></div>
+              <div class="lf-bar"><i style="width: {{ .Float "used_pct" }}%"></i></div>
+              {{ else }}
+              <div class="lf-kv"><span>Pool size</span><b>{{ printf "%.1f" (.Float "total_tb") }} TB · fully allocated</b></div>
+              {{ end }}
+            </div>
+            {{ end }}
+          </div>
+      - type: custom-api
+        title: Proxmox Storage Pools (Aggregate)
+        cache: 30s
+        url: https://proxmox.hrmsmrflrii.xyz/api2/json/cluster/resources?type=storage
+        headers:
+          Authorization: "${GLANCE_PVE_AUTH}"
+        template: |
+          {{ $lvU := 0.0 }}{{ $lvM := 0.0 }}{{ $lvN := 0 }}
+          {{ $vmU := 0.0 }}{{ $vmM := 0.0 }}{{ $vmN := 0 }}
+          {{ $pdU := 0.0 }}{{ $pdM := 0.0 }}{{ $pdN := 0 }}
+          {{ range .JSON.Array "data" }}
+            {{ $s := .String "storage" }}
+            {{ if eq $s "local-lvm" }}{{ $lvU = add $lvU (.Float "disk") }}{{ $lvM = add $lvM (.Float "maxdisk") }}{{ $lvN = add $lvN 1 }}{{ end }}
+            {{ if eq $s "VMDisks" }}{{ $vmU = add $vmU (.Float "disk") }}{{ $vmM = add $vmM (.Float "maxdisk") }}{{ $vmN = add $vmN 1 }}{{ end }}
+            {{ if eq $s "ProxmoxData" }}{{ $pdU = add $pdU (.Float "disk") }}{{ $pdM = add $pdM (.Float "maxdisk") }}{{ $pdN = add $pdN 1 }}{{ end }}
+          {{ end }}
+          <div style="padding: 4px;">
+            {{ if gt $lvM 0.0 }}{{ $pct := div (mul $lvU 100.0) $lvM }}<div style="margin-bottom: 10px;"><div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span style="font-size: 11px; color: #d1d5db; font-weight: 600;">local-lvm</span><span style="font-size: 10px; color: #94a3b8;">{{ printf "%.0f" (div $lvU 1073741824.0) }} / {{ printf "%.0f" (div $lvM 1073741824.0) }} GB</span></div><div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 6px; overflow: hidden;"><div style="background: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; height: 6px; width: {{ printf "%.1f" $pct }}%;"></div></div><div style="display: flex; justify-content: space-between; margin-top: 2px;"><span style="font-size: 9px; color: #666;">{{ $lvN }} nodes</span><span style="font-size: 9px; color: #94a3b8;">{{ printf "%.1f" $pct }}%</span></div></div>{{ end }}
+            {{ if gt $vmM 0.0 }}{{ $pct := div (mul $vmU 100.0) $vmM }}<div style="margin-bottom: 10px;"><div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span style="font-size: 11px; color: #d1d5db; font-weight: 600;">VMDisks</span><span style="font-size: 10px; color: #94a3b8;">{{ printf "%.0f" (div $vmU 1073741824.0) }} / {{ printf "%.0f" (div $vmM 1073741824.0) }} GB</span></div><div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 6px; overflow: hidden;"><div style="background: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; height: 6px; width: {{ printf "%.1f" $pct }}%;"></div></div><div style="display: flex; justify-content: space-between; margin-top: 2px;"><span style="font-size: 9px; color: #666;">{{ $vmN }} nodes</span><span style="font-size: 9px; color: #94a3b8;">{{ printf "%.1f" $pct }}%</span></div></div>{{ end }}
+            {{ if gt $pdM 0.0 }}{{ $pct := div (mul $pdU 100.0) $pdM }}<div style="margin-bottom: 10px;"><div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span style="font-size: 11px; color: #d1d5db; font-weight: 600;">ProxmoxData</span><span style="font-size: 10px; color: #94a3b8;">{{ printf "%.0f" (div $pdU 1073741824.0) }} / {{ printf "%.0f" (div $pdM 1073741824.0) }} GB</span></div><div style="background: rgba(255,255,255,0.08); border-radius: 4px; height: 6px; overflow: hidden;"><div style="background: {{ if lt $pct 70.0 }}#22c55e{{ else if lt $pct 90.0 }}#f59e0b{{ else }}#ef4444{{ end }}; height: 6px; width: {{ printf "%.1f" $pct }}%;"></div></div><div style="display: flex; justify-content: space-between; margin-top: 2px;"><span style="font-size: 9px; color: #666;">{{ $pdN }} nodes</span><span style="font-size: 9px; color: #94a3b8;">{{ printf "%.1f" $pct }}%</span></div></div>{{ end }}
+          </div>

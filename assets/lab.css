@@ -1,0 +1,127 @@
+/*
+ * Hermes Lab - Glance theme (2026-10 redesign)
+ * Built on Glance's own color variables, so every widget follows the theme. Components used by the
+ * custom-api templates are prefixed lf- (Lab Feed). States: lf-ok / lf-info / lf-warn / lf-crit / lf-unknown.
+ */
+
+:root {
+  --lf-ok: hsl(145 55% 50%);
+  --lf-info: hsl(210 75% 64%);
+  --lf-warn: hsl(38 92% 58%);
+  --lf-crit: hsl(0 72% 62%);
+  --lf-unknown: hsl(220 10% 55%);
+  --lf-radius: 10px;
+  --lf-tile: var(--color-widget-background-highlight);
+}
+
+/* ---------- page chrome ---------- */
+.widget { border-radius: 14px; }
+.widget-content { border-radius: 14px; }
+.widget-header { letter-spacing: .02em; }
+a.lf-kpi, a.lf-row, a.lf-agent { text-decoration: none; color: inherit; }
+
+/* ---------- state colors ---------- */
+.lf-ok { --lf-state: var(--lf-ok); }
+.lf-info { --lf-state: var(--lf-info); }
+.lf-warn { --lf-state: var(--lf-warn); }
+.lf-crit { --lf-state: var(--lf-crit); }
+.lf-unknown, .lf- { --lf-state: var(--lf-unknown); }
+.lf-c { color: var(--lf-state); }
+
+.lf-dot {
+  width: 9px; height: 9px; border-radius: 50%; flex: 0 0 9px;
+  background: var(--lf-state, var(--lf-unknown));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--lf-state, var(--lf-unknown)) 22%, transparent);
+}
+.lf-crit .lf-dot, .lf-dot.lf-pulse { animation: lf-pulse 1.6s ease-in-out infinite; }
+@keyframes lf-pulse { 50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--lf-state) 8%, transparent); } }
+
+/* ---------- headline banner ---------- */
+.lf-banner {
+  display: flex; align-items: center; gap: 10px; padding: 10px 14px; margin-bottom: 12px;
+  border-radius: var(--lf-radius);
+  background: color-mix(in srgb, var(--lf-state) 12%, var(--lf-tile));
+  border: 1px solid color-mix(in srgb, var(--lf-state) 35%, transparent);
+}
+.lf-banner-text { color: var(--color-text-highlight); font-weight: 600; }
+
+/* ---------- KPI tiles ---------- */
+.lf-kpis { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
+.lf-kpi {
+  position: relative; padding: 12px 12px 10px; border-radius: var(--lf-radius); background: var(--lf-tile);
+  border-left: 3px solid var(--lf-state, var(--lf-unknown)); transition: background .15s;
+}
+a.lf-kpi:hover { background: color-mix(in srgb, var(--lf-state) 10%, var(--lf-tile)); }
+.lf-label { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--color-text-subdue); }
+.lf-value { font-size: 24px; font-weight: 700; line-height: 1.15; margin-top: 4px; color: var(--color-text-highlight);
+            font-variant-numeric: tabular-nums; }
+.lf-value small { font-size: 12px; font-weight: 500; color: var(--color-text-subdue); margin-left: 2px; }
+.lf-sub { font-size: 11px; color: var(--color-text-subdue); margin-top: 2px; }
+.lf-kpi .lf-dot { position: absolute; top: 12px; right: 12px; }
+
+/* ---------- bars ---------- */
+.lf-bar { height: 6px; border-radius: 4px; background: var(--color-progress-border, rgba(255,255,255,.08));
+          overflow: hidden; margin-top: 6px; }
+.lf-bar > i { display: block; height: 100%; border-radius: 4px; background: var(--lf-state, var(--color-primary)); }
+.lf-bar.lf-thick { height: 10px; }
+
+/* ---------- rows / lists ---------- */
+.lf-list { display: flex; flex-direction: column; gap: 4px; }
+.lf-row {
+  display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 8px; background: var(--lf-tile);
+  border-left: 3px solid var(--lf-state, transparent); min-width: 0;
+}
+a.lf-row:hover { filter: brightness(1.12); }
+.lf-row .lf-main { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+                   color: var(--color-text-highlight); font-size: 13px; }
+.lf-row .lf-meta { font-size: 11px; color: var(--color-text-subdue); white-space: nowrap; }
+.lf-row img { width: 20px; height: 20px; border-radius: 4px; flex: 0 0 20px; }
+.lf-section { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--color-text-subdue);
+              margin: 12px 2px 6px; display: flex; justify-content: space-between; }
+.lf-section:first-child { margin-top: 0; }
+.lf-empty { font-size: 12px; color: var(--color-text-subdue); padding: 8px 2px; }
+
+/* ---------- pills / buttons ---------- */
+.lf-pill { font-size: 10px; padding: 2px 7px; border-radius: 999px; white-space: nowrap;
+           color: var(--lf-state, var(--color-text-base));
+           background: color-mix(in srgb, var(--lf-state, var(--color-text-base)) 15%, transparent); }
+a.lf-btn { font-size: 10px; padding: 3px 9px; border-radius: 6px; text-decoration: none; white-space: nowrap;
+           color: var(--lf-warn); border: 1px solid color-mix(in srgb, var(--lf-warn) 60%, transparent); }
+a.lf-btn:hover { background: color-mix(in srgb, var(--lf-warn) 15%, transparent); }
+.lf-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* ---------- grids ---------- */
+.lf-grid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(var(--lf-min, 210px), 1fr)); }
+.lf-grid-2 { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; }
+.lf-card { padding: 12px; border-radius: var(--lf-radius); background: var(--lf-tile);
+           border-left: 3px solid var(--lf-state, var(--lf-unknown)); min-width: 0; }
+.lf-card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.lf-card-title { font-weight: 600; color: var(--color-text-highlight); font-size: 13px; overflow: hidden;
+                 text-overflow: ellipsis; white-space: nowrap; }
+.lf-kv { display: flex; justify-content: space-between; font-size: 11px; color: var(--color-text-subdue); margin-top: 3px; }
+.lf-kv b { color: var(--color-text-highlight); font-weight: 600; }
+
+/* ---------- agents ---------- */
+.lf-agent { display: flex; gap: 10px; align-items: center; padding: 9px 10px; border-radius: var(--lf-radius);
+            background: var(--lf-tile); border-left: 3px solid var(--lf-agent, var(--lf-unknown)); }
+.lf-agent .lf-emoji { font-size: 20px; width: 26px; text-align: center; }
+.lf-agent .lf-who { flex: 1; min-width: 0; }
+.lf-agent .lf-name { color: var(--color-text-highlight); font-weight: 600; font-size: 13px; }
+.lf-agent .lf-role { font-size: 11px; color: var(--color-text-subdue); white-space: nowrap; overflow: hidden;
+                     text-overflow: ellipsis; }
+.lf-agent.lf-working { background: color-mix(in srgb, var(--lf-ok) 10%, var(--lf-tile)); }
+
+/* ---------- life progress ---------- */
+.lf-life { display: grid; grid-template-columns: 52px 1fr 44px; align-items: center; gap: 12px; margin-bottom: 10px; }
+.lf-life .lf-bar { margin: 0; height: 12px; }
+.lf-quote { text-align: center; padding: 12px; border-radius: var(--lf-radius); background: var(--lf-tile);
+            font-style: italic; color: var(--color-text-base); font-size: 13px; }
+
+/* ---------- mobile ---------- */
+@media (max-width: 700px) {
+  .lf-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lf-grid-2 { grid-template-columns: 1fr; }
+  .lf-value { font-size: 20px; }
+  .lf-row .lf-hide-sm { display: none; }
+  .lf-grid { --lf-min: 160px; }
+}

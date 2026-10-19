@@ -1,0 +1,16 @@
+name: service-version-api
+
+services:
+  service-version-api:
+    build: .
+    container_name: service-version-api
+    restart: unless-stopped
+    ports:
+      - "5070:5070"
+    volumes:
+      - /home/hermes-admin/.ssh:/root/.ssh:ro
+    environment:
+      - TZ=America/New_York
+      - UPDATE_API_KEY=${UPDATE_API_KEY}
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"

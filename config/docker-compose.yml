@@ -1,0 +1,20 @@
+# Glance v0.7.0+ requires config directory mount (not single file)
+# See: https://github.com/glanceapp/glance/blob/main/docs/v0.7.0-upgrade.md
+services:
+  glance:
+    image: glanceapp/glance:latest
+    container_name: glance
+    restart: unless-stopped
+    security_opt:
+      - apparmor=unconfined
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./config:/app/config
+      - ./assets:/app/assets:ro
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    env_file:
+      - .env
+    environment:
+      - TZ=Asia/Manila

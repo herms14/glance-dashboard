@@ -1,0 +1,95 @@
+- name: Compute
+  slug: compute
+  columns:
+    - size: small
+      widgets:
+      - type: custom-api
+        title: Cluster Nodes
+        cache: 30s
+        url: https://proxmox.hrmsmrflrii.xyz/api2/json/nodes
+        headers:
+          Authorization: "${GLANCE_PVE_AUTH}"
+        template: |
+          <div class="lf-section"><span>MorpheusCluster</span><span>{{ len (.JSON.Array "data") }} nodes</span></div>
+          {{ range sortByString "node" "asc" (.JSON.Array "data") }}
+          {{ $on := eq (.String "status") "online" }}{{ $up := .Int "uptime" }}
+          <div class="lf-card {{ if $on }}lf-ok{{ else }}lf-crit{{ end }} margin-bottom-10">
+            <div class="lf-card-head"><span style="display:flex;align-items:center;gap:7px"><span class="lf-dot"></span><span class="lf-card-title">{{ .String "node" }}</span></span>
+              <span class="lf-pill">{{ .String "status" }}</span></div>
+            <div class="lf-kv"><span>Uptime</span><b>{{ if gt $up 86400 }}{{ div $up 86400 }}d {{ div (mod $up 86400) 3600 }}h{{ else }}{{ div $up 3600 }}h {{ div (mod $up 3600) 60 }}m{{ end }}</b></div>
+            <div class="lf-kv"><span>CPU</span><b>{{ printf "%.1f" (mul (.Float "cpu") 100.0) }}%</b></div>
+            <div class="lf-bar lf-info"><i style="width: {{ mul (.Float "cpu") 100.0 }}%"></i></div>
+            <div class="lf-kv margin-top-5"><span>RAM</span><b>{{ div (.Int "mem") 1073741824 }} / {{ div (.Int "maxmem") 1073741824 }} GB</b></div>
+            <div class="lf-bar" style="--lf-state: hsl(265 70% 68%)"><i style="width: {{ div (mul (.Float "mem") 100.0) (.Float "maxmem") }}%"></i></div>
+            <div class="lf-kv margin-top-5"><span>Root disk</span><b>{{ div (.Int "disk") 1073741824 }} / {{ div (.Int "maxdisk") 1073741824 }} GB</b></div>
+            <div class="lf-bar lf-warn"><i style="width: {{ div (mul (.Float "disk") 100.0) (.Float "maxdisk") }}%"></i></div>
+          </div>
+          {{ end }}
+    - size: full
+      widgets:
+      - type: iframe
+        title: Container Monitoring
+        source: https://grafana.hrmsmrflrii.xyz/d/containers-modern/container-monitoring?orgId=1&kiosk&theme=transparent&refresh=30s
+        height: 900
+      - type: custom-api
+        title: Running VMs
+        cache: 30s
+        url: https://proxmox.hrmsmrflrii.xyz/api2/json/cluster/resources?type=vm
+        headers:
+          Authorization: "${GLANCE_PVE_AUTH}"
+        template: |
+          {{ $run := 0 }}{{ $tot := 0 }}{{ range .JSON.Array "data" }}{{ if and (eq (.String "type") "qemu") (ne (.Int "template") 1) }}{{ $tot = add $tot 1 }}{{ if eq (.String "status") "running" }}{{ $run = add $run 1 }}{{ end }}{{ end }}{{ end }}
+          <div class="lf-section"><span>QEMU virtual machines</span><span>{{ $run }} running / {{ $tot }}</span></div>
+          <div class="lf-grid" style="--lf-min: 230px">
+            {{ range sortByString "name" "asc" (.JSON.Array "data") }}{{ if and (eq (.String "type") "qemu") (eq (.String "status") "running") }}
+            {{ $up := .Int "uptime" }}
+            <div class="lf-card lf-ok">
+              <div class="lf-card-head"><span class="lf-card-title">{{ .String "name" }}</span><span class="lf-pill lf-info">{{ .String "node" }}</span></div>
+              <div class="lf-kv"><span>CPU</span><b>{{ printf "%.1f" (mul (.Float "cpu") 100.0) }}%</b></div>
+              <div class="lf-bar lf-info"><i style="width: {{ mul (.Float "cpu") 100.0 }}%"></i></div>
+              <div class="lf-kv margin-top-5"><span>RAM</span><b>{{ div (.Int "mem") 1073741824 }} / {{ div (.Int "maxmem") 1073741824 }} GB</b></div>
+              <div class="lf-bar" style="--lf-state: hsl(265 70% 68%)"><i style="width: {{ div (mul (.Float "mem") 100.0) (.Float "maxmem") }}%"></i></div>
+              <div class="lf-kv margin-top-5"><span>Uptime</span><b>{{ if gt $up 86400 }}{{ div $up 86400 }}d {{ div (mod $up 86400) 3600 }}h{{ else }}{{ div $up 3600 }}h{{ end }}</b></div>
+            </div>
+            {{ end }}{{ end }}
+          </div>
+    - size: small
+      widgets:
+      - type: custom-api
+        title: VM & Container Status
+        cache: 30s
+        url: https://proxmox.hrmsmrflrii.xyz/api2/json/cluster/resources
+        headers:
+          Authorization: "${GLANCE_PVE_AUTH}"
+        template: |
+          {{ $all := .JSON.Array "data" }}
+          {{ range sortByString "node" "asc" $all }}{{ if eq (.String "type") "node" }}{{ $n := .String "node" }}
+          {{ $vm := 0 }}{{ $ct := 0 }}{{ range $all }}{{ if and (eq (.String "node") $n) (eq (.String "status") "running") }}{{ if eq (.String "type") "qemu" }}{{ $vm = add $vm 1 }}{{ else if eq (.String "type") "lxc" }}{{ $ct = add $ct 1 }}{{ end }}{{ end }}{{ end }}
+          <div class="lf-section"><span>{{ $n }}</span><span>{{ $vm }} VM · {{ $ct }} CT</span></div>
+          <div class="lf-list margin-bottom-10">
+            {{ range sortByString "name" "asc" $all }}{{ if and (eq (.String "node") $n) (eq (.String "status") "running") (or (eq (.String "type") "qemu") (eq (.String "type") "lxc")) }}
+            {{ $up := .Int "uptime" }}
+            <div class="lf-row {{ if eq (.String "type") "lxc" }}lf-warn{{ else }}lf-ok{{ end }}"><span class="lf-pill">{{ if eq (.String "type") "lxc" }}CT{{ else }}VM{{ end }}</span><span class="lf-main">{{ .String "name" }}</span><span class="lf-meta">{{ if gt $up 86400 }}{{ div $up 86400 }}d{{ else }}{{ div $up 3600 }}h{{ end }}</span></div>
+            {{ end }}{{ end }}
+          </div>
+          {{ end }}{{ end }}
+      - type: bookmarks
+        title: Quick Links
+        groups:
+        - title: Dashboards
+          links:
+          - title: Proxmox UI
+            url: https://proxmox.hrmsmrflrii.xyz
+            icon: si:proxmox
+          - title: Grafana
+            url: https://grafana.hrmsmrflrii.xyz
+            icon: si:grafana
+          - title: Portainer
+            url: https://portainer.hrmsmrflrii.xyz
+            icon: si:portainer
+          - title: Container Monitoring
+            url: https://grafana.hrmsmrflrii.xyz/d/containers-modern/container-monitoring?orgId=1
+            icon: si:grafana
+          - title: Proxmox Cluster Health
+            url: https://grafana.hrmsmrflrii.xyz/d/proxmox-cluster-health/proxmox-cluster-health?orgId=1
+            icon: si:grafana

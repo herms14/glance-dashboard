@@ -1,0 +1,112 @@
+- name: Services
+  slug: services
+  columns:
+    - size: full
+      widgets:
+      # Service Version Manager (192.168.40.13:5070). One template for every category (YAML anchor).
+      # "Update" no longer carries the SVM key: it opens Lab Feed, which files an approval for Hewg; the update
+      # only runs after Master Hermes reacts ✅ in #homelab-infrastructure.
+      - type: custom-api
+        title: Critical Infrastructure
+        cache: 1m
+        url: http://192.168.40.13:5070/api/services/infrastructure
+        template: &svc |
+          <div class="lf-section"><span>{{ .JSON.Int "online" }}/{{ len (.JSON.Array "services") }} online</span>
+            {{ $u := 0 }}{{ range .JSON.Array "services" }}{{ if .Bool "update_available" }}{{ $u = add $u 1 }}{{ end }}{{ end }}
+            {{ if gt $u 0 }}<span class="lf-c lf-warn">{{ $u }} update{{ if gt $u 1 }}s{{ end }}</span>{{ end }}</div>
+          <div class="lf-list">
+            {{ range .JSON.Array "services" }}
+            {{ $h := .String "health" }}
+            <div class="lf-row {{ if eq $h "online" }}lf-ok{{ else if eq $h "offline" }}lf-crit{{ else }}lf-warn{{ end }}">
+              <img src="https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/{{ .String "icon" }}.png" alt="" onerror="this.style.visibility='hidden'">
+              {{ if .String "web_url" }}<a class="lf-main" href="{{ .String "web_url" }}" target="_blank">{{ .String "display_name" }}</a>{{ else }}<span class="lf-main">{{ .String "display_name" }}</span>{{ end }}
+              <span class="lf-pill">{{ if eq $h "online" }}Online{{ else if eq $h "offline" }}Offline{{ else }}Unknown{{ end }}</span>
+              <span class="lf-meta lf-hide-sm" style="width: 92px; text-align: right;">{{ if and (.String "current_version") (ne (.String "current_version") "N/A") }}v{{ .String "current_version" | trimPrefix "v" }}{{ else }}custom{{ end }}</span>
+              <span style="width: 92px; text-align: right;">
+                {{ if .Bool "can_update" }}{{ if .Bool "update_available" }}<a class="lf-btn" href="http://192.168.40.16:8790/update/{{ .String "name" }}" target="_blank" title="Files an approval - runs after your ✅">Update</a>{{ else }}<span class="lf-meta lf-c lf-ok">Up to date</span>{{ end }}
+                {{ else if .Bool "update_available" }}<span class="lf-meta lf-c lf-warn" title="Blacklisted from one-click update">Update available</span>
+                {{ else if eq (.String "type") "docker" }}<span class="lf-meta lf-c lf-ok">Up to date</span>{{ end }}
+              </span>
+            </div>
+            {{ end }}
+          </div>
+      - type: custom-api
+        title: Auth & Identity
+        cache: 1m
+        url: http://192.168.40.13:5070/api/services/auth
+        template: *svc
+      - type: custom-api
+        title: Core Applications
+        cache: 1m
+        url: http://192.168.40.13:5070/api/services/core_apps
+        template: *svc
+    - size: full
+      widgets:
+      - type: custom-api
+        title: Media Stack
+        cache: 1m
+        url: http://192.168.40.13:5070/api/services/media
+        template: *svc
+      - type: custom-api
+        title: Monitoring & Observability
+        cache: 1m
+        url: http://192.168.40.13:5070/api/services/monitoring
+        template: *svc
+      - type: custom-api
+        title: Custom APIs & Bots
+        cache: 1m
+        url: http://192.168.40.13:5070/api/services/apis_bots
+        template: *svc
+    - size: small
+      widgets:
+      # Counted by Lab Feed from the category lists (SVM's own /api/summary reports 0 online).
+      - type: custom-api
+        title: Service Summary
+        cache: 1m
+        url: http://192.168.40.16:8790/api/services
+        headers:
+          X-Labfeed-Token: ${LABFEED_TOKEN}
+        template: |
+          <div class="lf-kpi lf-{{ .JSON.String "state" }} margin-bottom-10">
+            <span class="lf-dot"></span><div class="lf-label">Online</div>
+            <div class="lf-value">{{ .JSON.Int "online" }}<small>/ {{ .JSON.Int "total" }}</small></div>
+            <div class="lf-sub">{{ .JSON.Int "updates_available" }} updates available</div>
+          </div>
+          {{ if gt (.JSON.Int "offline") 0 }}
+          <div class="lf-section"><span>Offline</span></div>
+          <div class="lf-list margin-bottom-10">{{ range .JSON.Array "offline_names" }}<div class="lf-row lf-crit"><span class="lf-main">{{ .String "" }}</span></div>{{ end }}</div>
+          {{ end }}
+          <div class="lf-section"><span>By category</span></div>
+          <div class="lf-list">
+            {{ range .JSON.Array "categories" }}
+            <div class="lf-row {{ if eq (.Int "online") (.Int "total") }}lf-ok{{ else }}lf-warn{{ end }}">
+              <span class="lf-main">{{ .String "name" }}</span>
+              <span class="lf-meta">{{ .Int "online" }}/{{ .Int "total" }}{{ if gt (.Int "updates") 0 }} · <span class="lf-c lf-warn">{{ .Int "updates" }}↑</span>{{ end }}</span>
+            </div>
+            {{ end }}
+          </div>
+      - type: bookmarks
+        title: Quick Access
+        groups:
+        - title: Infrastructure
+          links:
+          - title: Proxmox UI
+            url: https://proxmox.hrmsmrflrii.xyz
+            icon: si:proxmox
+          - title: Synology DSM
+            url: https://192.168.20.32:5001
+            icon: si:synology
+          - title: PBS Web UI
+            url: https://192.168.20.50:8007
+            icon: si:proxmox
+        - title: Monitoring
+          links:
+          - title: Grafana
+            url: https://grafana.hrmsmrflrii.xyz
+            icon: si:grafana
+          - title: Portainer
+            url: https://portainer.hrmsmrflrii.xyz
+            icon: si:portainer
+          - title: Uptime Kuma
+            url: https://uptime.hrmsmrflrii.xyz
+            icon: si:uptimekuma
